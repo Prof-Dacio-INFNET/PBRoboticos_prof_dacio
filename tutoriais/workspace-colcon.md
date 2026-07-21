@@ -5,11 +5,11 @@
 
 ## 0. Onde clonar o repositório (importante!)
 
-Quando o seu repositório `pb-<usuario>` existir (a partir da aula 2), **clone-o DENTRO do filesystem do WSL**, na sua home do Ubuntu — **não** em `/mnt/c/...` (o disco do Windows):
+Quando o seu repositório `projeto-pb-<usuario>` existir (a partir da aula 2), **clone-o DENTRO do filesystem do WSL**, na sua home do Ubuntu — **não** em `/mnt/c/...` (o disco do Windows):
 
 ```bash
 cd ~                                      # home do Ubuntu — o lugar certo
-gh repo clone Prof-Dacio-INFNET/pb-SEU-USUARIO
+gh repo clone Prof-Dacio-INFNET/projeto-pb-SEU-USUARIO
 ```
 
 Por quê: compilar com colcon em `/mnt/c` é **muito mais lento** (o acesso ao disco do Windows pelo WSL tem alto custo) e causa problemas de permissões e fins de linha. O repositório sincroniza pelo **GitHub** (push/pull), então ele não precisa — e não deve — ficar em pasta do Windows/OneDrive. Para editar com conforto: instale o VS Code no Windows com a extensão **WSL** e, dentro da pasta do projeto no Ubuntu, rode `code .` — o editor abre no Windows operando direto nos arquivos do WSL.
@@ -25,7 +25,7 @@ Um **workspace** é a pasta onde seus pacotes vivem e são compilados: código e
 ## 2. Compilar o workspace do seu projeto
 
 ```bash
-cd ~/pb-SEU-USUARIO/ros2_ws
+cd ~/projeto-pb-SEU-USUARIO/ros2_ws
 colcon build
 source install/setup.bash
 ```
@@ -35,7 +35,7 @@ source install/setup.bash
 ## 3. Criar o seu primeiro pacote
 
 ```bash
-cd ~/pb-SEU-USUARIO/ros2_ws/src
+cd ~/projeto-pb-SEU-USUARIO/ros2_ws/src
 ros2 pkg create --build-type ament_python --node-name meu_no meu_pacote
 cd .. && colcon build && source install/setup.bash
 ros2 run meu_pacote meu_no    # "Hi from meu_pacote."

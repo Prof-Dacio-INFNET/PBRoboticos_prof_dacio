@@ -35,14 +35,14 @@ Repita em **cada máquina** que usar (computador do laboratório, notebook, PC d
 2. **Selecione o SEU NOME na lista da turma** (roster) — é isso que vincula sua conta a você na correção. Não pule; não escolha o nome do colega.
 3. Clique em **Accept this assignment**.
 4. **📧 PASSO QUE A DOCUMENTAÇÃO DO GITHUB NÃO DESTACA:** abra o **e-mail** cadastrado na sua conta GitHub e **aceite o convite** ("You've been invited to Prof-Dacio-INFNET…"). **Sem aceitar o convite, o repositório dá erro 404.** Alternativa se o e-mail não chegar: [github.com/orgs/Prof-Dacio-INFNET/invitation](https://github.com/orgs/Prof-Dacio-INFNET/invitation) (e confira o spam).
-5. Recarregue a página do assignment: aparecerá o link do seu repositório **privado** — ex.: `pb-capitao-gambiarra`. Só você e o professor têm acesso.
+5. Recarregue a página do assignment: aparecerá o link do seu repositório **privado** — ex.: `projeto-pb-capitao-gambiarra`. Só você e o professor têm acesso.
 
 ## Parte C — Clonar e conhecer o repositório
 
 ```bash
 cd ~
-gh repo clone Prof-Dacio-INFNET/pb-SEU-USUARIO   # ex.: pb-dacioms
-cd pb-SEU-USUARIO
+gh repo clone Prof-Dacio-INFNET/projeto-pb-SEU-USUARIO   # ex.: projeto-pb-dacioms
+cd projeto-pb-SEU-USUARIO
 ```
 
 | Pasta/arquivo | O que vai aí |
@@ -132,7 +132,7 @@ git checkout dev                                            # 4) volte a trabalh
 |---|---|
 | **Aceitei, mas o repositório dá 404** | **Convite pendente no e-mail** (Parte B, passo 4). Aceite pelo link do e-mail ou em `github.com/orgs/Prof-Dacio-INFNET/invitation`; confira o spam |
 | Aceitei sem escolher meu nome na lista | Avise o professor — ele vincula sua conta ao roster |
-| `Permission denied` no clone/push | `gh auth login` nesta máquina; confirme que é o **seu** `pb-…` |
+| `Permission denied` no clone/push | `gh auth login` nesta máquina; confirme que é o **seu** `projeto-pb-…` |
 | `rejected: fetch first` no push | Você editou em outra máquina sem pull. `git pull`, resolva, `git push` |
 | "Meu trabalho não apareceu na correção" | Estava numa branch não mergeada na `main` — merge antes da tag |
 | Trabalho do lab não está em casa | Faltou `git push` no lab. Crie o hábito da Parte D |

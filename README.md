@@ -15,7 +15,7 @@ gh repo clone Prof-Dacio-INFNET/PBRoboticos_prof_dacio
 
 ## Regras de entrega (resumo — o oficial está no Moodle)
 
-**A entrega oficial de todo TP é no MOODLE** (ZIP de códigos + PDF + links). O repositório individual `pb-<usuario>` é auxiliar (desenvolvimento + tag `tpN` para correção do código) e critério de avaliação.
+**A entrega oficial de todo TP é no MOODLE** (ZIP de códigos + PDF + links). O repositório individual `projeto-pb-<usuario>` é auxiliar (desenvolvimento + tag `tpN` para correção do código) e critério de avaliação.
 
 **Requisitos:** Ubuntu 22.04 (WSL2 ou nativo) + ROS 2 Humble + Python 3.10 — ver `tutoriais/`.
 
