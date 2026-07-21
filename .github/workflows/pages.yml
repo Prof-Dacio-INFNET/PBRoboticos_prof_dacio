@@ -1,0 +1,40 @@
+# Publica o site do material (MkDocs Material -> GitHub Pages).
+# Requisito unico nas configuracoes do repo: Settings -> Pages -> Source: "GitHub Actions".
+name: Publicar site
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - run: pip install mkdocs-material
+      - name: Montar docs/ a partir da estrutura do repo
+        run: |
+          rm -rf docs && mkdir docs
+          cp README.md docs/index.md
+          cp LICENSE.md docs/licenca.md 2>/dev/null || true
+          for d in aulas tutoriais exemplos recursos; do
+            [ -d "$d" ] && cp -r "$d" docs/ || true
+          done
+      - run: mkdocs build
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

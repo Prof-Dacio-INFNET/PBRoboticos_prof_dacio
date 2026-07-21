@@ -1,0 +1,22 @@
+site_name: PB Sistemas Robóticos — Prof. Dácio (INFNET 2026.2)
+site_url: https://prof-dacio-infnet.github.io/PBRoboticos_prof_dacio/
+repo_url: https://github.com/Prof-Dacio-INFNET/PBRoboticos_prof_dacio
+copyright: "© 2026 Dácio Moreira de Souza — material CC BY-NC-ND 4.0 · exemplos MIT"
+theme:
+  name: material
+  language: pt-BR
+  palette:
+    primary: indigo
+  features:
+    - navigation.sections
+    - navigation.top
+    - search.suggest
+    - content.code.copy
+docs_dir: docs
+markdown_extensions:
+  - admonition
+  - pymdownx.superfences
+  - pymdownx.highlight
+  - tables
+  - toc:
+      permalink: true
