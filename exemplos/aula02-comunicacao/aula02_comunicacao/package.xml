@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>aula02_comunicacao</name>
+  <version>0.1.0</version>
+  <description>Aula 2: publisher + subscriber + serviço (esqueleto do TP1)</description>
+  <maintainer email="dacioms@exemplo.com">Prof. Dacio</maintainer>
+  <license>MIT</license>
+  <depend>rclpy</depend>
+  <depend>std_msgs</depend>
+  <depend>std_srvs</depend>
+  <export><build_type>ament_python</build_type></export>
+</package>
