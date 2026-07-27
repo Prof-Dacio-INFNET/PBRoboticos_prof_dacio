@@ -82,4 +82,11 @@ git push
 Capture um `rqt_graph` e salve em `docs/evidencias/aula02/` do seu repositório.
 
 ## Checklist de conclusão
-- [ ] Exemplo rodando (launch) · [ ] pacote renomeado · [ ] publisher modificado · [ ] 2º subscriber (alerta) · [ ] tópico `/camera/status` · [ ] serviço `/contagem` respondendo · [ ] commit+push na `dev` · [ ] captura em docs/evidencias/
+- [ ] Exemplo rodando (launch) 
+- [ ] pacote renomeado
+- [ ] publisher modificado
+- [ ] 2º subscriber (alerta)
+- [ ] tópico `/camera/status`
+- [ ] serviço `/contagem` respondendo
+- [ ] commit+push na `dev`
+- [ ] captura em docs/evidencias/
