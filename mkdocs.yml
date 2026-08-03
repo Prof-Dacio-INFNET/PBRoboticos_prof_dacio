@@ -1,22 +1,159 @@
-site_name: PB Sistemas Robóticos — Prof. Dácio (INFNET 2026.2)
+# Configuração do site do material (MkDocs Material).
+#
+# A pasta docs/ NÃO existe no repositório: ela é montada pelo workflow
+# .github/workflows/pages.yml a partir da estrutura real (aulas/, tutoriais/,
+# exemplos/, recursos/, cheatsheets/). Cada pasta publica o seu README.md como
+# página de abertura da seção (o workflow renomeia README.md -> index.md).
+#
+# PARA ADICIONAR UMA AULA NOVA:
+#   1. crie aulas/etapaNN-aulaMM/README.md (e coloque o PDF na mesma pasta)
+#   2. acrescente uma linha em nav: -> Aulas
+# Sem o passo 2 a página existe e é indexada na busca, mas não aparece no menu.
+
+site_name: PB Sistemas Robóticos — INFNET 2026.2
+site_description: Material da disciplina Projeto de Bloco - Sistemas Robóticos, Prof. Dácio Moreira de Souza (Instituto INFNET).
+site_author: Dácio Moreira de Souza
 site_url: https://prof-dacio-infnet.github.io/PBRoboticos_prof_dacio/
 repo_url: https://github.com/Prof-Dacio-INFNET/PBRoboticos_prof_dacio
+repo_name: PBRoboticos_prof_dacio
+edit_uri: ""
 copyright: "© 2026 Dácio Moreira de Souza — material CC BY-NC-ND 4.0 · exemplos MIT"
+
+docs_dir: docs
+site_dir: site
+
 theme:
   name: material
   language: pt-BR
+  icon:
+    logo: material/robot-industrial
+    repo: fontawesome/brands/github
   palette:
-    primary: indigo
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-night
+        name: Mudar para o tema escuro
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-sunny
+        name: Mudar para o tema claro
   features:
+    - navigation.tabs
+    - navigation.tabs.sticky
     - navigation.sections
+    - navigation.indexes
     - navigation.top
+    - navigation.footer
+    - toc.follow
     - search.suggest
+    - search.highlight
+    - search.share
     - content.code.copy
-docs_dir: docs
+    - content.code.annotate
+    - content.tabs.link
+    - content.tooltips
+
+extra_css:
+  - assets/extra.css
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/Prof-Dacio-INFNET
+      name: GitHub do professor
+    - icon: material/web
+      link: https://daciosouza.com.br/PB_sistRoboticos/
+      name: Espelho e arquivos grandes
+  generator: false
+
+plugins:
+  - search:
+      lang: pt
+
 markdown_extensions:
+  - abbr
   - admonition
-  - pymdownx.superfences
-  - pymdownx.highlight
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
   - tables
   - toc:
-      permalink: true
+      permalink: "¶"
+      permalink_title: Link permanente para esta seção
+      toc_depth: 3
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+
+nav:
+  - Início: index.md
+
+  - Aulas:
+      - aulas/index.md
+      - "Aula 1 — Abertura, ROS 2 e o projeto": aulas/etapa01-aula01/index.md
+      - "Aula 2 — Primeiros nós: tópicos e serviços": aulas/etapa01-aula02/index.md
+      - "Aula 3 — Comunicação e visão computacional": aulas/etapa02-aula03/index.md
+
+  - Tutoriais:
+      - tutoriais/index.md
+      - "Ambiente: ROS 2 Humble no WSL2": tutoriais/setup-ros2-humble-wsl2.md
+      - "Workspace e colcon": tutoriais/workspace-colcon.md
+      - "Câmera USB no WSL2 (usbipd)": tutoriais/camera-wsl2-usbipd.md
+      - "Manual do aluno: GitHub e entregas": tutoriais/manual-do-aluno-github.md
+      - "Tarefa da Aula 2 — primeiros nós": tutoriais/tarefa-aula02-primeiros-nos.md
+      - "Tarefa da Aula 3 — pipeline de visão": tutoriais/tarefa-aula03-visao.md
+      - "Uso de IA na disciplina": tutoriais/orientacao-uso-ia.md
+
+  - Projeto:
+      - recursos/index.md
+      - "Catálogo de projetos": recursos/catalogo-projetos.md
+      - "Derivações e aplicações": recursos/derivacoes-projetos.md
+      - "Simulação × hardware real": recursos/simulado-vs-hardware.md
+      - "Gates de cada TP": recursos/gates-tps.md
+      - Desafios semanais:
+          - recursos/desafios/index.md
+          - "Desafio 1 — comunicação": recursos/desafios/desafio-01-comunicacao.md
+          - "Desafio 2 — visão": recursos/desafios/desafio-02-visao.md
+
+  - Exemplos:
+      - exemplos/index.md
+      - "Aula 2 — comunicação": exemplos/aula02-comunicacao/index.md
+      - "Aula 3 — visão": exemplos/aula03-visao/index.md
+      - TP1: exemplos/tp1/index.md
+      - TP2: exemplos/tp2/index.md
+      - TP3: exemplos/tp3/index.md
+      - TP4: exemplos/tp4/index.md
+      - TP5: exemplos/tp5/index.md
+
+  - Consulta rápida:
+      - cheatsheets/index.md
+      - "Git — fluxo e tags": cheatsheets/git-cheatsheet.md
+      - "Colcon — workspace e build": cheatsheets/colcon.md
+      - "ROS 2 — nós, tópicos, serviços": cheatsheets/ros2-cheatsheet.md
+      - "Regras de entrega": cheatsheets/regras-entrega.md
+      - "OpenCV": cheatsheets/opencv.md
+      - "Deep learning": cheatsheets/deep-learning.md
+      - "Gazebo, URDF e TF": cheatsheets/gazebo-urdf-tf.md
+      - "SLAM e Nav2": cheatsheets/slam-nav2.md
+      - "MoveIt 2": cheatsheets/moveit.md
+      - "Veículos e RL": cheatsheets/veiculos-rl.md
+      - Licença: licenca.md

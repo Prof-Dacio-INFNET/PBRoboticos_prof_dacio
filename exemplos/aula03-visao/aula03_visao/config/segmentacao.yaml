@@ -1,0 +1,17 @@
+# Parâmetros do segmentador. Edite AQUI, não no código — é assim que o TP2 cobra.
+# Dica: matiz (H) no OpenCV vai de 0 a 179. Vermelho dá a volta, por isso duas faixas.
+segmentador_hsv:
+  ros__parameters:
+    h_min: 0        # faixa 1 do vermelho
+    h_max: 10
+    h_min2: 170     # faixa 2 do vermelho
+    h_max2: 180
+    s_min: 120      # saturação mínima (corta cinzas)
+    v_min: 70       # brilho mínimo (corta sombras)
+    area_min: 400.0 # ignora manchas menores que isso (px²)
+    desenhar_contornos: true
+
+# Outras cores (troque e recompile o entendimento, não o código):
+#   azul    -> h_min: 100, h_max: 130   (deixe h_min2/h_max2 iguais a h_min/h_max)
+#   verde   -> h_min:  40, h_max:  85
+#   amarelo -> h_min:  20, h_max:  35

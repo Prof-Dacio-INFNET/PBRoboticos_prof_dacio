@@ -1,5 +1,13 @@
 # Publica o site do material (MkDocs Material -> GitHub Pages).
 # Requisito unico nas configuracoes do repo: Settings -> Pages -> Source: "GitHub Actions".
+#
+# A montagem de docs/ NAO mora aqui: ela mora em tools/montar-docs.sh, que e o
+# mesmo script que o professor roda na maquina dele. Quando a montagem do CI
+# diverge da montagem local, o defeito so aparece depois de publicado -- foi
+# assim que o CSS da identidade visual sumiu do site sem nenhum build reclamar.
+#
+# Para conferir localmente exatamente o que este workflow vai publicar:
+#   ./tools/montar-docs.sh && python3 tools/conferir-nav.py && mkdocs build --strict
 name: Publicar site
 on:
   push:
@@ -9,6 +17,9 @@ permissions:
   contents: read
   pages: write
   id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: true
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -17,16 +28,19 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.x'
+          cache: pip
       - run: pip install mkdocs-material
+
       - name: Montar docs/ a partir da estrutura do repo
-        run: |
-          rm -rf docs && mkdir docs
-          cp README.md docs/index.md
-          cp LICENSE.md docs/licenca.md 2>/dev/null || true
-          for d in aulas tutoriais exemplos recursos; do
-            [ -d "$d" ] && cp -r "$d" docs/ || true
-          done
-      - run: mkdocs build
+        run: ./tools/montar-docs.sh
+
+      - name: Conferir que todo item do nav existe
+        run: python3 tools/conferir-nav.py
+
+      # --strict: link quebrado e referencia a arquivo inexistente derrubam o
+      # build em vez de virar aviso que ninguem le no log do Actions.
+      - run: mkdocs build --strict
+
       - uses: actions/upload-pages-artifact@v3
         with:
           path: site
@@ -35,6 +49,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4

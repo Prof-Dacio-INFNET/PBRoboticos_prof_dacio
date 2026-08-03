@@ -1,0 +1,180 @@
+/* Paleta da disciplina — PB Sistemas Robóticos (INFNET 2026.2)
+   NAVY #14213D (institucional)  ·  AMBER #FCA311 (destaque)
+   Usada nos slides, no site e nas figuras, para que o material tenha
+   a mesma identidade em qualquer suporte. */
+
+:root {
+  --pb-navy: #14213D;
+  --pb-navy-light: #23345F;
+  --pb-navy-dark: #0B1526;
+  --pb-amber: #FCA311;
+  --pb-amber-dark: #C97F06;
+  --pb-gray: #E5E5E5;
+}
+
+/* ---- tema claro ---- */
+[data-md-color-scheme="default"] {
+  --md-primary-fg-color: var(--pb-navy);
+  --md-primary-fg-color--light: var(--pb-navy-light);
+  --md-primary-fg-color--dark: var(--pb-navy-dark);
+  --md-primary-bg-color: #ffffff;
+  --md-primary-bg-color--light: #ffffffb3;
+  --md-accent-fg-color: var(--pb-amber-dark);
+  --md-accent-fg-color--transparent: rgba(252, 163, 17, 0.12);
+  --md-typeset-a-color: #1A3D8F;
+}
+
+/* ---- tema escuro ----
+   O cabeçalho fica MAIS CLARO que o fundo da página, não mais escuro: com o
+   navy escuro em cima de um fundo quase preto, cabeçalho e conteúdo viravam a
+   mesma mancha e a barra de navegação sumia. */
+[data-md-color-scheme="slate"] {
+  --md-primary-fg-color: var(--pb-navy);
+  --md-primary-fg-color--light: var(--pb-navy-light);
+  --md-primary-fg-color--dark: var(--pb-navy-dark);
+  --md-accent-fg-color: var(--pb-amber);
+  --md-accent-fg-color--transparent: rgba(252, 163, 17, 0.16);
+  --md-typeset-a-color: var(--pb-amber);
+  --md-default-bg-color: #0E141D;
+}
+
+/* Cabeçalho e abas formam um bloco só: o degrau de cor entre os dois lia como
+   defeito de renderização, não como hierarquia. */
+.md-tabs {
+  background-color: var(--md-primary-fg-color);
+}
+.md-header {
+  box-shadow: none;
+}
+/* Aba ativa marcada por sublinhado âmbar. O Material só muda a opacidade do
+   texto, o que some no azul escuro; o traço resolve sem recolorir a palavra.
+   Atenção ao seletor: a classe --active fica no <li> (md-tabs__item--active),
+   NÃO no <a>. Escrever .md-tabs__link--active gera CSS que nunca aplica. */
+.md-tabs__item--active > .md-tabs__link {
+  opacity: 1;
+  font-weight: 600;
+  box-shadow: inset 0 -3px 0 var(--pb-amber);
+}
+.md-tabs__link:hover {
+  opacity: 1;
+}
+
+/* Item ativo do menu lateral na cor institucional, com peso — em página longa
+   é o que responde "onde eu estou" sem precisar reler o título. */
+.md-nav__link--active,
+.md-nav__item .md-nav__link--active {
+  color: var(--md-primary-fg-color);
+  font-weight: 600;
+}
+[data-md-color-scheme="slate"] .md-nav__link--active,
+[data-md-color-scheme="slate"] .md-nav__item .md-nav__link--active {
+  color: var(--pb-amber);
+}
+
+/* Títulos com mais respiro e hierarquia visível */
+.md-typeset h1 {
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.md-typeset h2 {
+  font-weight: 600;
+  margin-top: 2.2em;
+  padding-bottom: 0.25em;
+  border-bottom: 1px solid var(--md-default-fg-color--lightest);
+}
+.md-typeset h3 {
+  font-weight: 600;
+  margin-top: 1.6em;
+}
+
+/* Tabelas: cabeçalho na cor institucional e zebra discreta.
+   O material tem MUITA tabela de referência — legibilidade aqui vale ouro. */
+.md-typeset table:not([class]) th {
+  background-color: var(--md-primary-fg-color);
+  color: #ffffff;
+  font-weight: 600;
+}
+.md-typeset table:not([class]) tbody tr:nth-child(even) {
+  background-color: rgba(20, 33, 61, 0.035);
+}
+[data-md-color-scheme="slate"] .md-typeset table:not([class]) tbody tr:nth-child(even) {
+  background-color: rgba(255, 255, 255, 0.03);
+}
+.md-typeset table:not([class]) td,
+.md-typeset table:not([class]) th {
+  padding: 0.6em 0.9em;
+}
+
+/* Citação em destaque (a "regra da disciplina" aparece muito) */
+.md-typeset blockquote {
+  border-left: 4px solid var(--pb-amber);
+  background-color: rgba(252, 163, 17, 0.06);
+  padding: 0.4em 1em;
+  color: inherit;
+}
+
+/* Cartões da página inicial */
+.md-typeset .grid.cards > ul > li {
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 0.5rem;
+  transition: border-color 160ms, box-shadow 160ms, transform 160ms;
+}
+.md-typeset .grid.cards > ul > li:hover {
+  border-color: var(--pb-amber);
+  box-shadow: 0 4px 16px rgba(20, 33, 61, 0.12);
+  transform: translateY(-2px);
+}
+.md-typeset .grid.cards > ul > li > hr {
+  border-color: var(--pb-amber);
+}
+
+/* Chamada de destaque da home */
+/* A parada final usa rgba(...,0) e não a palavra `transparent`: `transparent`
+   é preto com alfa zero, e a interpolação até ele deixa uma faixa acinzentada
+   com borda visível no meio do degradê — bem aparente no tema escuro. */
+.pb-hero {
+  border-left: 5px solid var(--pb-amber);
+  background: linear-gradient(90deg, rgba(20, 33, 61, 0.07), rgba(20, 33, 61, 0) 85%);
+  padding: 1rem 1.2rem;
+  border-radius: 0 0.4rem 0.4rem 0;
+  margin: 1.2rem 0 2rem;
+}
+[data-md-color-scheme="slate"] .pb-hero {
+  background: linear-gradient(90deg, rgba(252, 163, 17, 0.10), rgba(252, 163, 17, 0) 85%);
+}
+
+/* Etiquetas de status usadas nas listas de aula/TP */
+.pb-tag {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.6;
+  padding: 0 0.55em;
+  border-radius: 0.7em;
+  vertical-align: 0.12em;
+  white-space: nowrap;
+}
+.pb-tag.ok    { background: #1B7F4B; color: #fff; }
+.pb-tag.next  { background: var(--pb-amber); color: #14213D; }
+.pb-tag.soon  { background: var(--pb-gray); color: #14213D; }
+[data-md-color-scheme="slate"] .pb-tag.soon { background: #33415C; color: #E5E5E5; }
+
+/* Código: um pouco mais compacto, cabe mais linha na tela do aluno */
+.md-typeset pre > code {
+  font-size: 0.76rem;
+  line-height: 1.45;
+}
+
+/* Rodapé sem o degradê padrão */
+.md-footer-meta {
+  background-color: var(--pb-navy-dark);
+}
+
+/* Impressão (alunos imprimem cheatsheets) */
+@media print {
+  .md-typeset table:not([class]) th {
+    background-color: #14213D !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
