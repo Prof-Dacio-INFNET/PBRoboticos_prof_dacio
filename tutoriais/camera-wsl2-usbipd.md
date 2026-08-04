@@ -8,6 +8,8 @@ opcional: true
 
 # Câmera USB no WSL2 com usbipd
 
+> **Este guia é só para a rota WSL2.** Se o seu Ubuntu roda em **VirtualBox**, `usbipd` não se aplica: lá a webcam entra pelo Extension Pack, em *Dispositivos → Webcams*. Veja [a seção de webcam do guia do VirtualBox](setup-ros2-humble-virtualbox.md#webcam-extension-pack-nao-usbipd). Em Ubuntu **nativo**, a webcam já aparece em `/dev/video0` e nada disso é necessário.
+
 **Este guia é opcional.** Todo o material da disciplina roda sem webcam — o exemplo da Aula 3 gera a cena em código, e o caminho simulado precisa continuar funcionando de qualquer forma. Siga este tutorial quando quiser trazer ruído, iluminação e latência reais para o seu pipeline — é o elemento real do [meio termo descrito em simulação × hardware](../recursos/simulado-vs-hardware.md), e nenhuma trilha é obrigatória.
 
 O WSL2 é uma máquina virtual e, por padrão, **não enxerga dispositivos USB do Windows**. O `usbipd-win` resolve isso encaminhando o dispositivo pela rede local da VM. Funciona bem, com uma ressalva importante que aparece no fim deste guia.

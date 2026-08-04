@@ -65,7 +65,7 @@ Como escolher as duas classes depende da sua derivação de projeto. Alguns pare
 | Triagem / reciclagem | tampa azul | tampa verde | duas tampas de garrafa |
 
 !!! tip "Sem webcam ainda? A tarefa continua valendo"
-    Rode com `fonte:=sintetico` e **edite a cena sintética** para desenhar os seus dois objetos, com as suas cores e os seus tamanhos. Isso satisfaz a tarefa inteira. A câmera entra quando o `usbipd` estiver resolvido — ver o [tutorial da câmera](camera-wsl2-usbipd.md). Não espere hardware para começar: quem espera chega ao TP1 com uma semana a menos.
+    Rode com `fonte:=sintetico` e **edite a cena sintética** para desenhar os seus dois objetos, com as suas cores e os seus tamanhos. Isso satisfaz a tarefa inteira. A câmera entra depois, e o caminho depende da sua rota: no **WSL2**, pelo [usbipd](camera-wsl2-usbipd.md); no **VirtualBox**, pelo [Extension Pack](setup-ros2-humble-virtualbox.md#webcam-extension-pack-nao-usbipd); no **Ubuntu nativo**, ela já está lá. Não espere hardware para começar: quem espera chega ao TP1 com uma semana a menos.
 
 Para descobrir os limiares HSV do seu objeto, não chute. Meça:
 
@@ -75,7 +75,7 @@ ros2 run percepcao_meu_projeto amostrar_hsv          # clique no objeto, tecle q
 
 Clique em vários pontos do objeto, inclusive nas partes em sombra: a faixa precisa cobrir o objeto real, não o objeto bem iluminado. A máscara prevista aparece em verde enquanto você clica, e ao sair o nó imprime o bloco de YAML pronto.
 
-Sem câmera, ou sem janela gráfica no WSL? Fotografe o objeto com o celular, copie a foto para dentro do WSL e meça na foto — vale igual:
+Sem câmera, ou sem janela gráfica nenhuma? Fotografe o objeto com o celular, copie a foto para dentro do Ubuntu e meça na foto — vale igual:
 
 ```bash
 ros2 run percepcao_meu_projeto amostrar_hsv --ros-args -p imagem:=/caminho/foto.jpg
@@ -178,6 +178,7 @@ Ela **não** fecha o G1.1 — declarar domínio, usuário, classes, trilha e pla
 | `libexec directory .../lib/<pacote> does not exist` | o `setup.cfg` ficou com o nome antigo (`script_dir`/`install_scripts`) |
 | `KeyError: 16` na conversão (com ou sem `AttributeError: _ARRAY_API not found` antes) | o `cv_bridge` do apt está com uma biblioteca trocada por baixo — NumPy 2 ou OpenCV 5, os dois vindos de pip. O exemplo cai sozinho na conversão manual e a tarefa pode ser feita assim. Para curar: os nós rodam com o `python3` **do sistema**, então mexer no venv não adianta. Rode `python3 -c "import numpy, cv2; print(numpy.__file__); print(cv2.__file__)"`; se algum apontar para `~/.local` ou `/usr/local`, `python3 -m pip uninstall -y numpy opencv-python opencv-contrib-python opencv-python-headless` e `sudo apt install --reinstall python3-opencv python3-numpy`. Detalhes no [README do exemplo](https://github.com/Prof-Dacio-INFNET/PBRoboticos_prof_dacio/tree/main/exemplos/aula03-visao#curando-o-keyerror-16-de-vez) |
 | `rcl_shutdown already called` ao sair com `Ctrl+C` | ruído de encerramento, não quebra nada; feche com `if rclpy.ok(): rclpy.shutdown()` |
+| `Exception ignored in: <function Future.__del__ …>` / `'Task' object has no attribute '_exception'` ao sair | também é ruído — e o próprio Python avisa: `Exception ignored in:` quer dizer que ele descartou a exceção, porque ela veio de um `__del__` durante o desligamento. Detalhe conhecido do `rclpy` do Humble. O que vale ler é o `process has finished cleanly` logo abaixo |
 | máscara toda preta | `s_min`/`v_min` altos demais; comece frouxo (S≥60, V≥40) e aperte |
 | máscara toda branca | faixa de matiz larga demais, ou objeto e fundo com a mesma cor — troque o fundo |
 | contagem pulando entre 1 e 2 | `area_min` baixo, ou falta morfologia `OPEN`; se os objetos se tocam, é oclusão (registre) |

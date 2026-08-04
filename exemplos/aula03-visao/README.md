@@ -26,10 +26,10 @@ Ver a imagem processada: `ros2 run rqt_image_view rqt_image_view` e escolha `/vi
 | `fonte` | Quando usar | Comando |
 |---|---|---|
 | `sintetico` (padrão) | sempre funciona — cena gerada em código, 2 objetos vermelhos + 1 distrator azul | `ros2 launch aula03_visao visao.launch.py` |
-| `webcam` | você já passou a câmera para o WSL2 com usbipd | `ros2 launch aula03_visao visao.launch.py fonte:=webcam` |
+| `webcam` | a câmera já aparece em `/dev/video0` dentro do Ubuntu (WSL2: via usbipd · VirtualBox: via *Dispositivos → Webcams*) | `ros2 launch aula03_visao visao.launch.py fonte:=webcam` |
 | `video` | arquivo `.mp4` em loop (ótimo para o vídeo do TP) | `ros2 run aula03_visao publicador_camera --ros-args -p fonte:=video -p arquivo:=/caminho/clip.mp4` |
 
-Sem webcam no WSL2? Ver [tutoriais/camera-wsl2-usbipd.md](../../tutoriais/camera-wsl2-usbipd.md). **A fonte sintética é aceita no TP1** desde que você explique a escolha — o que se avalia é o pipeline.
+Sem webcam? O caminho depende da sua rota de ambiente: no **WSL2** é o [usbipd](../../tutoriais/camera-wsl2-usbipd.md); no **VirtualBox** é o [Extension Pack](../../tutoriais/setup-ros2-humble-virtualbox.md#webcam-extension-pack-nao-usbipd) (`usbipd` não se aplica lá); no **Ubuntu nativo** a câmera já está em `/dev/video0`. **A fonte sintética é aceita no TP1** desde que você explique a escolha — o que se avalia é o pipeline.
 
 ## Ajustar sem tocar no código
 
@@ -55,7 +55,7 @@ Clique no objeto em vários pontos — inclusive nas partes escuras dele —, ve
 
 Ele lê a **mediana** de uma vizinhança 9×9 em volta do clique, não o pixel isolado: um pixel sozinho carrega ruído de sensor e artefato de compressão. E, se as amostras aparecerem partidas nas duas pontas do círculo de matiz, ele devolve **duas faixas** automaticamente — que é o caso do vermelho.
 
-Sem WSLg para abrir janela? O caminho é o teste offline abaixo, com uma foto.
+Nenhuma janela gráfica abre? (WSLg quebrado no WSL2, Guest Additions faltando no VirtualBox, servidor sem tela.) O caminho é o teste offline abaixo, com uma foto — a tarefa continua inteira.
 
 ## Teste offline (sem ROS 2)
 
@@ -64,7 +64,7 @@ python3 teste_offline.py                  # cena sintética: 2 vermelhos + 1 dis
 python3 teste_offline.py minha_foto.jpg   # a mesma segmentação sobre uma foto sua
 ```
 
-O primeiro modo imprime a contagem por frame — útil para depurar visão sem subir o grafo, e para entender o experimento abaixo. O segundo aplica **a mesma** função de máscara do nó da aula sobre uma foto, diz quanto da imagem a máscara cobriu, lista as áreas encontradas e sugere os limiares. É a saída de emergência para quem ainda não tem câmera nem interface gráfica: tire a foto com o celular, copie para dentro do WSL e meça ali.
+O primeiro modo imprime a contagem por frame — útil para depurar visão sem subir o grafo, e para entender o experimento abaixo. O segundo aplica **a mesma** função de máscara do nó da aula sobre uma foto, diz quanto da imagem a máscara cobriu, lista as áreas encontradas e sugere os limiares. É a saída de emergência para quem ainda não tem câmera nem interface gráfica: tire a foto com o celular e copie para dentro do Ubuntu — no WSL2, arrastando pelo Explorer em `\\wsl$`; no VirtualBox, pela pasta compartilhada em `/media/sf_<nome>` (só para copiar o arquivo: **o workspace não mora lá**).
 
 ## O experimento que vale ouro no relatório
 
@@ -111,6 +111,7 @@ ros2 launch aula03_visao visao.launch.py
 | `cv_bridge=nao, conversao manual bgr8` no log de partida | é o aviso acima em forma de log: o exemplo está no plano B. Funciona, mas vale consertar o ambiente |
 | `libexec directory '.../lib/<pacote>' does not exist` | o `setup.cfg` ficou com o nome antigo depois de renomear — [guia de renomeação](../../tutoriais/renomear-pacote-ros2.md) |
 | `rcl_shutdown already called on the given context` ao sair com `Ctrl+C` | ruído de encerramento; não quebra a execução principal. Os nós daqui já fecham com `if rclpy.ok(): rclpy.shutdown()` |
+| `Exception ignored in: <function Future.__del__ …>` seguido de `AttributeError: 'Task' object has no attribute '_exception'` ao sair com `Ctrl+C` | **ruído, e Python está dizendo isso na primeira linha.** `Exception ignored in:` é o interpretador avisando que ele mesmo descartou essa exceção — ela aconteceu dentro de um `__del__`, durante a coleta de lixo do desligamento, quando o objeto já estava meio desmontado. É um detalhe conhecido do `rclpy` do Humble, não é do seu código. Confira a linha que interessa: `process has finished cleanly` |
 | `The following packages are in the environment but not in the workspace` / caminho inexistente em `AMENT_PREFIX_PATH` | resíduo de um `install/` de pacote que você apagou. Abra um terminal novo (sem o `source` antigo) e refaça `source install/setup.bash` |
 | tópico existe e `echo` não mostra nada | QoS incompatível — `ros2 topic info /camera/image_raw --verbose` |
 | mudei `config/segmentacao.yaml` e nada mudou | o YAML é copiado no build: recompile, ou passe `--params-file` apontando para o arquivo em `src/` |

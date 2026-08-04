@@ -14,9 +14,10 @@ A aula terminou apresentando a estrutura do semestre — cinco TPs que são cinc
 
 ## Para fazer depois desta aula
 
-Deixe o ambiente pronto: WSL2 com **Ubuntu 22.04 (jammy)**, ROS 2 Humble, git, `gh` e `uv`. O tutorial valida cada pré-requisito antes de instalar, e existe um motivo para insistir na versão: o `wsl --install` sem argumento instala uma versão de Ubuntu mais nova, e o `ros-humble-desktop` **não existe** fora do jammy. Se `lsb_release -a` não disser 22.04, pare e corrija antes de qualquer outra coisa.
+Deixe o ambiente pronto: **Ubuntu 22.04 (jammy)**, ROS 2 Humble, git, `gh` e `uv`. Escolha **uma rota por máquina** — WSL2 é a padrão; VirtualBox é a rota das máquinas do laboratório e de quem não consegue WSL2; Ubuntu nativo também vale. O tutorial valida cada pré-requisito antes de instalar, e existe um motivo para insistir na versão: o `wsl --install` sem argumento instala uma versão de Ubuntu mais nova, e o `ros-humble-desktop` **não existe** fora do jammy. Se `lsb_release -a` não disser 22.04, pare e corrija antes de qualquer outra coisa.
 
-- [Setup ROS 2 Humble no WSL2](../../tutoriais/setup-ros2-humble-wsl2.md)
+- [Setup ROS 2 Humble no WSL2](../../tutoriais/setup-ros2-humble-wsl2.md) — rota padrão
+- [Ambiente alternativo: ROS 2 Humble no VirtualBox](../../tutoriais/setup-ros2-humble-virtualbox.md) — laboratório, Windows Home, política corporativa
 - [Manual do aluno: GitHub e entregas](../../tutoriais/manual-do-aluno-github.md)
 - [Catálogo de projetos](../../recursos/catalogo-projetos.md) — comece a pensar no seu
 
@@ -24,4 +25,4 @@ Deixe o ambiente pronto: WSL2 com **Ubuntu 22.04 (jammy)**, ROS 2 Humble, git, `
 
 O **`ROS_DOMAIN_ID` é o seu número de chamada**. Sem isso, na rede do laboratório todo mundo enxerga os nós de todo mundo, e você vai passar meia hora depurando um comportamento que é de outra pessoa.
 
-O repositório mora **dentro do WSL** (em `~`), nunca em `/mnt/c`. Clonar no disco do Windows funciona e é lento a ponto de atrapalhar, além de gerar problemas de permissão que aparecem só no `colcon build`.
+O repositório mora **dentro do Linux**, na home (`~`) — nunca numa pasta que é do Windows por baixo: `/mnt/c/...` no WSL2, `/media/sf_<nome>` no VirtualBox. Clonar lá funciona e é lento a ponto de atrapalhar, além de gerar problemas de permissão e de fim de linha que aparecem só no `colcon build`.

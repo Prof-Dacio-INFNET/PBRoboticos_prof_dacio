@@ -20,15 +20,17 @@ Aulas às **terças, 07h00–09h30, sala SJ205** · Prof. Dácio Moreira de Souz
 
     ---
 
-    Ubuntu 22.04 (WSL2 ou nativo) + ROS 2 Humble + Python 3.10. O tutorial valida cada pré-requisito antes de instalar, então dá para seguir sem adivinhação.
+    Ubuntu 22.04 + ROS 2 Humble + Python 3.10. **Escolha uma rota por máquina:** WSL2 (padrão, Windows 10/11), VirtualBox (laboratório, Windows Home, política corporativa) ou Ubuntu nativo. Do ROS 2 em diante é tudo igual nas três. Os tutoriais validam cada pré-requisito antes de instalar.
 
     [:octicons-arrow-right-24: Setup ROS 2 Humble no WSL2](tutoriais/setup-ros2-humble-wsl2.md)
+
+    [:octicons-arrow-right-24: Rota alternativa: VirtualBox](tutoriais/setup-ros2-humble-virtualbox.md)
 
 -   :material-github:{ .lg .middle } **2. Prepare o seu repositório**
 
     ---
 
-    Aceite o convite do GitHub Classroom, clone **dentro do WSL** e rode `init-branches.sh`. O repositório é parte da entrega, não um anexo dela.
+    Aceite o convite do GitHub Classroom, clone **dentro do Linux** (na home do Ubuntu — nunca numa pasta do Windows) e rode `init-branches.sh`. O repositório é parte da entrega, não um anexo dela.
 
     [:octicons-arrow-right-24: Manual do aluno: GitHub e entregas](tutoriais/manual-do-aluno-github.md)
 
@@ -59,6 +61,15 @@ O tópico deixa de carregar texto e passa a carregar **imagem**. Montamos o pipe
 [Conteúdo e slides da aula](aulas/etapa02-aula03/index.md){ .md-button .md-button--primary }
 [Exemplo executável](exemplos/aula03-visao/index.md){ .md-button }
 [Tarefa da semana](tutoriais/tarefa-aula03-visao.md){ .md-button }
+
+!!! warning "Avisos de 04/08 — leia antes de rodar o exemplo da Aula 3"
+    **1. `KeyError: 16` no `cv_bridge`.** Se você instalou OpenCV ou NumPy com `pip` **fora de um venv**, o exemplo da Aula 3 quebra com um `KeyError: 16` que não parece ter relação com nada. O material foi corrigido com o diagnóstico e a cura completa: [o aviso na página da aula](aulas/etapa02-aula03/index.md#cv_bridge-e-o-que-fazer-quando-ele-nao-coopera). **Nada trava:** o exemplo detecta o problema sozinho no import e converte a imagem na mão. A regra da disciplina continua a mesma — **bibliotecas do sistema vêm do `apt`; o `uv` só dentro de um venv**, nunca com `sudo`, nunca com `--system`.
+
+    **2. `Exception ignored in: <function Future.__del__ …>` ao sair com `Ctrl+C`.** É ruído conhecido do `rclpy` do Humble na coleta de lixo do desligamento — não é erro do seu código. A linha que importa é `process has finished cleanly`.
+
+    **3. Rota VirtualBox.** Quem usa (ou vai usar) as máquinas do **laboratório**, ou não consegue WSL2 na sua máquina, agora tem um guia próprio: [ROS 2 Humble no VirtualBox](tutoriais/setup-ros2-humble-virtualbox.md). Do ROS 2 em diante, tudo é igual às outras rotas — o que muda é a webcam, as pastas compartilhadas e a rede.
+
+    **4. O `check-ambiente.sh` ficou mais esperto.** Ele detecta a sua rota e agora também confere de onde vêm o OpenCV e o NumPy: `curl -sSL https://raw.githubusercontent.com/Prof-Dacio-INFNET/PBRoboticos_prof_dacio/main/recursos/check-ambiente.sh | bash`
 
 ## Calendário de entregas
 

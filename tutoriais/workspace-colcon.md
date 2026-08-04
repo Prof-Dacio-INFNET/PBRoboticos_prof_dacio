@@ -1,18 +1,28 @@
 # Tutorial — Workspace Colcon e o seu primeiro pacote ROS 2
 
-**Pré-requisito:** setup WSL2 + ROS 2 Humble concluído. Tempo: ~20 min.
-⚠️ **Todos os comandos deste tutorial rodam DENTRO do WSL** (terminal do Ubuntu-22.04) — nunca no PowerShell/CMD. Na dúvida sobre em qual distro você está: `lsb_release -a`.
+**Pré-requisito:** ambiente com ROS 2 Humble concluído — [WSL2](setup-ros2-humble-wsl2.md) ou [VirtualBox](setup-ros2-humble-virtualbox.md). Tempo: ~20 min.
+⚠️ **Todos os comandos deste tutorial rodam DENTRO do Ubuntu** — no terminal do Ubuntu-22.04 do WSL, ou no terminal da máquina virtual — **nunca no PowerShell/CMD do Windows**. Na dúvida sobre onde você está: `lsb_release -a` (tem de dizer `22.04` e `jammy`).
 
 ## 0. Onde clonar o repositório (importante!)
 
-Quando o seu repositório `projeto-pb-<usuario>` existir (a partir da aula 2), **clone-o DENTRO do filesystem do WSL**, na sua home do Ubuntu — **não** em `/mnt/c/...` (o disco do Windows):
+Quando o seu repositório `projeto-pb-<usuario>` existir (a partir da aula 2), **clone-o DENTRO do filesystem do Linux**, na sua home do Ubuntu — **não** numa pasta que na verdade mora no Windows:
 
 ```bash
 cd ~                                      # home do Ubuntu — o lugar certo
 gh repo clone Prof-Dacio-INFNET/projeto-pb-SEU-USUARIO
 ```
 
-Por quê: compilar com colcon em `/mnt/c` é **muito mais lento** (o acesso ao disco do Windows pelo WSL tem alto custo) e causa problemas de permissões e fins de linha. O repositório sincroniza pelo **GitHub** (push/pull), então ele não precisa — e não deve — ficar em pasta do Windows/OneDrive. Para editar com conforto: instale o VS Code no Windows com a extensão **WSL** e, dentro da pasta do projeto no Ubuntu, rode `code .` — o editor abre no Windows operando direto nos arquivos do WSL.
+Por quê: compilar com colcon numa pasta do Windows é **muito mais lento** (todo acesso a disco atravessa uma camada de tradução) e causa problemas de permissões e de fins de linha — o `git status` passa a acusar arquivos modificados que você não tocou. O repositório sincroniza pelo **GitHub** (push/pull), então ele não precisa — e não deve — ficar em pasta do Windows/OneDrive.
+
+**A pasta proibida tem nome diferente em cada rota, e a armadilha é a mesma:**
+
+| Rota | Pasta que **não** serve para o workspace | O lugar certo |
+|---|---|---|
+| WSL2 | `/mnt/c/...` (o disco do Windows visto de dentro do WSL) | `~` — a home do Ubuntu |
+| VirtualBox | `/media/sf_<nome>` (pasta compartilhada do VirtualBox) | `~` — a home do Ubuntu, dentro do disco da VM |
+| Ubuntu nativo | — | `~` |
+
+Para editar com conforto: **no WSL2**, instale o VS Code no Windows com a extensão **WSL** e rode `code .` dentro da pasta do projeto no Ubuntu — o editor abre no Windows operando direto nos arquivos do WSL. **No VirtualBox**, instale o VS Code *dentro* do Ubuntu da VM (`sudo snap install code --classic`) e edite lá; não tente editar pela pasta compartilhada.
 
 *Ainda sem o repositório? Pratique este tutorial num workspace de treino: `mkdir -p ~/treino_ws/src` e use `~/treino_ws` no lugar de `ros2_ws` abaixo.*
 

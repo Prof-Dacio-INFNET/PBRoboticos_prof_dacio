@@ -6,9 +6,9 @@ Este é o "esqueleto do seu TP1": um publisher, um subscriber e um serviço, no 
 ```bash
 curl -sSL https://raw.githubusercontent.com/Prof-Dacio-INFNET/PBRoboticos_prof_dacio/main/recursos/check-ambiente.sh | bash
 ```
-Tudo ✓? Siga. Faltou algo? Volte aos tutoriais de setup.
+Tudo ✓? Siga. Faltou algo? Volte ao tutorial da **sua** rota de ambiente: [WSL2](setup-ros2-humble-wsl2.md) ou [VirtualBox](setup-ros2-humble-virtualbox.md). O script diz na primeira linha qual rota ele detectou — se estiver errada, você está no terminal errado.
 
-## 1. Trabalhe na branch dev, dentro do seu repositório (no WSL)
+## 1. Trabalhe na branch dev, dentro do seu repositório (no terminal do Ubuntu)
 ```bash
 cd ~/projeto-pb-SEU-USUARIO      # onde você clonou (nunca em /mnt/c)
 git checkout dev

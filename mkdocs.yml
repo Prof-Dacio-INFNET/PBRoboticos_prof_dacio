@@ -116,6 +116,7 @@ nav:
   - Tutoriais:
       - tutoriais/index.md
       - "Ambiente: ROS 2 Humble no WSL2": tutoriais/setup-ros2-humble-wsl2.md
+      - "Ambiente alternativo: ROS 2 Humble no VirtualBox": tutoriais/setup-ros2-humble-virtualbox.md
       - "Workspace e colcon": tutoriais/workspace-colcon.md
       - "Renomear um pacote ROS 2": tutoriais/renomear-pacote-ros2.md
       - "Câmera USB no WSL2 (usbipd)": tutoriais/camera-wsl2-usbipd.md

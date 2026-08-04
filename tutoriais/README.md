@@ -4,11 +4,14 @@ Guias passo a passo da disciplina. Dois tipos convivem aqui: os **guias de ambie
 
 Todos os guias de setup **validam os pré-requisitos antes de instalar** e fixam as versões alvo. Isso é deliberado: a maior parte dos problemas de ambiente nesta disciplina vem de instalar a coisa certa na versão errada, e o erro só aparece três passos depois.
 
+**Antes de tudo, escolha a sua rota de ambiente — uma por máquina.** A rota padrão é [WSL2](setup-ros2-humble-wsl2.md), em Windows 10/11. Se a máquina não aceita WSL2 (Windows Home antigo, política corporativa, virtualização bloqueada) ou se você está numa máquina do **laboratório**, a rota é [VirtualBox](setup-ros2-humble-virtualbox.md). O Ubuntu 22.04 nativo também vale, e nele os dois guias servem só a partir da instalação do ROS 2. **Do `apt install ros-humble-desktop` em diante, tudo é igual nas três rotas** — o que muda é como você chega ao Ubuntu, como a webcam entra e onde os arquivos moram.
+
 ## Ambiente
 
 | Guia | Quando usar |
 |---|---|
-| [Ambiente: ROS 2 Humble no WSL2](setup-ros2-humble-wsl2.md) | primeira instalação, e sempre que precisar refazer |
+| [Ambiente: ROS 2 Humble no WSL2](setup-ros2-humble-wsl2.md) | primeira instalação em Windows 10/11 Pro com WSL2 — **rota padrão** |
+| [Ambiente alternativo: ROS 2 Humble no VirtualBox](setup-ros2-humble-virtualbox.md) | máquinas do laboratório, Windows Home sem WSL2, política corporativa, Mac Intel |
 | [Workspace e colcon](workspace-colcon.md) | criar pacotes, compilar, entender `source install/setup.bash` |
 | [Renomear um pacote ROS 2](renomear-pacote-ros2.md) | adotar um exemplo da aula como seu — os 4 lugares do nome, o `setup.cfg` e o erro de `libexec` |
 | [Câmera USB no WSL2 (usbipd)](camera-wsl2-usbipd.md) | passar a webcam do Windows para o Linux (Etapa 2 em diante) |

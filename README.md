@@ -9,7 +9,7 @@ gh repo clone Prof-Dacio-INFNET/PBRoboticos_prof_dacio
 ## Estrutura
 
 - `aulas/` — por aula: roteiro, PDF da apresentação e arquivos usados em sala (ex.: `etapa02-aula03/`)
-- `tutoriais/` — guias de ambiente (WSL2 + ROS 2 Humble, workspace/colcon, câmera via usbipd), processo (GitHub e entregas, uso de IA) e as tarefas semanais
+- `tutoriais/` — guias de ambiente (ROS 2 Humble no WSL2 **ou** no VirtualBox, workspace/colcon, câmera), processo (GitHub e entregas, uso de IA) e as tarefas semanais
 - `recursos/` — o que estrutura o projeto do semestre: catálogo de projetos, derivações e aplicações, simulação × hardware real, gates de cada TP, desafios opcionais e `check-ambiente.sh`
 - `exemplos/` — pacotes ROS 2 prontos para rodar, por aula (`aula02-comunicacao`, `aula03-visao`) e por TP (`tp1…tp5`), sob licença MIT
 - `cheatsheets/` — consulta rápida de comandos (ROS 2, colcon, git, OpenCV, Gazebo…)
@@ -20,7 +20,7 @@ gh repo clone Prof-Dacio-INFNET/PBRoboticos_prof_dacio
 
 Arquivos grandes e vídeos vão por **link público ou não-listado** (nunca privado). A responsabilidade de acessibilidade é do aluno: se o avaliador não consegue abrir, não existe.
 
-**Requisitos:** Ubuntu 22.04 (WSL2 ou nativo) + ROS 2 Humble + Python 3.10 — ver `tutoriais/`.
+**Requisitos:** Ubuntu 22.04 + ROS 2 Humble + Python 3.10, por uma das três rotas — WSL2 (padrão), VirtualBox (laboratório e quem não consegue WSL2) ou nativo. Ver `tutoriais/`.
 
 ## Licença e citação
 

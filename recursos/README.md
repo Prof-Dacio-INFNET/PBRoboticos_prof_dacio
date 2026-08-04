@@ -46,7 +46,7 @@ Exercícios opcionais, sem nota, publicados junto com as aulas. Servem como aque
 
 ## Ferramentas de apoio
 
-O script `check-ambiente.sh` verifica, de uma vez, se o seu ambiente atende aos pré-requisitos da disciplina: distribuição correta, ROS 2 Humble presente, workspace compilável, git e `gh` configurados. Rode antes de cada aula prática e antes de pedir ajuda com qualquer problema de ambiente.
+O script `check-ambiente.sh` verifica, de uma vez, se o seu ambiente atende aos pré-requisitos da disciplina: distribuição correta, ROS 2 Humble presente, workspace compilável, git e `gh` configurados. Ele detecta sozinho a sua rota de ambiente (WSL2, VirtualBox ou Ubuntu nativo) e adapta o diagnóstico — inclusive avisando se o repositório está na pasta errada de cada rota. Desde a Etapa 2 ele também confere de onde vêm o **OpenCV** e o **NumPy** e se o `cv_bridge` está saudável, que é a causa mais comum de erro na Aula 3. Rode antes de cada aula prática e antes de pedir ajuda com qualquer problema de ambiente.
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/Prof-Dacio-INFNET/PBRoboticos_prof_dacio/main/recursos/check-ambiente.sh | bash

@@ -18,7 +18,7 @@
 
 ### A2. Git e GitHub CLI (5 min — faça no laboratório E em casa)
 
-No terminal do Ubuntu/WSL2 (ver tutorial de setup do ambiente):
+No terminal do Ubuntu — do WSL2, da VM do VirtualBox ou nativo, tanto faz (ver o tutorial da sua rota de ambiente):
 
 ```bash
 sudo apt update && sudo apt install -y git gh

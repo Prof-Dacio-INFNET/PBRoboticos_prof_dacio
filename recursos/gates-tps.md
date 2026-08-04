@@ -156,7 +156,7 @@ Quando um gate vira `[!]`, existe uma ordem de tentativas. Ela é curta de prop�
 
 **Degrau 1 — no mesmo dia, reduza o escopo do gate, não o abandone.** Menos classes, cena menor, mapa de um cômodo, menos waypoints. Um gate passado em versão reduzida mantém o projeto avançando; um gate pendente trava todos os que vêm depois.
 
-**Degrau 2 — troque o caminho, mantenha o objetivo.** Webcam não abre no WSL2? `fonte:=video` ou `fonte:=sintetico`. Gazebo não roda? RViz2 com fonte sintética. YOLO não instala? Detector clássico com métrica honesta. O objetivo do TP quase nunca depende da ferramenta específica.
+**Degrau 2 — troque o caminho, mantenha o objetivo.** Webcam não abre (usbipd no WSL2, Extension Pack no VirtualBox)? `fonte:=video` ou `fonte:=sintetico`. Gazebo não roda? RViz2 com fonte sintética. YOLO não instala? Detector clássico com métrica honesta. O objetivo do TP quase nunca depende da ferramenta específica.
 
 **Degrau 3 — acione o plano B declarado no `PROJETO.md`.** Ele existe justamente para este momento; registre em `docs/decisoes.md` com data e motivo. Plano B acionado e documentado **não** tira nota.
 

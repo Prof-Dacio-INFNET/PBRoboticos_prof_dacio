@@ -40,11 +40,32 @@ Há uma consequência que morde na hora: publisher e subscriber precisam de perf
 ros2 topic info /camera/image_raw --verbose
 ```
 
-### `cv_bridge` — e o que fazer quando ele não está instalado
+### `cv_bridge` — e o que fazer quando ele não coopera
 
-O `cv_bridge` faz a ponte entre `sensor_msgs/Image` e o `numpy.ndarray` do OpenCV. É a forma canônica e é o que você deve usar. Acontece que ele é um pacote à parte (`ros-humble-cv-bridge`) e, em algumas instalações, não veio junto — e um pacote faltando não pode travar a turma inteira.
+O `cv_bridge` faz a ponte entre `sensor_msgs/Image` e o `numpy.ndarray` do OpenCV. É a forma canônica e é o que você deve usar. Acontece que ele é um pacote à parte (`ros-humble-cv-bridge`) e falha de duas maneiras bem diferentes: às vezes **não está instalado** (`ModuleNotFoundError`), e às vezes está instalado, importa sem reclamar e **quebra na primeira conversão**, com um `KeyError: 16` que não parece ter relação nenhuma com o que você fez.
 
-Por isso o exemplo da aula tem um módulo `ponte.py` que tenta importar o `cv_bridge` e, se não encontrar, monta a mensagem à mão. A conversão manual não tem segredo, e vale entender: `bgr8` significa três bytes por pixel na ordem azul-verde-vermelho, `step` é `largura * 3`, e o corpo é o array contíguo em bytes. Saber fazer isso na mão é o que separa quem usa a biblioteca de quem entende o que ela faz.
+Por isso o exemplo da aula tem um módulo `ponte.py` que, no import, faz um **round-trip de teste** — converte uma imagem minúscula ida e volta. Se qualquer coisa falhar, ele monta a mensagem à mão e segue. Você vê qual dos dois modos está valendo na linha de log do publicador: `cv_bridge=sim (round-trip conferido no import)` ou `cv_bridge=nao, conversão manual bgr8 | motivo: …`. **Os dois estão certos** e a tarefa vale igual nos dois.
+
+A conversão manual não tem segredo, e vale entender: `bgr8` significa três bytes por pixel na ordem azul-verde-vermelho, `step` é `largura * 3`, e o corpo é o array contíguo em bytes. Saber fazer isso na mão é o que separa quem usa a biblioteca de quem entende o que ela faz.
+
+!!! warning "O `KeyError: 16` e a lição que ele ensina — leia antes de instalar qualquer coisa"
+    O `cv_bridge` do `apt` é compilado contra o **OpenCV 4.5.4** e o **NumPy 1.x** que vêm do `apt`. Se você rodar `pip install opencv-python` ou `pip install numpy` **fora de um venv**, o pip instala versões novas em `~/.local`, que têm precedência no `python3` do sistema — e o `cv_bridge` passa a falar com uma biblioteca que não é a que ele conhece. O sintoma é um `KeyError: 16` na primeira conversão de imagem.
+
+    Duas caras do mesmo problema, e dá para distinguir pela mensagem: se antes do erro aparecer `AttributeError: _ARRAY_API not found`, é **NumPy 2**; se não aparecer nada de NumPy, é **OpenCV 5** (a versão 5 renumerou as constantes de tipo). A cura é a mesma nos dois casos:
+
+    ```bash
+    # confira de onde vêm — o esperado é /usr/lib/python3/dist-packages nos dois
+    python3 -c "import numpy, cv2; print(numpy.__version__, numpy.__file__); print(cv2.__version__, cv2.__file__)"
+
+    # se algum vier de ~/.local ou /usr/local, devolva o sistema ao apt
+    python3 -m pip uninstall -y numpy opencv-python opencv-contrib-python opencv-python-headless
+    sudo apt install --reinstall python3-opencv python3-numpy
+    python3 -c "from cv_bridge import CvBridge; print(16 in CvBridge().cvtype_to_name)"   # True = resolvido
+    ```
+
+    **Mexer no seu venv não resolve isto.** Os nós ROS 2 rodam com o `python3` do sistema, não com o do venv — é por isso que a doutrina da disciplina é: bibliotecas do sistema vêm do **apt**, e o `uv` só é usado **dentro** de um venv (`uv venv --system-site-packages`), nunca com `sudo` e nunca com `--system`.
+
+    Guarde o formato desta história, porque ela vai se repetir no seu TP: **um comando aparentemente inofensivo trocou uma biblioteca por baixo do ROS 2, e o erro apareceu horas depois, em outro lugar, sem relação aparente com a causa.**
 
 ## Parte 2 — Segmentação por cor
 
@@ -74,7 +95,7 @@ ros2 topic echo /vision/contagem                  # em outro terminal
 ros2 service call /vision/status std_srvs/srv/Trigger "{}"
 ```
 
-A fonte padrão é **sintética**: a cena é desenhada em código, então o exemplo funciona sem webcam, sem `usbipd` e sem driver. Quem já tiver a câmera passada para o WSL2 roda com `fonte:=webcam`; quem tiver um vídeo gravado usa `fonte:=video`. E se a webcam falhar ao abrir, o nó cai sozinho para a fonte sintética em vez de morrer — que é o comportamento que você também quer no seu projeto.
+A fonte padrão é **sintética**: a cena é desenhada em código, então o exemplo funciona sem webcam e sem driver nenhum, em qualquer rota de ambiente. Quem já tiver a câmera visível dentro do Ubuntu roda com `fonte:=webcam`; quem tiver um vídeo gravado usa `fonte:=video`. E se a webcam falhar ao abrir, o nó cai sozinho para a fonte sintética em vez de morrer — que é o comportamento que você também quer no seu projeto.
 
 Depois de rodar, o exercício que importa é este: **troque a cor sem tocar no código.**
 
@@ -109,8 +130,10 @@ Este bloco não é "sobra de aula": ele decide o semestre. Três documentos novo
 |---|---|
 | tópico existe, `echo` não mostra nada | QoS incompatível (`BEST_EFFORT` × `RELIABLE`) — confira com `ros2 topic info --verbose` |
 | `ModuleNotFoundError: cv_bridge` | pacote ausente; o exemplo cai no modo manual sozinho, ou instale `ros-humble-cv-bridge` |
-| janela do `rqt_image_view` não abre | WSLg desatualizado — `wsl --update` e reabra o terminal |
-| webcam não abre no WSL2 | falta o `usbipd attach` — ver [tutorial da câmera](../../tutoriais/camera-wsl2-usbipd.md); enquanto isso, `fonte:=sintetico` |
+| `KeyError: 16` na conversão de imagem | OpenCV ou NumPy vindos de `pip` no python do sistema — [veja o aviso acima](#cv_bridge-e-o-que-fazer-quando-ele-nao-coopera). O exemplo não trava: cai no modo manual |
+| `Exception ignored in: <function Future.__del__ …>` / `'Task' object has no attribute '_exception'` ao sair | ruído do `rclpy` na coleta de lixo do desligamento. `Exception ignored in:` é o próprio Python avisando que descartou a exceção. A linha que importa é `process has finished cleanly` |
+| janela do `rqt_image_view` não abre | **WSL2:** WSLg desatualizado — `wsl --update` e reabra o terminal. **VirtualBox:** Guest Additions faltando, ou **aceleração 3D ligada** (desligue-a) |
+| webcam não abre | **WSL2:** falta o `usbipd attach` — ver [tutorial da câmera](../../tutoriais/camera-wsl2-usbipd.md). **VirtualBox:** Extension Pack + *Dispositivos → Webcams* ([seção do guia](../../tutoriais/setup-ros2-humble-virtualbox.md#webcam-extension-pack-nao-usbipd)). Enquanto isso, `fonte:=sintetico` |
 | vermelho quase não é detectado | faltou a segunda faixa de matiz (170–180); vermelho ocupa as duas pontas do círculo |
 | contagem oscilando muito | `area_min` baixo demais, ou falta morfologia `OPEN` |
 | taxa muito baixa | resolução alta demais; comece em 640×480 |

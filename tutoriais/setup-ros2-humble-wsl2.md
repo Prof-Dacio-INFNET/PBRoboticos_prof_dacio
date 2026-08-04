@@ -2,6 +2,8 @@
 
 **Disciplina:** PB Sistemas Robóticos · caminho padrão da disciplina (Windows 11). Ubuntu nativo/dual boot também é aceito — pule direto ao Passo 3. Tempo total: ~40–60 min (dependendo da internet).
 
+> **Está numa máquina do laboratório, ou o WSL2 não instala nesta máquina?** Existe uma rota alternativa: [ROS 2 Humble no VirtualBox](setup-ros2-humble-virtualbox.md). Faça os Passos 1–4 de lá e volte para cá **a partir do [Passo 2](#passo-2-preparar-o-ubuntu)** — do preparo do Ubuntu em diante os dois caminhos são idênticos. Escolha **uma rota por máquina**: manter WSL2 e VirtualBox ativos na mesma máquina Windows costuma quebrar os dois (Hyper-V).
+
 ## Passo 1 — Instalar o WSL2 com Ubuntu 22.04
 
 No **PowerShell como Administrador**:
@@ -154,13 +156,13 @@ uv --version
 | `rosdep: command not found` | Consequência do erro acima: o `apt install` abortou e nada foi instalado. Resolva a versão do Ubuntu e repita o Passo 3 |
 | `sudo: uv: command not found` | Não use `sudo` com uv — ele é instalado no SEU usuário (`~/.local/bin`), invisível para o root |
 | `Permission denied ... dist-packages` (uv/pip) | Você tentou instalar no Python do sistema — não faça: o sistema é do `apt`; pacotes extras vão em `uv venv` (regras de ouro do Passo 6) |
-| Janela gráfica não abre (turtlesim/rviz) | `wsl --update` no PowerShell e reinicie o WSL (`wsl --shutdown`); WSLg exige Win11 atualizado |
+| Janela gráfica não abre (turtlesim/rviz) | `wsl --update` no PowerShell e reinicie o WSL (`wsl --shutdown`); WSLg exige Win11 atualizado. **Na rota VirtualBox nada disso se aplica:** lá a janela é do próprio Ubuntu, e o culpado costuma ser Guest Additions ausente ou **aceleração 3D ligada** — [veja o guia do VirtualBox](setup-ros2-humble-virtualbox.md#quando-a-coisa-nao-coopera) |
 | Janela abre **cinza/minúscula com `[WARN:COPY MODE]`** | Glitch do WSLg pós-instalação: `wsl --shutdown` no PowerShell e reabra o Ubuntu — resolve |
 | `ros2: command not found` | Faltou `source /opt/ros/humble/setup.bash` (confira o `.bashrc`) |
 | Vejo tópicos/nós que não criei | Colega na mesma rede com o mesmo `ROS_DOMAIN_ID` — defina o seu (Passo 4) |
 | apt muito lento / trava | Rede da instituição pode limitar — tente hotspot ou faça em casa |
-| Pouco espaço em disco | A disciplina pede ~50 GB livres. Limpe dentro do Ubuntu: `sudo apt clean` e apague `build/ install/ log/` antigos. **Não use** `--set-sparse true` (o WSL atual desativou por risco de corrupção de dados; forçar com `--allow-unsafe` não vale o risco). Compactar o disco virtual é possível via `diskpart`/`compact vdisk` (avançado, opcional) |
-| Webcam no WSL2 | Precisa do `usbipd-win` — **tutorial próprio da disciplina** (necessário a partir da Etapa 2) |
+| Pouco espaço em disco | A disciplina pede ~50 GB livres. Limpe dentro do Ubuntu: `sudo apt clean` e apague `build/ install/ log/` antigos. **Não use** `--set-sparse true` (o WSL atual desativou por risco de corrupção de dados; forçar com `--allow-unsafe` não vale o risco). Compactar o disco virtual é possível via `diskpart`/`compact vdisk` (avançado, opcional). **Na rota VirtualBox:** o `.vdi` cresce e **nunca encolhe sozinho** — apagar arquivo dentro da VM não devolve espaço ao Windows; dimensione o disco com folga desde o início |
+| Webcam | **WSL2:** precisa do `usbipd-win` — [tutorial próprio da disciplina](camera-wsl2-usbipd.md) (a partir da Etapa 2). **VirtualBox:** `usbipd` não existe nessa rota; a webcam entra pelo Extension Pack, em *Dispositivos → Webcams* ([seção do guia](setup-ros2-humble-virtualbox.md#webcam-extension-pack-nao-usbipd)) |
 
 ## Checklist final
 
