@@ -1,6 +1,6 @@
 # OpenCV 4 — referência (DR2 / TP1–TP2)
 
-Instalação: **pelo apt, no sistema** — `sudo apt install python3-opencv` (e `ros-humble-cv-bridge` se for usar com ROS 2). Não instale `opencv-python` nem `numpy` por pip fora de um venv: isso reescreve o NumPy que o ROS 2 usa e quebra o `cv_bridge` com `KeyError: 16`. Dentro de um venv (`uv venv --system-site-packages`), o uv é bem-vindo para o que **não** for OpenCV/NumPy.
+Instalação: **pelo apt, no sistema** — `sudo apt install python3-opencv` (e `ros-humble-cv-bridge` se for usar com ROS 2), o que fixa a versão **4.5.4**, que é contra a qual o `cv_bridge` foi compilado. Não instale `opencv-python` nem `numpy` por pip fora de um venv: o pip traz OpenCV 5 e NumPy 2, e ambos quebram o `cv_bridge` com `KeyError: 16` — o OpenCV 5 renumerou as constantes de tipo, e sob NumPy 2 a extensão em C++ nem carrega. Dentro de um venv (`uv venv --system-site-packages`), o uv é bem-vindo para o que **não** for OpenCV/NumPy.
 ```python
 import cv2, numpy as np
 img = cv2.imread('f.png'); cap = cv2.VideoCapture(0)   # arquivo / webcam

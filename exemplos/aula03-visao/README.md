@@ -107,31 +107,50 @@ ros2 launch aula03_visao visao.launch.py
 
 | Sintoma | O que é, e o que fazer |
 |---|---|
-| `A module that was compiled using NumPy 1.x cannot be run in NumPy 2.x` seguido de `AttributeError: _ARRAY_API not found` e, mais adiante, `KeyError: 16` | o `cv_bridge` do apt foi compilado contra NumPy 1.x e está rodando sob NumPy 2. O `import` **passa** e a conversão quebra depois (16 = `CV_8UC3` = `bgr8`). O `ponte.py` detecta isso sozinho — faz um round-trip de teste no import — e cai no modo manual, então o exemplo continua rodando. Para curar de vez, veja o quadro logo abaixo desta tabela |
+| `KeyError: 16` na conversão, com ou sem `AttributeError: _ARRAY_API not found` antes | o `cv_bridge` do apt está conversando com uma biblioteca que não é a que ele esperava — NumPy 2, ou OpenCV 5, os dois vindos de pip. 16 é `CV_8UC3`, que é exatamente `bgr8`. O `ponte.py` detecta isso sozinho — faz um round-trip de teste no import — e cai na conversão manual, então o exemplo continua rodando e a tarefa pode ser feita. Para curar de vez, veja [Curando o `KeyError: 16` de vez](#curando-o-keyerror-16-de-vez) |
+| `cv_bridge=nao, conversao manual bgr8` no log de partida | é o aviso acima em forma de log: o exemplo está no plano B. Funciona, mas vale consertar o ambiente |
 | `libexec directory '.../lib/<pacote>' does not exist` | o `setup.cfg` ficou com o nome antigo depois de renomear — [guia de renomeação](../../tutoriais/renomear-pacote-ros2.md) |
 | `rcl_shutdown already called on the given context` ao sair com `Ctrl+C` | ruído de encerramento; não quebra a execução principal. Os nós daqui já fecham com `if rclpy.ok(): rclpy.shutdown()` |
 | `The following packages are in the environment but not in the workspace` / caminho inexistente em `AMENT_PREFIX_PATH` | resíduo de um `install/` de pacote que você apagou. Abra um terminal novo (sem o `source` antigo) e refaça `source install/setup.bash` |
 | tópico existe e `echo` não mostra nada | QoS incompatível — `ros2 topic info /camera/image_raw --verbose` |
 | mudei `config/segmentacao.yaml` e nada mudou | o YAML é copiado no build: recompile, ou passe `--params-file` apontando para o arquivo em `src/` |
 
-### Curando o conflito de NumPy de vez
+### Curando o `KeyError: 16` de vez
 
-O ponto que engana: **os nós ROS 2 rodam com o `python3` do sistema**, não com o python de um venv — repare no `/usr/lib/python3.10/...` que aparece no traceback. Instalar `numpy<2` dentro de um venv não muda nada para eles. O NumPy 2 que atrapalha está num diretório que o python do sistema enxerga, e é de lá que ele precisa sair.
+Esse erro tem **duas causas possíveis**, e as duas vêm da mesma raiz: algum `pip install` fora de um venv trocou, por baixo do ROS 2, uma biblioteca que o `cv_bridge` do apt esperava encontrar.
 
-Descubra de onde ele vem:
+O ponto que engana antes de tudo: **os nós ROS 2 rodam com o `python3` do sistema**, não com o python de um venv — repare no `/usr/lib/python3.10/...` que aparece no traceback. Instalar coisa dentro de um venv não muda nada para eles. O que atrapalha está num diretório que o python do sistema enxerga, e é de lá que precisa sair.
+
+Comece pelo diagnóstico:
 
 ```bash
-python3 -c "import numpy; print(numpy.__version__, numpy.__file__)"
+python3 - <<'PY'
+import cv2, numpy as np
+print("cv2  ", cv2.__version__, cv2.__file__)
+print("numpy", np.__version__, np.__file__)
+from cv_bridge import CvBridge
+b = CvBridge()
+print("tem a chave 16?", 16 in b.cvtype_to_name)
+print("encoding_to_cvtype2('bgr8') =", b.encoding_to_cvtype2('bgr8'))
+PY
 ```
+
+O esperado num ambiente correto é `cv2 4.5.4` e `numpy 1.x`, ambos vindos de `/usr/lib/python3/dist-packages`, e `tem a chave 16? True`.
+
+**Causa 1 — NumPy 2.** Se aparecer NumPy 2.x, e antes do `KeyError` o terminal tiver cuspido `A module that was compiled using NumPy 1.x cannot be run in NumPy 2.x` e `AttributeError: _ARRAY_API not found`: a extensão em C++ do `cv_bridge` foi compilada contra NumPy 1.x e falha ao carregar sob NumPy 2. O detalhe cruel é que o `import` **passa** assim mesmo — a tabela interna de tipos fica vazia e o erro só aparece na primeira conversão.
+
+**Causa 2 — OpenCV 5.** Se o `cv2.__version__` disser 5.x, é isto: **o OpenCV 5 renumerou as constantes de tipo.** `cv2.CV_8UC3` continua existindo, mas não vale mais 16. O `cv_bridge` do apt foi compilado contra o OpenCV 4.5.4 e pergunta em numeração antiga (`getCvType('bgr8')` devolve 16), enquanto a tabela do `CvBridge` foi montada com a numeração nova. Os dois lados falam versões diferentes do mesmo dicionário, e sobra o `KeyError: 16`. É a causa mais provável quando **não** há mensagem nenhuma sobre NumPy antes do erro.
+
+A cura das duas é a mesma: tirar do caminho o que veio por pip.
 
 | O que o caminho mostra | De onde veio | Como tirar |
 |---|---|---|
-| `~/.local/lib/python3.10/site-packages/...` | `pip install --user` | `python3 -m pip uninstall -y numpy` |
-| `/usr/local/lib/python3.10/dist-packages/...` | `sudo pip` ou `uv pip install --system` | `sudo python3 -m pip uninstall -y numpy` |
-| `/usr/lib/python3/dist-packages/...` com versão 1.x | é o do apt, está correto | nada a fazer — o problema é outro |
+| `~/.local/lib/python3.10/site-packages/...` | `pip install --user` | `python3 -m pip uninstall -y numpy opencv-python opencv-contrib-python opencv-python-headless` |
+| `/usr/local/lib/python3.10/dist-packages/...` | `sudo pip` ou `uv pip install --system` | o mesmo comando, com `sudo` |
+| `/usr/lib/python3/dist-packages/...` | é o do apt, está correto | nada a fazer |
 
-Repita o `uninstall` até dizer que não está instalado; pode haver mais de uma camada. No fim, o esperado é `1.21.5 /usr/lib/python3/dist-packages/numpy/__init__.py`. Se o NumPy sumir de vez, `sudo apt install --reinstall python3-numpy`.
+Repita o `uninstall` até dizer que não está instalado; pode haver mais de uma camada. Se alguma das bibliotecas sumir de vez, reponha pelo apt: `sudo apt install --reinstall python3-opencv python3-numpy`. Confirme com o script de diagnóstico acima — `tem a chave 16? True` é o sinal de que a ponte fechou.
 
-A regra de instalação da disciplina existe justamente por causa disso: **OpenCV e cv_bridge vêm do apt** (`python3-opencv`, `ros-humble-cv-bridge`), e o **uv só é usado dentro de um venv** — nunca `sudo uv`, nunca `uv pip install --system`. Um pip fora do venv reescreve o NumPy que o ROS 2 usa, e o sintoma só aparece muito depois, na primeira conversão de imagem.
+A regra de instalação da disciplina existe justamente por causa disso: **OpenCV e cv_bridge vêm do apt** (`python3-opencv`, `ros-humble-cv-bridge`), e o **uv só é usado dentro de um venv** — nunca `sudo uv`, nunca `uv pip install --system`. Um pip fora do venv reescreve, sem avisar, bibliotecas que o ROS 2 usa; o sintoma só aparece muito depois, longe da causa.
 
 Licença: MIT (ver `exemplos/LICENSE`) — pode copiar para o seu repositório mantendo o aviso de copyright.
