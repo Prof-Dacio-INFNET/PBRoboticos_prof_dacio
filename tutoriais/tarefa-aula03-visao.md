@@ -39,7 +39,14 @@ colcon build --symlink-install && source install/setup.bash
 ros2 launch percepcao_meu_projeto visao.launch.py
 ```
 
-Ao renomear, o nome novo precisa bater em **três lugares**: a pasta, o `package.xml` e o `setup.py` (incluindo os `entry_points`). Quando não bate, o sintoma é um `Package not found` teimoso que sobrevive a recompilações — a cura é `rm -rf build install log` e compilar de novo.
+**Toda essa edição acontece em `src/`** — nunca em `build/` ou `install/`, que são gerados pelo `colcon build` e sobrescritos a cada compilação.
+
+!!! warning "Renomear pacote: os quatro lugares (e o `setup.cfg` que todo mundo esquece)"
+    Em pacotes `ament_python`, ao renomear pacote, alinhar `<name>` em `package.xml`, `package_name` em `setup.py`, arquivo `resource/<package_name>` e `setup.cfg` (`script_dir`/`install_scripts` em `$base/lib/<package_name>`).
+
+    - Se `setup.cfg` ficar com nome antigo, `ros2 launch` falha com: `libexec directory .../lib/<package_name> does not exist`.
+
+    Faltando o `package.xml` ou o `resource/`, o sintoma é outro: um `Package not found` teimoso que sobrevive a recompilações. Passo a passo completo, com a sequência de comandos e o teste de 10 segundos que confere os três pontos: [Renomear um pacote ROS 2](renomear-pacote-ros2.md).
 
 Escolha um nome que descreva o seu domínio, não a aula. `percepcao_estoque`, `visao_pomar`, `deteccao_epi`. O nome do pacote é a primeira coisa que o avaliador lê.
 
@@ -167,7 +174,10 @@ Ela **não** fecha o G1.1 — declarar domínio, usuário, classes, trilha e pla
 
 | Sintoma | O que verificar |
 |---|---|
-| `Package not found` depois de renomear | os três lugares do nome; depois `rm -rf build install log` |
+| `Package not found` depois de renomear | `package.xml` e `resource/<nome>`; ver [renomear pacote](renomear-pacote-ros2.md) |
+| `libexec directory .../lib/<pacote> does not exist` | o `setup.cfg` ficou com o nome antigo (`script_dir`/`install_scripts`) |
+| `AttributeError: _ARRAY_API not found` e depois `KeyError: 16` | `cv_bridge` do apt compilado contra NumPy 1.x rodando sob NumPy 2 — o exemplo cai sozinho no modo manual; para curar, `uv pip install "numpy<2"` no venv |
+| `rcl_shutdown already called` ao sair com `Ctrl+C` | ruído de encerramento, não quebra nada; feche com `if rclpy.ok(): rclpy.shutdown()` |
 | máscara toda preta | `s_min`/`v_min` altos demais; comece frouxo (S≥60, V≥40) e aperte |
 | máscara toda branca | faixa de matiz larga demais, ou objeto e fundo com a mesma cor — troque o fundo |
 | contagem pulando entre 1 e 2 | `area_min` baixo, ou falta morfologia `OPEN`; se os objetos se tocam, é oclusão (registre) |

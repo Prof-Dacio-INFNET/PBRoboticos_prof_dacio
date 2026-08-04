@@ -21,7 +21,7 @@ from rclpy.node import Node
 from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy
 from sensor_msgs.msg import Image
 
-from .ponte import para_msg, USANDO_CV_BRIDGE
+from .ponte import para_msg, descrever_ponte
 
 # QoS típico de sensor: entrega rápida, sem retransmitir frame velho.
 QOS_SENSOR = QoSProfile(
@@ -65,7 +65,7 @@ class PublicadorCamera(Node):
         self.create_timer(1.0 / max(fps, 1.0), self.tick)
         self.get_logger().info(
             f'Publicando /camera/image_raw · fonte={self.fonte} · {self.largura}x{self.altura} '
-            f'@{fps:.0f}fps · cv_bridge={"sim" if USANDO_CV_BRIDGE else "nao (plano B)"}')
+            f'@{fps:.0f}fps · {descrever_ponte()}')
 
     # ---------------------------------------------------------------- fontes
     def frame_sintetico(self):
@@ -116,7 +116,13 @@ def main():
         if no.cap is not None:
             no.cap.release()
         no.destroy_node()
-        rclpy.shutdown()
+        # Ctrl+C: o rclpy do Humble ja pode ter derrubado o contexto pelo
+        # signal handler. Chamar shutdown() de novo levanta
+        # "rcl_shutdown already called on the given context" -- barulho de
+        # saida que assusta a turma sem que nada tenha quebrado. rclpy.ok()
+        # resolve: so fecha o que ainda estiver de pe.
+        if rclpy.ok():
+            rclpy.shutdown()
 
 
 if __name__ == '__main__':

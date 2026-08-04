@@ -1,6 +1,6 @@
 # Aulas
 
-Encontros de **terça-feira, 07h00–09h30, sala SJ205**. Cada aula tem uma página com o roteiro do dia, o PDF da apresentação, os exemplos usados em sala e a tarefa da semana.
+Encontros de **terça-feira, sala SJ205**. Cada aula tem uma página com o conteúdo trabalhado, o PDF da apresentação, os exemplos usados em sala e a tarefa da semana.
 
 O bloco tem dez etapas de conteúdo distribuídas em dois trimestres (26T3, de 20/07 a 03/10, e 26T4, de 05/10 a 19/12). Cada etapa cobre duas semanas, e as aulas dentro de uma etapa são sequenciais: a segunda assume que a primeira aconteceu.
 

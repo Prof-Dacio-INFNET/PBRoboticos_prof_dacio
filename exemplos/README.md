@@ -25,7 +25,7 @@ cp -r aula03-visao/aula03_visao ~/SEU-REPO/ros2_ws/src/
 cd ~/SEU-REPO/ros2_ws && colcon build --symlink-install && source install/setup.bash
 ```
 
-Ao adaptar, **renomeie o pacote** (`aula03_visao` → `percepcao_meu_projeto`) e lembre que o nome precisa bater em três lugares: a pasta, o `package.xml` e o `setup.py`. Quando não bate, `rm -rf build install log` e recompile.
+Ao adaptar, **renomeie o pacote** (`aula03_visao` → `percepcao_meu_projeto`) — sempre em `src/`, nunca nas cópias de `build/` e `install/`. O nome precisa bater em quatro lugares (`package.xml`, `setup.py`, `resource/<nome>` e `setup.cfg`), e é o `setup.cfg` esquecido que produz o `libexec directory ... does not exist`. Passo a passo: [renomear um pacote ROS 2](../tutoriais/renomear-pacote-ros2.md).
 
 ## Nenhum exemplo exige hardware
 

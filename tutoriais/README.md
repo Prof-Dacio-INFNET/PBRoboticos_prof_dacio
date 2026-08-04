@@ -10,6 +10,7 @@ Todos os guias de setup **validam os pré-requisitos antes de instalar** e fixam
 |---|---|
 | [Ambiente: ROS 2 Humble no WSL2](setup-ros2-humble-wsl2.md) | primeira instalação, e sempre que precisar refazer |
 | [Workspace e colcon](workspace-colcon.md) | criar pacotes, compilar, entender `source install/setup.bash` |
+| [Renomear um pacote ROS 2](renomear-pacote-ros2.md) | adotar um exemplo da aula como seu — os 4 lugares do nome, o `setup.cfg` e o erro de `libexec` |
 | [Câmera USB no WSL2 (usbipd)](camera-wsl2-usbipd.md) | passar a webcam do Windows para o Linux (Etapa 2 em diante) |
 
 ## Processo e entregas

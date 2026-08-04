@@ -117,6 +117,7 @@ nav:
       - tutoriais/index.md
       - "Ambiente: ROS 2 Humble no WSL2": tutoriais/setup-ros2-humble-wsl2.md
       - "Workspace e colcon": tutoriais/workspace-colcon.md
+      - "Renomear um pacote ROS 2": tutoriais/renomear-pacote-ros2.md
       - "Câmera USB no WSL2 (usbipd)": tutoriais/camera-wsl2-usbipd.md
       - "Manual do aluno: GitHub e entregas": tutoriais/manual-do-aluno-github.md
       - "Tarefa da Aula 2 — primeiros nós": tutoriais/tarefa-aula02-primeiros-nos.md

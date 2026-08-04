@@ -1,6 +1,6 @@
 # Aula 3 — Comunicação e visão computacional
 
-**Terça, 04/08/2026 · 07h00–09h30 · sala SJ205 · Etapa 2 (03/08–15/08)**
+**Terça, 04/08/2026 · sala SJ205 · Etapa 2 (03/08–15/08)**
 
 [:material-file-pdf-box: Slides da Aula 3 (PDF)](apresentacao-aula03.pdf){ .md-button .md-button--primary }
 [:material-code-tags: Exemplo `aula03-visao`](../../exemplos/aula03-visao/index.md){ .md-button }
@@ -17,16 +17,6 @@ Ao fim da aula você terá rodando o pipeline `câmera → segmentação → con
 Ao final da aula você deve conseguir publicar imagem em um tópico ROS 2 e explicar por que a QoS de sensor é diferente da QoS padrão; converter entre `sensor_msgs/Image` e a matriz do OpenCV nos dois sentidos, com e sem `cv_bridge`; segmentar um objeto por cor em HSV e justificar por que HSV e não BGR; contar ocorrências com contornos e filtro de área; expor o resultado por um serviço; e ajustar todo o comportamento por parâmetro, sem editar código.
 
 Fora do teclado, você deve sair da aula com **três decisões de projeto tomadas**: a derivação de aplicação que vai seguir, a trilha (simulada, híbrida ou real) e os gates do TP1 marcados no seu `PROJETO.md`.
-
-## Roteiro do encontro
-
-| Horário | Bloco | O que acontece |
-|---|---|---|
-| 07h00–07h15 | Retomada e checagem | pendências de ambiente, `check-ambiente.sh`, quem ainda não tem repositório de pé |
-| 07h15–08h00 | Imagem no grafo | `sensor_msgs/Image`, QoS de sensor, `cv_bridge` e o plano B; demo do exemplo rodando |
-| 08h00–08h20 | Visão: HSV e contornos | por que HSV, o problema do vermelho, morfologia, filtro de área, oclusão |
-| 08h20–09h00 | Mão na massa | rodar o exemplo, trocar a cor por parâmetro, adaptar ao objeto do próprio projeto |
-| 09h00–09h30 | Bloco de projeto | derivações, simulação × hardware, gates do TP1, mentoria individual |
 
 ## Parte 1 — Imagem viajando no grafo
 
@@ -96,13 +86,13 @@ ros2 param set /segmentador_hsv area_min 1200.0
 
 Configuração em YAML e parâmetro em vez de constante no código é exatamente o que o TP2 vai cobrar. Comece o hábito hoje, enquanto é barato.
 
-## Parte 4 — Bloco de projeto (09h00–09h30)
+## Parte 4 — Bloco de projeto
 
 Este bloco não é "sobra de aula": ele decide o semestre. Três documentos novos entram em vigor hoje.
 
 **[Derivações e aplicações](../../recursos/derivacoes-projetos.md)** mostra que o núcleo técnico é quase sempre o mesmo — `sensor → percepção → representação → decisão → navegação → evidência` — e que o que muda entre um projeto e outro é o domínio. Isso libera você a escolher uma aplicação que realmente te interessa, sem aumentar o risco técnico. São cinco derivações para cada uma das sete famílias do catálogo, mais uma tabela de troca de setor.
 
-**[Simulação × hardware real](../../recursos/simulado-vs-hardware.md)** explicita a régua da disciplina, e ela é assimétrica de propósito: quem simula tem o ambiente sob controle, então a expectativa de **complexidade e eficácia é maior**; quem coloca hardware real no circuito gasta boa parte do esforço em problemas que a simulação não tem, e isso é reconhecido mesmo com resultado final mais modesto. A recomendação padrão é a trilha **híbrida**: núcleo simulado com **um** elemento real — a webcam já basta para trazer ruído, iluminação e latência de verdade.
+**[Simulação × hardware real](../../recursos/simulado-vs-hardware.md)** explicita a régua da disciplina, e ela é assimétrica de propósito: quem simula tem o ambiente sob controle, então a expectativa de **complexidade e eficácia é maior**; quem coloca hardware real no circuito gasta boa parte do esforço em problemas que a simulação não tem, e isso é reconhecido mesmo com resultado final mais modesto. **Não há trilha recomendada:** as três são defensáveis, e a escolha certa é a que você consegue sustentar até o TP5. A trilha **híbrida** aparece no material como *exemplo de meio termo plausível* — núcleo simulado com **um** elemento real, e a webcam já basta para trazer ruído, iluminação e latência de verdade —, não como escolha padrão.
 
 **[Gates de cada TP](../../recursos/gates-tps.md)** transforma cada TP em uma sequência de checkpoints verificáveis por comando, com data e com evidência commitada. Copie o bloco do TP1 para o seu `PROJETO.md` hoje e faça **um commit por gate**.
 

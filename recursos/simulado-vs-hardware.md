@@ -27,10 +27,12 @@ Por isso, na trilha de hardware, escopo menor e desempenho inferior são aceitá
 | Trilha | O que significa | Para quem |
 |---|---|---|
 | **S — Simulada** | Gazebo/RViz2/MetaDrive do começo ao fim; TP5 pela Opção B (drone PX4 simulado) | maioria da turma; quem quer profundidade algorítmica |
-| **H — Híbrida** (recomendada) | núcleo em simulação + **um** elemento real: webcam via usbipd, ou validação do TP5 numa Raspberry Pi | quem tem algum hardware e não quer apostar o semestre nele |
+| **H — Híbrida** | núcleo em simulação + **um** elemento real: webcam via usbipd, ou validação do TP5 numa Raspberry Pi | quem tem algum hardware e não quer apostar o semestre nele |
 | **R — Real** | robô físico como palco principal a partir do TP4/TP5 | quem já tem a plataforma montada e tempo |
 
-A trilha **H** é a recomendação padrão da disciplina. Ela captura quase todo o aprendizado de integração real — a webcam sozinha já entrega ruído, iluminação, latência e driver — sem colocar o cronograma inteiro na mão de um componente que pode chegar quebrado.
+**A disciplina não recomenda nenhuma das três.** As três são igualmente defensáveis diante da régua acima, e a escolha certa é a que combina com o hardware que você tem em mãos, com o tempo que consegue reservar e com o que você quer aprender.
+
+A trilha **H** aparece no material como **exemplo de meio termo plausível** — ela existe para mostrar que há posição entre "tudo simulado" e "robô físico como palco principal". A webcam sozinha já entrega ruído, iluminação, latência e driver sem colocar o cronograma inteiro na mão de um componente que pode chegar quebrado; é um meio termo que funciona para muita gente. Isso não a torna a escolha certa para você.
 
 **Você não escolhe a trilha para o semestre inteiro no TP1.** Escolhe por TP, e a decisão só é irreversível no TP5 (Opção A/B). O que se pede no TP1 é apenas declarar a intenção e o plano B.
 
@@ -67,7 +69,7 @@ O plano B nunca é "peço prorrogação". O plano B é a versão simulada equiva
 
 ## Como declarar sua trilha
 
-No `PROJETO.md`, um bloco curto — e mantenha o marcador, ele é lido automaticamente na correção:
+No `PROJETO.md`, um bloco curto — e mantenha o marcador, ele é lido automaticamente na correção. O exemplo abaixo usa a trilha H só para ilustrar o formato; troque pelos seus dados, qualquer uma das três trilhas preenche o mesmo bloco:
 
 ```markdown
 <!-- PB:TRILHA -->

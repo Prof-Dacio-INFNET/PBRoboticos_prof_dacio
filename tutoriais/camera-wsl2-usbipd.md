@@ -8,7 +8,7 @@ opcional: true
 
 # Câmera USB no WSL2 com usbipd
 
-**Este guia é opcional.** Todo o material da disciplina roda sem webcam — o exemplo da Aula 3 gera a cena em código, e o caminho simulado precisa continuar funcionando de qualquer forma. Siga este tutorial quando quiser trazer ruído, iluminação e latência reais para o seu pipeline, que é o que a [trilha híbrida](../recursos/simulado-vs-hardware.md) recomenda.
+**Este guia é opcional.** Todo o material da disciplina roda sem webcam — o exemplo da Aula 3 gera a cena em código, e o caminho simulado precisa continuar funcionando de qualquer forma. Siga este tutorial quando quiser trazer ruído, iluminação e latência reais para o seu pipeline — é o elemento real do [meio termo descrito em simulação × hardware](../recursos/simulado-vs-hardware.md), e nenhuma trilha é obrigatória.
 
 O WSL2 é uma máquina virtual e, por padrão, **não enxerga dispositivos USB do Windows**. O `usbipd-win` resolve isso encaminhando o dispositivo pela rede local da VM. Funciona bem, com uma ressalva importante que aparece no fim deste guia.
 
@@ -143,4 +143,4 @@ Troque o BUSID pelo seu. Se você usa mais de uma porta USB, o mais robusto é r
 
 ## Onde isso entra na disciplina
 
-A câmera real é o **um elemento de hardware** que a trilha híbrida sugere. Ela é suficiente para trazer variação de iluminação, ruído de sensor e latência de captura para o seu pipeline — os três fenômenos que a simulação não reproduz de graça — sem que você precise montar um robô. Se o seu projeto vai ter hardware, comece por aqui e leia o que a [régua assimétrica](../recursos/simulado-vs-hardware.md) espera de cada trilha antes de decidir ir além.
+A câmera real é o **um elemento de hardware** do exemplo de trilha híbrida. Ela é suficiente para trazer variação de iluminação, ruído de sensor e latência de captura para o seu pipeline — os três fenômenos que a simulação não reproduz de graça — sem que você precise montar um robô. Se o seu projeto vai ter hardware, comece por aqui e leia o que a [régua assimétrica](../recursos/simulado-vs-hardware.md) espera de cada trilha antes de decidir ir além.

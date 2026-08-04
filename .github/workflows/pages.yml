@@ -25,11 +25,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      # cache: pip exige um manifesto de dependencias versionado no repo. Sem
+      # tools/requirements.txt o setup-python nao avisa: ele DERRUBA o job com
+      # "No file in ... matched to [**/requirements.txt or **/pyproject.toml]"
+      # e todos os passos seguintes aparecem como "skipped".
       - uses: actions/setup-python@v5
         with:
           python-version: '3.x'
           cache: pip
-      - run: pip install mkdocs-material
+          cache-dependency-path: tools/requirements.txt
+      - run: pip install -r tools/requirements.txt
 
       - name: Montar docs/ a partir da estrutura do repo
         run: ./tools/montar-docs.sh

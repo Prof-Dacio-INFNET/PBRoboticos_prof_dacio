@@ -72,9 +72,46 @@ Em alguns frames a contagem cai de **2 para 1**: os dois círculos vermelhos se 
 
 ## Adapte para o seu projeto
 
-1. Renomeie o pacote (`aula03_visao` → `percepcao_meu_projeto`) e os nós.
+1. Renomeie o pacote (`aula03_visao` → `percepcao_meu_projeto`) e os nós — [passo a passo, com os quatro lugares do nome e o `setup.cfg`](../../tutoriais/renomear-pacote-ros2.md).
 2. Troque a faixa HSV pela cor/classe que interessa ao **seu** projeto.
 3. Faça `/vision/status` responder algo do seu domínio ("3 EPIs detectados", "faixa perdida").
 4. Guarde o `.launch.py`: no TP3 ele vira o `bringup.launch.py` do sistema inteiro.
+
+## Onde editar o quê
+
+Depois de copiar o pacote para `~/SEU-REPO/ros2_ws/src/`, **toda** alteração acontece em `src/`. As pastas `build/`, `install/` e `log/` são geradas pelo `colcon build` e sobrescritas a cada compilação — editar ali é trabalho que some no próximo build. Mapa rápido do que fica onde:
+
+| Quero mudar… | Arquivo, dentro de `src/<pacote>/` |
+|---|---|
+| a cena, a fonte de imagem, a taxa | `aula03_visao/publicador_camera.py` |
+| a máscara HSV, a morfologia, a contagem, o serviço | `aula03_visao/segmentador_hsv.py` |
+| os valores padrão dos parâmetros | `config/segmentacao.yaml` |
+| quais nós sobem e com que argumentos | `launch/visao.launch.py` |
+| a conversão imagem ↔ mensagem | `aula03_visao/ponte.py` |
+| o nome do pacote | `package.xml`, `setup.py`, `resource/<nome>` e `setup.cfg` — [ver o guia](../../tutoriais/renomear-pacote-ros2.md) |
+
+## Sequência de comandos recomendada
+
+```bash
+cd ~/SEU-REPO/ros2_ws
+
+# opcional, quando houver muita sujeira de build anterior
+rm -rf build/aula03_visao install/aula03_visao log/latest_build
+
+colcon build --packages-select aula03_visao --symlink-install
+source install/setup.bash
+ros2 launch aula03_visao visao.launch.py
+```
+
+## Se der errado
+
+| Sintoma | O que é, e o que fazer |
+|---|---|
+| `A module that was compiled using NumPy 1.x cannot be run in NumPy 2.x` seguido de `AttributeError: _ARRAY_API not found` e, mais adiante, `KeyError: 16` | o `cv_bridge` do apt foi compilado contra NumPy 1.x e está rodando sob NumPy 2. O `import` **passa** e a conversão quebra depois (16 = `CV_8UC3` = `bgr8`). O `ponte.py` detecta isso sozinho — faz um round-trip de teste no import — e cai no modo manual, então o exemplo continua rodando. Para curar de vez, no venv do projeto: `uv pip install "numpy<2"` |
+| `libexec directory '.../lib/<pacote>' does not exist` | o `setup.cfg` ficou com o nome antigo depois de renomear — [guia de renomeação](../../tutoriais/renomear-pacote-ros2.md) |
+| `rcl_shutdown already called on the given context` ao sair com `Ctrl+C` | ruído de encerramento; não quebra a execução principal. Os nós daqui já fecham com `if rclpy.ok(): rclpy.shutdown()` |
+| `The following packages are in the environment but not in the workspace` / caminho inexistente em `AMENT_PREFIX_PATH` | resíduo de um `install/` de pacote que você apagou. Abra um terminal novo (sem o `source` antigo) e refaça `source install/setup.bash` |
+| tópico existe e `echo` não mostra nada | QoS incompatível — `ros2 topic info /camera/image_raw --verbose` |
+| mudei `config/segmentacao.yaml` e nada mudou | o YAML é copiado no build: recompile, ou passe `--params-file` apontando para o arquivo em `src/` |
 
 Licença: MIT (ver `exemplos/LICENSE`) — pode copiar para o seu repositório mantendo o aviso de copyright.

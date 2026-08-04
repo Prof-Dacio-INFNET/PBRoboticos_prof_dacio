@@ -56,7 +56,7 @@ Aulas às **terças, 07h00–09h30, sala SJ205** · Prof. Dácio Moreira de Souz
 
 O tópico deixa de carregar texto e passa a carregar **imagem**. Montamos o pipeline `câmera → segmentação HSV → contagem → serviço`, que é literalmente o esqueleto dos itens 3 e 4 do TP1.
 
-[Roteiro e slides da aula](aulas/etapa02-aula03/index.md){ .md-button .md-button--primary }
+[Conteúdo e slides da aula](aulas/etapa02-aula03/index.md){ .md-button .md-button--primary }
 [Exemplo executável](exemplos/aula03-visao/index.md){ .md-button }
 [Tarefa da semana](tutoriais/tarefa-aula03-visao.md){ .md-button }
 

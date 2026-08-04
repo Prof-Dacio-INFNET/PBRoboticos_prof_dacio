@@ -1,6 +1,6 @@
 # Aula 1 — Abertura, ROS 2 e o projeto do semestre
 
-**Terça, 21/07/2026 · 07h00–09h30 · sala SJ205 · Etapa 1**
+**Terça, 21/07/2026 · sala SJ205 · Etapa 1**
 
 [:material-file-pdf-box: Slides da Aula 1 (PDF)](apresentacao-aula01.pdf){ .md-button .md-button--primary }
 

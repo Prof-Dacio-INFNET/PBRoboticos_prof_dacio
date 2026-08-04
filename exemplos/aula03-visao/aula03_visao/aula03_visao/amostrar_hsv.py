@@ -225,7 +225,13 @@ def main():
         no.relatorio()
         cv2.destroyAllWindows()
         no.destroy_node()
-        rclpy.shutdown()
+        # Ctrl+C: o rclpy do Humble ja pode ter derrubado o contexto pelo
+        # signal handler. Chamar shutdown() de novo levanta
+        # "rcl_shutdown already called on the given context" -- barulho de
+        # saida que assusta a turma sem que nada tenha quebrado. rclpy.ok()
+        # resolve: so fecha o que ainda estiver de pe.
+        if rclpy.ok():
+            rclpy.shutdown()
 
 
 if __name__ == '__main__':
