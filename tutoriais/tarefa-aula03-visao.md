@@ -176,7 +176,7 @@ Ela **não** fecha o G1.1 — declarar domínio, usuário, classes, trilha e pla
 |---|---|
 | `Package not found` depois de renomear | `package.xml` e `resource/<nome>`; ver [renomear pacote](renomear-pacote-ros2.md) |
 | `libexec directory .../lib/<pacote> does not exist` | o `setup.cfg` ficou com o nome antigo (`script_dir`/`install_scripts`) |
-| `AttributeError: _ARRAY_API not found` e depois `KeyError: 16` | `cv_bridge` do apt compilado contra NumPy 1.x rodando sob NumPy 2 — o exemplo cai sozinho no modo manual; para curar, `uv pip install "numpy<2"` no venv |
+| `AttributeError: _ARRAY_API not found` e depois `KeyError: 16` | `cv_bridge` do apt compilado contra NumPy 1.x rodando sob NumPy 2 — o exemplo cai sozinho no modo manual. Para curar: os nós rodam com o `python3` **do sistema**, então mexer no venv não adianta — rode `python3 -c "import numpy; print(numpy.__version__, numpy.__file__)"` e desinstale o NumPy 2 do diretório que aparecer (`python3 -m pip uninstall -y numpy`, com `sudo` se for `/usr/local`). Detalhes no [README do exemplo](https://github.com/Prof-Dacio-INFNET/PBRoboticos_prof_dacio/tree/main/exemplos/aula03-visao#curando-o-conflito-de-numpy-de-vez) |
 | `rcl_shutdown already called` ao sair com `Ctrl+C` | ruído de encerramento, não quebra nada; feche com `if rclpy.ok(): rclpy.shutdown()` |
 | máscara toda preta | `s_min`/`v_min` altos demais; comece frouxo (S≥60, V≥40) e aperte |
 | máscara toda branca | faixa de matiz larga demais, ou objeto e fundo com a mesma cor — troque o fundo |

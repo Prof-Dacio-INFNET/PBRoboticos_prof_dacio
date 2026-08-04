@@ -1,6 +1,6 @@
 # OpenCV 4 — referência (DR2 / TP1–TP2)
 
-Instalar no venv da disciplina (uv): `uv pip install opencv-python numpy`
+Instalação: **pelo apt, no sistema** — `sudo apt install python3-opencv` (e `ros-humble-cv-bridge` se for usar com ROS 2). Não instale `opencv-python` nem `numpy` por pip fora de um venv: isso reescreve o NumPy que o ROS 2 usa e quebra o `cv_bridge` com `KeyError: 16`. Dentro de um venv (`uv venv --system-site-packages`), o uv é bem-vindo para o que **não** for OpenCV/NumPy.
 ```python
 import cv2, numpy as np
 img = cv2.imread('f.png'); cap = cv2.VideoCapture(0)   # arquivo / webcam

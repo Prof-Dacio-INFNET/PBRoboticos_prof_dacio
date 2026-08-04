@@ -26,11 +26,36 @@ tabela interna de tipos do cv_bridge fica vazia. O erro só aparece na primeira
 conversão, como `KeyError: 16`. Por isso o teste abaixo é um round-trip de
 verdade, e o `except` é largo de propósito.
 
-Cura definitiva no seu ambiente (dentro do venv do projeto, nunca com sudo):
+Cura definitiva: tirar o NumPy 2 do caminho do python DO SISTEMA
+----------------------------------------------------------------
+Atenção, porque é fácil errar aqui: os nós ROS 2 rodam com o `python3` do
+sistema (repare no `/usr/lib/python3.10/...` do traceback), **não** com o
+python de um venv. Instalar `numpy<2` dentro de um venv não muda nada para
+eles. O NumPy 2 que atrapalha está num diretório que o python do sistema
+enxerga, e é de lá que ele precisa sair.
 
-    source ~/projeto-pb/.venv/bin/activate
-    uv pip install "numpy<2"                    # alinha com o cv_bridge do apt
-    sudo apt install ros-humble-cv-bridge python3-opencv
+Descubra de onde ele vem:
+
+    python3 -c "import numpy; print(numpy.__version__, numpy.__file__)"
+
+    ~/.local/lib/python3.10/site-packages/...   -> resíduo de `pip install --user`
+        python3 -m pip uninstall -y numpy
+
+    /usr/local/lib/python3.10/dist-packages/... -> resíduo de `sudo pip` ou de
+                                                   `uv pip install --system`
+        sudo python3 -m pip uninstall -y numpy
+
+Repita até dizer que não está instalado — pode haver mais de uma camada. No
+fim, o esperado é o NumPy do apt:
+
+    1.21.5 /usr/lib/python3/dist-packages/numpy/__init__.py
+
+Se ele tiver sumido junto: `sudo apt install --reinstall python3-numpy`.
+
+A doutrina da disciplina existe justamente para evitar esse buraco: OpenCV e
+cv_bridge vêm do apt (`python3-opencv`, `ros-humble-cv-bridge`), e o uv só é
+usado **dentro** de um venv — nunca `sudo uv`, nunca `uv pip install --system`.
+Um pip fora do venv reescreve o NumPy que o ROS 2 usa.
 
 Enquanto isso não acontece, este módulo mantém o exemplo rodando.
 """

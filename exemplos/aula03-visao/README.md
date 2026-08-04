@@ -107,11 +107,31 @@ ros2 launch aula03_visao visao.launch.py
 
 | Sintoma | O que é, e o que fazer |
 |---|---|
-| `A module that was compiled using NumPy 1.x cannot be run in NumPy 2.x` seguido de `AttributeError: _ARRAY_API not found` e, mais adiante, `KeyError: 16` | o `cv_bridge` do apt foi compilado contra NumPy 1.x e está rodando sob NumPy 2. O `import` **passa** e a conversão quebra depois (16 = `CV_8UC3` = `bgr8`). O `ponte.py` detecta isso sozinho — faz um round-trip de teste no import — e cai no modo manual, então o exemplo continua rodando. Para curar de vez, no venv do projeto: `uv pip install "numpy<2"` |
+| `A module that was compiled using NumPy 1.x cannot be run in NumPy 2.x` seguido de `AttributeError: _ARRAY_API not found` e, mais adiante, `KeyError: 16` | o `cv_bridge` do apt foi compilado contra NumPy 1.x e está rodando sob NumPy 2. O `import` **passa** e a conversão quebra depois (16 = `CV_8UC3` = `bgr8`). O `ponte.py` detecta isso sozinho — faz um round-trip de teste no import — e cai no modo manual, então o exemplo continua rodando. Para curar de vez, veja o quadro logo abaixo desta tabela |
 | `libexec directory '.../lib/<pacote>' does not exist` | o `setup.cfg` ficou com o nome antigo depois de renomear — [guia de renomeação](../../tutoriais/renomear-pacote-ros2.md) |
 | `rcl_shutdown already called on the given context` ao sair com `Ctrl+C` | ruído de encerramento; não quebra a execução principal. Os nós daqui já fecham com `if rclpy.ok(): rclpy.shutdown()` |
 | `The following packages are in the environment but not in the workspace` / caminho inexistente em `AMENT_PREFIX_PATH` | resíduo de um `install/` de pacote que você apagou. Abra um terminal novo (sem o `source` antigo) e refaça `source install/setup.bash` |
 | tópico existe e `echo` não mostra nada | QoS incompatível — `ros2 topic info /camera/image_raw --verbose` |
 | mudei `config/segmentacao.yaml` e nada mudou | o YAML é copiado no build: recompile, ou passe `--params-file` apontando para o arquivo em `src/` |
+
+### Curando o conflito de NumPy de vez
+
+O ponto que engana: **os nós ROS 2 rodam com o `python3` do sistema**, não com o python de um venv — repare no `/usr/lib/python3.10/...` que aparece no traceback. Instalar `numpy<2` dentro de um venv não muda nada para eles. O NumPy 2 que atrapalha está num diretório que o python do sistema enxerga, e é de lá que ele precisa sair.
+
+Descubra de onde ele vem:
+
+```bash
+python3 -c "import numpy; print(numpy.__version__, numpy.__file__)"
+```
+
+| O que o caminho mostra | De onde veio | Como tirar |
+|---|---|---|
+| `~/.local/lib/python3.10/site-packages/...` | `pip install --user` | `python3 -m pip uninstall -y numpy` |
+| `/usr/local/lib/python3.10/dist-packages/...` | `sudo pip` ou `uv pip install --system` | `sudo python3 -m pip uninstall -y numpy` |
+| `/usr/lib/python3/dist-packages/...` com versão 1.x | é o do apt, está correto | nada a fazer — o problema é outro |
+
+Repita o `uninstall` até dizer que não está instalado; pode haver mais de uma camada. No fim, o esperado é `1.21.5 /usr/lib/python3/dist-packages/numpy/__init__.py`. Se o NumPy sumir de vez, `sudo apt install --reinstall python3-numpy`.
+
+A regra de instalação da disciplina existe justamente por causa disso: **OpenCV e cv_bridge vêm do apt** (`python3-opencv`, `ros-humble-cv-bridge`), e o **uv só é usado dentro de um venv** — nunca `sudo uv`, nunca `uv pip install --system`. Um pip fora do venv reescreve o NumPy que o ROS 2 usa, e o sintoma só aparece muito depois, na primeira conversão de imagem.
 
 Licença: MIT (ver `exemplos/LICENSE`) — pode copiar para o seu repositório mantendo o aviso de copyright.

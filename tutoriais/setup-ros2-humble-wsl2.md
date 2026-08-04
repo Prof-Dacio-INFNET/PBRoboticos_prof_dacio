@@ -130,8 +130,9 @@ uv --version
 
 1. **O Python do sistema é território do `apt`** — as bibliotecas base do TP1 já vieram nos passos anteriores (`python3-opencv` inclui o NumPy). Confirme:
    ```bash
-   python3 -c "import cv2, numpy; print('OpenCV', cv2.__version__, '| NumPy', numpy.__version__)"
+   python3 -c "import cv2, numpy; print('OpenCV', cv2.__version__, '| NumPy', numpy.__version__, numpy.__file__)"
    ```
+   O NumPy tem que ser **1.x**, vindo de `/usr/lib/python3/dist-packages`. Se aparecer 2.x, ou um caminho em `~/.local` ou `/usr/local`, algum `pip` fora de venv passou por aqui: desinstale (`python3 -m pip uninstall -y numpy`, com `sudo` se for `/usr/local`) e repita até sobrar só o do apt. O `cv_bridge` do ROS 2 é compilado contra NumPy 1.x e quebra sob NumPy 2 — o sintoma aparece só lá na frente, como `KeyError: 16`.
 2. **Nunca `sudo uv ...`** (o uv vive no seu usuário; o root não o encontra) e **nunca `uv pip install --system`** (tentaria escrever nas pastas do sistema — sem permissão, e nem queremos mexer nelas).
 3. Pacotes além do apt (YOLO, TensorFlow, MetaDrive — TPs 2+) entram em **ambientes `uv venv --system-site-packages`** (que continuam enxergando o `rclpy` do ROS) — cada tutorial que precisar mostrará o comando exato.
 
