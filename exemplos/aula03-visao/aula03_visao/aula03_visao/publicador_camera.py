@@ -17,6 +17,7 @@ import math
 import cv2
 import numpy as np
 import rclpy
+from rclpy.clock import Clock, ClockType
 from rclpy.node import Node
 from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy
 from sensor_msgs.msg import Image
@@ -40,6 +41,7 @@ class PublicadorCamera(Node):
         self.declare_parameter('fps', 15.0)
         self.declare_parameter('largura', 640)
         self.declare_parameter('altura', 480)
+        self.declare_parameter('fourcc', 'MJPG')          # MJPG | YUYV | '' para nao pedir
 
         self.fonte = self.get_parameter('fonte').value
         self.largura = int(self.get_parameter('largura').value)
@@ -54,18 +56,67 @@ class PublicadorCamera(Node):
             alvo = (int(self.get_parameter('dispositivo').value)
                     if self.fonte == 'webcam'
                     else self.get_parameter('arquivo').value)
-            self.cap = cv2.VideoCapture(alvo)
+            # CAP_V4L2 explicito: sem isso o OpenCV tenta o GStreamer primeiro,
+            # falha com um aviso ruidoso, e so entao cai no V4L2 -- e com backend
+            # indefinido os cap.set() abaixo podem ser silenciosamente ignorados.
+            self.cap = (cv2.VideoCapture(alvo, cv2.CAP_V4L2)
+                        if self.fonte == 'webcam' else cv2.VideoCapture(alvo))
             if not self.cap.isOpened():
                 self.get_logger().error(
                     f"Nao consegui abrir a fonte '{alvo}'. Caindo para 'sintetico'. "
                     "Webcam no WSL2? veja tutoriais/camera-wsl2-usbipd.md")
                 self.cap = None
                 self.fonte = 'sintetico'
+            elif self.fonte == 'webcam':
+                self.negociar_webcam(fps)
 
-        self.create_timer(1.0 / max(fps, 1.0), self.tick)
+        # Timer no relogio MONOTONICO, nao no de parede. O relogio de parede do
+        # WSL2 pode dar saltos de varios segundos (a sincronizacao com o Windows
+        # brigando com o servico de hora do proprio Ubuntu). Com SYSTEM_TIME, um
+        # salto para tras congela o publicador ate o relogio "alcancar" o proximo
+        # disparo -- e o sintoma aparece como se a camera tivesse travado.
+        # O monotonico nunca anda para tras, entao a captura fica imune.
+        try:
+            self.create_timer(1.0 / max(fps, 1.0), self.tick,
+                              clock=Clock(clock_type=ClockType.STEADY_TIME))
+        except TypeError:        # rclpy sem o argumento `clock`
+            self.create_timer(1.0 / max(fps, 1.0), self.tick)
         self.get_logger().info(
             f'Publicando /camera/image_raw · fonte={self.fonte} · {self.largura}x{self.altura} '
             f'@{fps:.0f}fps · {descrever_ponte()}')
+
+    # ------------------------------------------------------------ negociacao
+    def negociar_webcam(self, fps):
+        """Pede a camera o formato certo ANTES de comecar a capturar.
+
+        A ordem importa: FOURCC primeiro, tamanho depois. Invertida, o driver
+        renegocia e costuma voltar sozinho para YUYV.
+
+        Por que MJPG: um quadro 1920x1080 em YUYV (sem compressao) ocupa 4,1 MB.
+        A 30 fps sao ~124 MB/s -- mais do que o USB 2.0 entrega, e muito mais do
+        que sobrevive ao encaminhamento do usbipd no WSL2. A camera entao negocia
+        para baixo sozinha e voce recebe 3 fps *sem nenhuma mensagem de erro*.
+        O mesmo quadro em 640x480 MJPG ocupa ~40 kB. Sao ~70x menos dados no fio.
+        """
+        cc = str(self.get_parameter('fourcc').value or '').upper()
+        if cc:
+            self.cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*cc[:4]))
+        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, self.largura)
+        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, self.altura)
+        self.cap.set(cv2.CAP_PROP_FPS, fps)
+        # Fila de 1 quadro: sem isso o read() devolve quadro velho sempre que a
+        # captura adianta o timer, e a imagem aparece atrasada em relacao ao mundo.
+        self.cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+        self.get_logger().info(f'webcam negociada: {self.formato_real()} '
+                               '(o que a camera ACEITOU, nao o que foi pedido)')
+
+    def formato_real(self):
+        """O que a camera de fato entrega. Pedir nao e o mesmo que receber."""
+        w = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        h = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        bruto = int(self.cap.get(cv2.CAP_PROP_FOURCC)) & 0xFFFFFFFF
+        cc = bruto.to_bytes(4, 'little').decode(errors='replace')
+        return f'{w}x{h} {cc} @{self.cap.get(cv2.CAP_PROP_FPS):.0f}fps'
 
     # ---------------------------------------------------------------- fontes
     def frame_sintetico(self):
@@ -93,7 +144,9 @@ class PublicadorCamera(Node):
             ok, frame = self.cap.read()
         if not ok:
             return None
-        return cv2.resize(frame, (self.largura, self.altura))
+        if frame.shape[1] != self.largura or frame.shape[0] != self.altura:
+            frame = cv2.resize(frame, (self.largura, self.altura))
+        return frame
 
     # ------------------------------------------------------------------ loop
     def tick(self):
