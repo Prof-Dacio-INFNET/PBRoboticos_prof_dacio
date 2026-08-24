@@ -65,7 +65,9 @@ def inf(m): print("  · %s" % m)
 
 if sys.prefix != sys.base_prefix:
     inf("você está DENTRO de um venv (%s). Os nós ROS 2 não usam o venv — eles rodam com o "
-        "python3 do sistema. Rode 'deactivate' e repita esta checagem" % sys.prefix)
+        "python3 do sistema. Rode 'deactivate' e repita esta checagem. "
+        "Atenção: com o venv ativo, rqt_image_view/rqt_graph/rviz2 falham com "
+        "\"No module named 'PyQt5'\", porque o PyQt5 do apt fica fora do venv" % sys.prefix)
 
 for nome in ("numpy", "cv2"):
     try:
@@ -96,6 +98,37 @@ except ImportError:
     inf("cv_bridge ausente — instale com: sudo apt install ros-humble-cv-bridge (a partir da Aula 3)")
 except Exception as e:
     no("cv_bridge quebrado no import (%s: %s)" % (type(e).__name__, e))
+
+# --------------------------------------------------------------- relogio
+# Um relogio que salta congela timers do rclpy e faz o "ros2 topic hz" mostrar
+# intervalos NEGATIVOS. O monotonico nunca anda para tras: divergencia entre os
+# dois acusa quem saltou.
+import time as _t
+_t0, _m0, _saltos = _t.time(), _t.monotonic(), 0
+for _ in range(20):                       # ~4 s de amostragem
+    _t.sleep(0.2)
+    _dw, _dm = _t.time() - _t0, _t.monotonic() - _m0
+    if abs(_dw - _dm) > 0.2:
+        _saltos += 1
+        _t0, _m0 = _t.time(), _t.monotonic()
+
+if _saltos:
+    no("o RELÓGIO está saltando (%d salto(s) em 4 s). Isso congela timers do rclpy e faz o "
+       "'ros2 topic hz' mostrar intervalo negativo — e qualquer medição de taxa vira ficção. "
+       "Cure com: sudo systemctl disable --now systemd-timesyncd  "
+       "(se persistir: wsl --shutdown no PowerShell, reabrir, e refazer o usbipd attach)" % _saltos)
+else:
+    ok("relógio estável (sem salto na amostragem)")
+    try:
+        if "microsoft" in open("/proc/version").read().lower():
+            import subprocess
+            _r = subprocess.run(["systemctl", "is-active", "systemd-timesyncd"],
+                                capture_output=True, text=True)
+            if _r.stdout.strip() == "active":
+                inf("systemd-timesyncd ativo no WSL2 — ele disputa o relógio com a sincronização "
+                    "do host e pode fazê-lo saltar mais tarde. Se a taxa ficar errática, desative")
+    except Exception:
+        pass
 
 sys.exit(1 if FALHOU else 0)
 PY

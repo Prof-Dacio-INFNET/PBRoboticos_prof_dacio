@@ -159,10 +159,70 @@ uv --version
 | Janela gráfica não abre (turtlesim/rviz) | `wsl --update` no PowerShell e reinicie o WSL (`wsl --shutdown`); WSLg exige Win11 atualizado. **Na rota VirtualBox nada disso se aplica:** lá a janela é do próprio Ubuntu, e o culpado costuma ser Guest Additions ausente ou **aceleração 3D ligada** — [veja o guia do VirtualBox](setup-ros2-humble-virtualbox.md#quando-a-coisa-nao-coopera) |
 | Janela abre **cinza/minúscula com `[WARN:COPY MODE]`** | Glitch do WSLg pós-instalação: `wsl --shutdown` no PowerShell e reabra o Ubuntu — resolve |
 | `ros2: command not found` | Faltou `source /opt/ros/humble/setup.bash` (confira o `.bashrc`) |
+| `ModuleNotFoundError: No module named 'PyQt5'` no `rqt_image_view`/`rqt_graph`/`rviz2` | Você está com um **venv ativado**. O `source /opt/ros/humble/setup.bash` expõe o ROS 2 via `PYTHONPATH`, que sobrevive à ativação do venv — por isso `ros2 launch` continua funcionando e só as ferramentas gráficas morrem. Já o `python3-pyqt5` do apt mora em `/usr/lib/python3/dist-packages`, caminho padrão do sistema que um venv sem `--system-site-packages` corta fora. `deactivate` resolve na hora; para não repetir, recrie com `uv venv --system-site-packages` |
+| Taxas erráticas, `ros2 topic hz` com buracos de segundos ou `min:` negativo | O relógio do WSL2 está saltando — [seção abaixo](#o-relogio-do-wsl2-pode-saltar-e-isso-estraga-qualquer-medicao) |
 | Vejo tópicos/nós que não criei | Colega na mesma rede com o mesmo `ROS_DOMAIN_ID` — defina o seu (Passo 4) |
 | apt muito lento / trava | Rede da instituição pode limitar — tente hotspot ou faça em casa |
 | Pouco espaço em disco | A disciplina pede ~50 GB livres. Limpe dentro do Ubuntu: `sudo apt clean` e apague `build/ install/ log/` antigos. **Não use** `--set-sparse true` (o WSL atual desativou por risco de corrupção de dados; forçar com `--allow-unsafe` não vale o risco). Compactar o disco virtual é possível via `diskpart`/`compact vdisk` (avançado, opcional). **Na rota VirtualBox:** o `.vdi` cresce e **nunca encolhe sozinho** — apagar arquivo dentro da VM não devolve espaço ao Windows; dimensione o disco com folga desde o início |
 | Webcam | **WSL2:** precisa do `usbipd-win` — [tutorial próprio da disciplina](camera-wsl2-usbipd.md) (a partir da Etapa 2). **VirtualBox:** `usbipd` não existe nessa rota; a webcam entra pelo Extension Pack, em *Dispositivos → Webcams* ([seção do guia](setup-ros2-humble-virtualbox.md#webcam-extension-pack-nao-usbipd)) |
+
+## O relógio do WSL2 pode saltar — e isso estraga qualquer medição
+
+Este é um defeito do ambiente, não do seu código, e vale conhecer **antes** de perder uma tarde. O WSL2 sincroniza continuamente o relógio do Ubuntu com o do Windows. Se o Ubuntu também estiver rodando o próprio serviço de hora — o `systemd-timesyncd`, ativo por padrão quando `/etc/wsl.conf` tem `systemd=true` — os dois corrigem o mesmo relógio em direções opostas, e ele passa a oscilar vários segundos, várias vezes por minuto. Some a isso a suspensão da VM pelo gerenciamento de energia do Windows (notebook na bateria, ocioso) e o resultado é um relógio que anda para frente e para trás sozinho.
+
+### Como reconhecer
+
+O sinal mais claro aparece em `ros2 topic hz`:
+
+```
+average rate: 0.891
+        min: -5.108s max: 6.300s
+```
+
+**Um intervalo negativo entre duas mensagens é impossível** — nada chega antes de ter sido enviado. Quando um número desses aparece na saída, ele não é ruído: é a prova de que uma premissa da medição quebrou. Aqui, a premissa é que o relógio anda sempre para frente.
+
+Para confirmar em trinta segundos, compare o relógio de parede com o monotônico — o monotônico nunca anda para trás, então divergência entre os dois acusa quem saltou:
+
+```bash
+python3 - <<'PY'
+import time
+t0, m0 = time.time(), time.monotonic()
+saltos = 0
+for _ in range(60):
+    time.sleep(0.5)
+    dw, dm = time.time() - t0, time.monotonic() - m0
+    if abs(dw - dm) > 0.2:
+        saltos += 1
+        print(f"  SALTO: parede {dw:6.2f}s  monotonico {dm:6.2f}s  ->  {dw-dm:+.2f}s")
+        t0, m0 = time.time(), time.monotonic()
+print(f"saltos em 30s: {saltos}")
+PY
+```
+
+Saltos de tamanho sempre igual, repetindo com período regular, são a assinatura de duas autoridades de tempo brigando. Deriva de relógio de verdade é lenta e monótona, e não faz isso.
+
+### Como curar
+
+```bash
+timedatectl status                                  # "NTP service: active" = ha um servico interno
+sudo systemctl disable --now systemd-timesyncd      # deixe so o WSL sincronizar
+```
+
+Se persistir, `wsl --shutdown` no PowerShell e reabra — **e refaça o `usbipd attach` se estiver usando webcam**, porque o shutdown derruba o encaminhamento. Em notebook, mantenha a máquina na tomada durante a aula: a economia de energia suspende a VM do WSL, e o tempo suspenso não é contado pelo relógio monotônico, mas é contado pelo de parede.
+
+### Por que isso quebra mais do que a medição
+
+O `create_timer` do `rclpy` usa, por padrão, o relógio do sistema. Um salto de −6 s faz o timer esperar seis segundos a mais pelo próximo disparo: o nó **congela de verdade**, sem erro nenhum no log, e o sintoma aparece como se a câmera ou a rede tivessem travado. O exemplo da Aula 3 se protege pedindo o relógio monotônico explicitamente:
+
+```python
+from rclpy.clock import Clock, ClockType
+self.create_timer(periodo, self.tick, clock=Clock(clock_type=ClockType.STEADY_TIME))
+```
+
+O `header.stamp` das mensagens continua no relógio de parede — ele é o carimbo do mundo, e tem que ser comparável com o de outras máquinas. O que muda é só o laço, que passa a andar num relógio que não pode retroceder.
+
+!!! tip "O hábito que isso ensina"
+    Procure o **impossível** na saída antes de procurar o improvável. "Está meio lento" comporta dez explicações confortáveis e nenhuma decisiva; um intervalo negativo comporta uma só, e aponta direto para a premissa quebrada. Vale para o TP de vocês: quando um número não pode existir, ele é o melhor lugar para começar.
 
 ## Checklist final
 

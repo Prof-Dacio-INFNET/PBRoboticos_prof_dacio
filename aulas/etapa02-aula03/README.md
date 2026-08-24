@@ -136,7 +136,10 @@ Este bloco não é "sobra de aula": ele decide o semestre. Três documentos novo
 | webcam não abre | **WSL2:** falta o `usbipd attach` — ver [tutorial da câmera](../../tutoriais/camera-wsl2-usbipd.md). **VirtualBox:** Extension Pack + *Dispositivos → Webcams* ([seção do guia](../../tutoriais/setup-ros2-humble-virtualbox.md#webcam-extension-pack-nao-usbipd)). Enquanto isso, `fonte:=sintetico` |
 | vermelho quase não é detectado | faltou a segunda faixa de matiz (170–180); vermelho ocupa as duas pontas do círculo |
 | contagem oscilando muito | `area_min` baixo demais, ou falta morfologia `OPEN` |
-| taxa muito baixa | resolução alta demais; comece em 640×480 |
+| taxa muito baixa, ou imagem travando | meça antes de culpar a câmera. `ros2 topic hz` num tópico de **imagem** é um nó Python desserializando ~900 kB por mensagem: ele mede a si mesmo se afogando. Use a régua leve — `ros2 topic hz /vision/contagem` — e siga o [roteiro de medição](../../tutoriais/camera-wsl2-usbipd.md#medir-a-taxa-sem-se-enganar) |
+| `ros2 topic hz` com `min:` **negativo**, ou buracos de segundos | intervalo negativo entre duas mensagens é impossível — nada chega antes de ter sido enviado. É o **relógio do WSL2 saltando**, e ele também congela os timers do `rclpy`, o que parece câmera travada. [Diagnóstico e cura](../../tutoriais/setup-ros2-humble-wsl2.md#o-relogio-do-wsl2-pode-saltar-e-isso-estraga-qualquer-medicao) |
+| `ModuleNotFoundError: No module named 'PyQt5'` ao abrir o `rqt_image_view` | **venv ativado.** O ROS 2 entra pelo `PYTHONPATH` e sobrevive ao venv (por isso o `ros2 launch` funciona); o `python3-pyqt5` do apt não, porque um venv sem `--system-site-packages` corta o caminho do sistema. `deactivate` resolve na hora |
+| `A message was lost!!!` no `echo` de imagem | mensagem grande fragmentada em UDP: perdeu um fragmento, perdeu o quadro. Numa máquina só, `export ROS_LOCALHOST_ONLY=1` em todos os terminais costuma bastar. É por isso que não se dá `echo` em tópico de imagem |
 
 ## Para a próxima aula (11/08)
 
