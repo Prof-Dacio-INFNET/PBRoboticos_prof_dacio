@@ -14,7 +14,7 @@ Faça este checklist **de cima para baixo, num dia em que ainda dá tempo de con
 ## 1. O repositório está no estado certo
 
 ```bash
-cd ~/SEU-REPO
+cd ~/projeto-pb-SEU-USUARIO
 git status                       # tem que estar limpo
 git log --oneline -10            # um commit por gate, mensagens começando pelo código
 ```
@@ -54,7 +54,7 @@ A tag **congela** o código avaliado. Commit depois da tag não é considerado, 
 O ZIP é do **código**, não do repositório inteiro: sem `build/`, sem `install/`, sem `log/`, sem `.git/`.
 
 ```bash
-cd ~/SEU-REPO
+cd ~/projeto-pb-SEU-USUARIO
 zip -r tp1-SEUNOME.zip . -x "*/build/*" "*/install/*" "*/log/*" ".git/*" "*.pyc" "*__pycache__*"
 unzip -l tp1-SEUNOME.zip | tail -5      # confira o tamanho e o que entrou
 ```

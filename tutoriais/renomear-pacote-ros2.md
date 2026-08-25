@@ -47,7 +47,7 @@ Além dos arquivos, confira também as referências **dentro** do código e dos 
 Depois de trocar os nomes, compile do jeito previsível. O passo do `rm -rf` é opcional: use quando houver sujeira de build anterior — que é exatamente o caso depois de uma renomeação, porque os artefatos com o nome velho continuam em `build/` e `install/`.
 
 ```bash
-cd ~/SEU-REPO/ros2_ws
+cd ~/projeto-pb-SEU-USUARIO/ros2_ws
 
 # opcional, quando houver muita sujeira de build anterior
 rm -rf build/<nome_do_pacote> install/<nome_do_pacote> log/latest_build

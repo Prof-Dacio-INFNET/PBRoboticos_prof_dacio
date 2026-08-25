@@ -4,6 +4,20 @@
 
 [:material-file-pdf-box: Slides da Aula 1 (PDF)](apresentacao-aula01.pdf){ .md-button .md-button--primary }
 
+## Baixar o material desta aula
+
+A Aula 1 não tem pacote para compilar — o material que importa é o script que confere o seu ambiente. Baixe e rode:
+
+```bash
+# baixar o material (pode repetir sempre)
+rm -rf /tmp/PBRoboticos_prof_dacio
+cd /tmp && git clone --depth 1 https://github.com/Prof-Dacio-INFNET/PBRoboticos_prof_dacio.git
+
+bash /tmp/PBRoboticos_prof_dacio/recursos/check-ambiente.sh
+```
+
+Ele detecta a sua rota (WSL2, VirtualBox ou nativo), confere Ubuntu, ROS 2, `colcon`, `git`, `gh`, `uv`, o `ROS_DOMAIN_ID` e a procedência do OpenCV e do NumPy. **Rode antes de pedir ajuda:** a saída dele é metade do diagnóstico.
+
 ## O que foi visto
 
 A aula abriu o bloco apresentando o que é um sistema robótico do ponto de vista de software: um conjunto de processos independentes que trocam informação por uma rede, e não um programa monolítico. A partir daí veio o vocabulário do ROS 2 — nós, tópicos, serviços, ações e parâmetros — com a analogia da mensageria: o tópico é um canal em que qualquer um publica e qualquer um assina, o serviço é uma pergunta com resposta, e a ação é uma tarefa longa que informa progresso e pode ser cancelada.

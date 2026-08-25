@@ -17,7 +17,7 @@ O objetivo é dar ao seu projeto um vocabulário próprio, e o critério de pron
 ## 1. Crie o seu pacote de interfaces
 
 ```bash
-cd ~/SEU-REPO/ros2_ws/src
+cd ~/projeto-pb-SEU-USUARIO/ros2_ws/src
 ros2 pkg create --build-type ament_cmake <seuprojeto>_interfaces
 ```
 

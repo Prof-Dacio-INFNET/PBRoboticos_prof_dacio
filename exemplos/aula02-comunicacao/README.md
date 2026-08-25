@@ -4,8 +4,14 @@ Exemplo da Aula 2 (Etapa 1). Mostra os três tijolos de comunicação do ROS 2 q
 `publicador` → publica em `/camera/status`; `assinante` → escuta e conta; `servico_contagem` → responde `/contagem` (pergunta/resposta).
 
 ```bash
-cp -r aula02-comunicacao/aula02_comunicacao ~/SEU-REPO/ros2_ws/src/   # copie o pacote
-cd ~/SEU-REPO/ros2_ws && colcon build --symlink-install && source install/setup.bash
+# 1) baixar o material (pode repetir sempre -- o rm evita o erro de pasta ja existente)
+rm -rf /tmp/PBRoboticos_prof_dacio
+cd /tmp && git clone --depth 1 https://github.com/Prof-Dacio-INFNET/PBRoboticos_prof_dacio.git
+
+# 2) copiar o pacote para dentro do SEU projeto
+cp -r /tmp/PBRoboticos_prof_dacio/exemplos/aula02-comunicacao/aula02_comunicacao \
+      ~/projeto-pb-SEU-USUARIO/ros2_ws/src/
+cd ~/projeto-pb-SEU-USUARIO/ros2_ws && colcon build --symlink-install && source install/setup.bash
 ros2 launch aula02_comunicacao comunicacao.launch.py                  # sobe os 3 nós
 # noutro terminal:
 ros2 topic echo /camera/status
@@ -19,7 +25,7 @@ Adapte: troque o conteúdo publicado pela lógica do seu projeto; renomeie o pac
 Toda alteração é em `src/` — `build/`, `install/` e `log/` são gerados pelo `colcon build` e sobrescritos a cada compilação. Depois de editar:
 
 ```bash
-cd ~/SEU-REPO/ros2_ws
+cd ~/projeto-pb-SEU-USUARIO/ros2_ws
 
 # opcional, quando houver muita sujeira de build anterior
 rm -rf build/<nome_do_pacote> install/<nome_do_pacote> log/latest_build

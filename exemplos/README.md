@@ -22,8 +22,17 @@ As pastas [`tp1`](tp1/index.md), [`tp2`](tp2/index.md), [`tp3`](tp3/index.md), [
 O caminho que funciona é sempre o mesmo: copie a pasta do pacote para o `src/` do **seu** workspace, compile com `--symlink-install`, rode como está, e só então comece a mudar. Rodar antes de modificar parece perda de tempo e é o contrário: quando algo quebrar depois da sua primeira alteração, você sabe que o problema é seu e não do exemplo.
 
 ```bash
-cp -r aula03-visao/aula03_visao ~/SEU-REPO/ros2_ws/src/
-cd ~/SEU-REPO/ros2_ws && colcon build --symlink-install && source install/setup.bash
+# 1) baixar o material (pode repetir sempre -- o rm evita o erro de pasta ja existente)
+rm -rf /tmp/PBRoboticos_prof_dacio
+cd /tmp && git clone --depth 1 https://github.com/Prof-Dacio-INFNET/PBRoboticos_prof_dacio.git
+
+# 2) copiar o pacote para dentro do SEU projeto
+cp -r /tmp/PBRoboticos_prof_dacio/exemplos/aula03-visao/aula03_visao \
+      ~/projeto-pb-SEU-USUARIO/ros2_ws/src/
+
+# 3) compilar no SEU workspace
+cd ~/projeto-pb-SEU-USUARIO/ros2_ws
+colcon build --symlink-install && source install/setup.bash
 ```
 
 Ao adaptar, **renomeie o pacote** (`aula03_visao` → `percepcao_meu_projeto`) — sempre em `src/`, nunca nas cópias de `build/` e `install/`. O nome precisa bater em quatro lugares (`package.xml`, `setup.py`, `resource/<nome>` e `setup.cfg`), e é o `setup.cfg` esquecido que produz o `libexec directory ... does not exist`. Passo a passo: [renomear um pacote ROS 2](../tutoriais/renomear-pacote-ros2.md).

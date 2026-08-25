@@ -33,8 +33,8 @@ Um pacote ROS 2 no seu repositório `projeto-pb-<usuario>`, na branch `dev`, com
 Copie, renomeie, compile, rode **antes** de mudar qualquer coisa. Rodar o exemplo intacto no seu workspace parece perda de tempo e é o oposto: quando algo quebrar depois da sua primeira alteração, você saberá que o problema é seu.
 
 ```bash
-cp -r aula03-visao/aula03_visao ~/SEU-REPO/ros2_ws/src/percepcao_meu_projeto
-cd ~/SEU-REPO/ros2_ws
+cp -r aula03-visao/aula03_visao ~/projeto-pb-SEU-USUARIO/ros2_ws/src/percepcao_meu_projeto
+cd ~/projeto-pb-SEU-USUARIO/ros2_ws
 colcon build --symlink-install && source install/setup.bash
 ros2 launch percepcao_meu_projeto visao.launch.py
 ```

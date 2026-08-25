@@ -12,8 +12,14 @@ publicador_camera  --/camera/image_raw-->  segmentador_hsv  --/vision/segmented-
 ## Rodar (5 comandos)
 
 ```bash
-cp -r aula03-visao/aula03_visao ~/SEU-REPO/ros2_ws/src/
-cd ~/SEU-REPO/ros2_ws && colcon build --symlink-install && source install/setup.bash
+# 1) baixar o material (pode repetir sempre -- o rm evita o erro de pasta ja existente)
+rm -rf /tmp/PBRoboticos_prof_dacio
+cd /tmp && git clone --depth 1 https://github.com/Prof-Dacio-INFNET/PBRoboticos_prof_dacio.git
+
+# 2) copiar o pacote para dentro do SEU projeto
+cp -r /tmp/PBRoboticos_prof_dacio/exemplos/aula03-visao/aula03_visao \
+      ~/projeto-pb-SEU-USUARIO/ros2_ws/src/
+cd ~/projeto-pb-SEU-USUARIO/ros2_ws && colcon build --symlink-install && source install/setup.bash
 ros2 launch aula03_visao visao.launch.py            # fonte sintética: não precisa de webcam
 ros2 topic echo /vision/contagem                    # noutro terminal
 ros2 service call /vision/status std_srvs/srv/Trigger "{}"
@@ -79,7 +85,7 @@ Em alguns frames a contagem cai de **2 para 1**: os dois círculos vermelhos se 
 
 ## Onde editar o quê
 
-Depois de copiar o pacote para `~/SEU-REPO/ros2_ws/src/`, **toda** alteração acontece em `src/`. As pastas `build/`, `install/` e `log/` são geradas pelo `colcon build` e sobrescritas a cada compilação — editar ali é trabalho que some no próximo build. Mapa rápido do que fica onde:
+Depois de copiar o pacote para `~/projeto-pb-SEU-USUARIO/ros2_ws/src/`, **toda** alteração acontece em `src/`. As pastas `build/`, `install/` e `log/` são geradas pelo `colcon build` e sobrescritas a cada compilação — editar ali é trabalho que some no próximo build. Mapa rápido do que fica onde:
 
 | Quero mudar… | Arquivo, dentro de `src/<pacote>/` |
 |---|---|
@@ -93,7 +99,7 @@ Depois de copiar o pacote para `~/SEU-REPO/ros2_ws/src/`, **toda** alteração a
 ## Sequência de comandos recomendada
 
 ```bash
-cd ~/SEU-REPO/ros2_ws
+cd ~/projeto-pb-SEU-USUARIO/ros2_ws
 
 # opcional, quando houver muita sujeira de build anterior
 rm -rf build/aula03_visao install/aula03_visao log/latest_build

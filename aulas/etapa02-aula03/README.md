@@ -85,11 +85,33 @@ O **filtro de área é o parâmetro mais útil de todos** e o mais subestimado: 
 
 O exemplo desenha dois círculos vermelhos que, em alguns quadros, se sobrepõem. Quando isso acontece a contagem cai de 2 para 1, e **isso não é um defeito do exemplo** — é oclusão, o problema número um de qualquer sistema de percepção real. Reproduza, registre com print e discuta no relatório do TP1: por que acontece, e o que você faria a respeito (área máxima além da mínima, rastreamento entre quadros, `watershed`, ou um detector por aparência no TP2). Um parágrafo honesto sobre isso vale mais do que um pipeline que finge que o problema não existe.
 
-## Parte 3 — Mão na massa
+## Baixar o material desta aula
+
+Os exemplos vivem no repositório da disciplina. Você **não** trabalha dentro dele: copia o pacote para dentro do **seu** projeto e compila lá. Troque `SEU-USUARIO` pelo seu usuário do GitHub.
 
 ```bash
-cp -r aula03-visao/aula03_visao ~/SEU-REPO/ros2_ws/src/
-cd ~/SEU-REPO/ros2_ws && colcon build --symlink-install && source install/setup.bash
+# 1) baixar o material (pode repetir sempre — a linha do rm evita o erro de pasta já existente)
+rm -rf /tmp/PBRoboticos_prof_dacio
+cd /tmp && git clone --depth 1 https://github.com/Prof-Dacio-INFNET/PBRoboticos_prof_dacio.git
+
+# 2) copiar o pacote desta aula para dentro do SEU projeto
+cp -r /tmp/PBRoboticos_prof_dacio/exemplos/aula03-visao/aula03_visao \
+      ~/projeto-pb-SEU-USUARIO/ros2_ws/src/
+
+# 3) compilar no SEU workspace
+cd ~/projeto-pb-SEU-USUARIO/ros2_ws
+colcon build --packages-select aula03_visao --symlink-install
+source install/setup.bash
+```
+
+!!! tip "Rode antes de modificar"
+    Compile e rode o exemplo **como ele veio**, antes da sua primeira alteração. Parece perda de tempo e é o contrário: quando algo quebrar depois, você sabe que o problema é seu e não do exemplo.
+
+## Parte 3 — Mão na massa
+
+Com o pacote já copiado e compilado (seção [Baixar o material desta aula](#baixar-o-material-desta-aula)):
+
+```bash
 ros2 launch aula03_visao visao.launch.py          # fonte sintética: não precisa de webcam
 ros2 topic echo /vision/contagem                  # em outro terminal
 ros2 service call /vision/status std_srvs/srv/Trigger "{}"

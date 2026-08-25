@@ -22,12 +22,39 @@ Ao final da aula você deve conseguir explicar quando vale a pena criar uma inte
 
 ---
 
+## Baixar o material desta aula
+
+Os exemplos vivem no repositório da disciplina. Você **não** trabalha dentro dele: copia o pacote para dentro do **seu** projeto e compila lá. Troque `SEU-USUARIO` pelo seu usuário do GitHub.
+
+```bash
+# 1) baixar o material (pode repetir sempre — a linha do rm evita o erro de pasta já existente)
+rm -rf /tmp/PBRoboticos_prof_dacio
+cd /tmp && git clone --depth 1 https://github.com/Prof-Dacio-INFNET/PBRoboticos_prof_dacio.git
+
+# 2) copiar os DOIS pacotes desta aula para dentro do SEU projeto
+cp -r /tmp/PBRoboticos_prof_dacio/exemplos/aula06-interfaces/pb_interfaces \
+      /tmp/PBRoboticos_prof_dacio/exemplos/aula06-interfaces/aula06_percepcao \
+      ~/projeto-pb-SEU-USUARIO/ros2_ws/src/
+
+# 3) compilar no SEU workspace -- a ORDEM importa
+cd ~/projeto-pb-SEU-USUARIO/ros2_ws
+colcon build --packages-select pb_interfaces
+source install/setup.bash                     # sem isto o proximo passo falha
+colcon build --packages-select aula06_percepcao --symlink-install
+source install/setup.bash
+```
+
+São **dois** pacotes, e a ordem de compilação não é opcional: o pacote de interfaces precisa estar compilado **e** com `source` feito antes de qualquer nó que o importe. Inverter a ordem produz um `ModuleNotFoundError` que não menciona nada disso.
+
+!!! tip "Rode antes de modificar"
+    Compile e rode o exemplo **como ele veio**, antes da sua primeira alteração. Parece perda de tempo e é o contrário: quando algo quebrar depois, você sabe que o problema é seu e não do exemplo.
+
 ## Parte 0 — Clínica: aterrissar o TP1 (primeira hora)
 
 O calendário de gates diz que **G1.4 venceu ontem** e **G1.5 vence amanhã**. Isso não é motivo para pânico e é motivo para ordem. Comece medindo onde você está, com um comando só:
 
 ```bash
-cd ~/SEU-REPO
+cd ~/projeto-pb-SEU-USUARIO
 bash recursos/check-ambiente.sh                       # G1.0
 grep -c "PB:PROJETO\|PB:TRILHA" PROJETO.md            # G1.1 -- espera-se 2
 ros2 topic hz /vision/contagem                        # G1.2 e G1.3, regua leve
@@ -166,7 +193,7 @@ Compare com o `std_srvs/srv/Trigger` que o TP1 usa. O `Trigger` responde `succes
 A ordem importa: o pacote de interfaces precisa estar compilado **antes** de qualquer nó que o importe.
 
 ```bash
-cd ~/SEU-REPO/ros2_ws
+cd ~/projeto-pb-SEU-USUARIO/ros2_ws
 colcon build --packages-select pb_interfaces
 source install/setup.bash                       # sem isto, o import falha
 colcon build --packages-select aula06_percepcao --symlink-install

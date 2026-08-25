@@ -12,7 +12,10 @@ O bloco tem dez etapas de conteúdo distribuídas em dois trimestres (26T3, de 2
 | [Aula 4](etapa02-aula03/index.md) | 11/08/2026 | 2 | Pipeline de visão: continuação e mentoria de projeto | <span class="pb-tag ok">dada</span> |
 | [Aula 5](etapa02-aula03/index.md) | 18/08/2026 | 2 | Fechamento do pipeline de visão e leitura do TP1 | <span class="pb-tag ok">dada</span> |
 | [Aula 6](etapa03-aula06/index.md) | 25/08/2026 | 3 | Interfaces próprias e detecção inteligente | <span class="pb-tag next">atual</span> |
-| Aula 7 | 01/09/2026 | 4 | SLAM e percepção veicular | <span class="pb-tag soon">a seguir</span> |
+| Aula 7 | 01/09/2026 | 4 | Ações: tarefas longas, feedback e cancelamento | <span class="pb-tag soon">a seguir</span> |
+| Aula 8 | 08/09/2026 | 4 | Percepção veicular: detecção treinada e métrica | <span class="pb-tag soon">a seguir</span> |
+| Aula 9 | 15/09/2026 | 5 | SLAM, TF, URDF e parametrização em YAML | <span class="pb-tag soon">a seguir</span> |
+| Aula 10 | 22/09/2026 | 5 | Navegação autônoma + aterrissagem do TP2 | <span class="pb-tag soon">a seguir</span> |
 
 !!! note "Por que as Aulas 4 e 5 apontam para a página da Aula 3"
     O material da Aula 3 é denso e foi trabalhado ao longo de três encontros — 04, 11 e 18/08 —, com a leitura oficial do TP1 no último deles. As datas do calendário não mudaram; o que mudou foi o ritmo, e isso é normal num bloco prático. As três aulas compartilham a mesma página porque compartilham o mesmo conteúdo.
@@ -34,6 +37,41 @@ O bloco tem dez etapas de conteúdo distribuídas em dois trimestres (26T3, de 2
 | 9 | 09/11–21/11 | Integração final de sistemas autônomos |
 | 10 | 23/11–05/12 | Finalização do projeto e entrega |
 | — | 07/12–19/12 | Apresentações e fechamento |
+
+## Mapa de cobertura — o que cada aula entrega
+
+Esta tabela existe para uma pergunta específica: **a redistribuição das aulas deixou algum conteúdo de fora?** A resposta é não, e é aqui que dá para conferir. Cada gate dos TPs é um requisito verificável; a coluna da direita diz em que encontro ele é ensinado, e a regra que precisa valer é simples — **todo gate é ensinado antes da data em que vence**.
+
+| Gate | O que exige | Ensinado em | Vence em | Folga |
+|---|---|---|---|---|
+| G1.0 | ambiente operante | Aula 1 · 21/07 | 07/08 | 17 dias |
+| G1.1 | projeto declarado | Aula 1 · 21/07 (catálogo) e Aula 5 · 18/08 (leitura do TP1) | 11/08 | — |
+| G1.2 | grafo de imagem no ar | Aula 3 · 04/08 | 15/08 | 11 dias |
+| G1.3 | segmentação detectando o objeto | Aula 3 · 04/08 | 20/08 | 16 dias |
+| G1.4 | serviço + `rqt_graph` | Aula 2 · 28/07 (serviços) e Aula 3 · 04/08 | 24/08 | 20 dias |
+| G1.5 | relatório fechado | Aula 6 · 25/08 (clínica) | 26/08 | 1 dia |
+| G2.0 | pacote de interfaces compilando | Aula 6 · 25/08 | 04/09 | 10 dias |
+| G2.1 | `.msg`/`.srv` do domínio | Aula 6 · 25/08 | 08/09 | 14 dias |
+| G2.2 | action com servidor respondendo | Aula 7 · 01/09 | 12/09 | 11 dias |
+| G2.3 | action com feedback e cancelamento | Aula 7 · 01/09 | 16/09 | 15 dias |
+| G2.4 | detecção evoluída com métrica declarada | Aula 8 · 08/09 | 19/09 | 11 dias |
+| G2.5 | YAML + URDF no RViz2 com TF coerente | Aula 9 · 15/09 | 22/09 | 7 dias |
+
+### O que a redistribuição custou, dito com todas as letras
+
+O material da Etapa 2 ocupou três encontros em vez de dois, e o encontro extra saiu da **Etapa 3**, que tinha duas datas na janela 17/08–29/08 e ficou com uma. Nada foi cortado, mas quatro requisitos do TP2 mudaram de lugar:
+
+**Ações** (G2.2 e G2.3) eram da Etapa 3 e passam para a Aula 7. O deslocamento é confortável porque ação é pré-requisito de navegação — o Nav2 é construído sobre ações —, então ela entra na Etapa 4 como fundamento e não como enxerto.
+
+**Detecção treinada com métrica** (G2.4) era o "detecção inteligente" da Etapa 3 e passa para a Aula 8, dentro de percepção veicular. É o mesmo assunto com mais contexto: detectar veículo, pedestre ou placa é o caso de uso que justifica sair da segmentação por cor.
+
+**Parametrização e URDF** (G2.5) passa para a Aula 9, junto de SLAM e TF — que é onde URDF e RViz2 seriam necessários de qualquer forma. Aqui a redistribuição melhora a sequência em vez de piorar: ensinar URDF isolado é abstrato; ensinar URDF porque o SLAM precisa de TF coerente é concreto.
+
+**A folga mais apertada é a do G2.5, com sete dias.** É o ponto a vigiar. Se a Aula 9 atrasar como a Aula 3 atrasou, esse é o gate que estoura primeiro — e a resposta, se acontecer, é mover a data do gate, não fingir que dá tempo.
+
+### E o que continua onde estava
+
+As Etapas 6 a 10 não foram tocadas, e os TP3, TP4 e TP5 mantêm datas e conteúdo. A compressão foi absorvida inteiramente dentro do trimestre 26T3, entre a Etapa 3 e a Etapa 5.
 
 ## Como as aulas se conectam com as outras disciplinas do bloco
 
