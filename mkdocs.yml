@@ -112,6 +112,7 @@ nav:
       - "Aula 1 — Abertura, ROS 2 e o projeto": aulas/etapa01-aula01/index.md
       - "Aula 2 — Primeiros nós: tópicos e serviços": aulas/etapa01-aula02/index.md
       - "Aula 3 — Comunicação e visão computacional": aulas/etapa02-aula03/index.md
+      - "Aula 6 — Interfaces próprias e detecção inteligente": aulas/etapa03-aula06/index.md
 
   - Tutoriais:
       - tutoriais/index.md
@@ -123,6 +124,8 @@ nav:
       - "Manual do aluno: GitHub e entregas": tutoriais/manual-do-aluno-github.md
       - "Tarefa da Aula 2 — primeiros nós": tutoriais/tarefa-aula02-primeiros-nos.md
       - "Tarefa da Aula 3 — pipeline de visão": tutoriais/tarefa-aula03-visao.md
+      - "Tarefa da Aula 6 — interfaces próprias": tutoriais/tarefa-aula06-interfaces.md
+      - "Checklist de entrega do TP1": tutoriais/checklist-entrega-tp1.md
       - "Uso de IA na disciplina": tutoriais/orientacao-uso-ia.md
 
   - Projeto:
@@ -140,6 +143,7 @@ nav:
       - exemplos/index.md
       - "Aula 2 — comunicação": exemplos/aula02-comunicacao/index.md
       - "Aula 3 — visão": exemplos/aula03-visao/index.md
+      - "Aula 6 — interfaces próprias": exemplos/aula06-interfaces/index.md
       - TP1: exemplos/tp1/index.md
       - TP2: exemplos/tp2/index.md
       - TP3: exemplos/tp3/index.md

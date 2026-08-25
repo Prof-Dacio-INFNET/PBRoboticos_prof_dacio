@@ -1,0 +1,11 @@
+# Pergunta o estado da percepcao no vocabulario do SEU dominio.
+#
+# No TP1 isso era um std_srvs/srv/Trigger, que responde bool + string.
+# Servia para dizer "estou vivo". Nao servia para dizer O QUE se esta vendo.
+# Requisicao vazia: a pergunta e sempre a mesma.
+---
+bool    ativo
+string  classe_alvo
+uint32  total_detectado
+float32 confianca_media
+string  mensagem

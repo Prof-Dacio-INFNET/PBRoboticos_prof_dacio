@@ -1,0 +1,11 @@
+# Parametros do detector. Carregue com:
+#   ros2 run aula06_percepcao detector --ros-args --params-file config/percepcao.yaml
+detector:
+  ros__parameters:
+    fonte: sintetico
+    classe: objeto_alvo   # troque pelo rotulo do SEU dominio
+    h_min: 0              # vermelho ocupa as DUAS pontas do circulo de matiz:
+    h_max: 10             # 0-10 e 170-180. Esta faixa pega so a primeira.
+    s_min: 120
+    v_min: 70
+    area_min: 300

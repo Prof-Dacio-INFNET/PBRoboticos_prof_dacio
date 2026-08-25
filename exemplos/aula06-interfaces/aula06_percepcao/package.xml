@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>aula06_percepcao</name>
+  <version>0.1.0</version>
+  <description>Percepcao publicando interfaces proprias -- Aula 6, Etapa 3.</description>
+  <maintainer email="dacioms@gmail.com">Dacio Moreira de Souza</maintainer>
+  <license>MIT</license>
+
+  <depend>rclpy</depend>
+  <depend>std_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <!-- o pacote de interfaces e uma dependencia como outra qualquer -->
+  <depend>pb_interfaces</depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>

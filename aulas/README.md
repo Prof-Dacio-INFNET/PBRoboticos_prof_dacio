@@ -8,8 +8,16 @@ O bloco tem dez etapas de conteúdo distribuídas em dois trimestres (26T3, de 2
 |---|---|---|---|---|
 | [Aula 1](etapa01-aula01/index.md) | 21/07/2026 | 1 | Abertura, ROS 2 e o projeto do semestre | <span class="pb-tag ok">dada</span> |
 | [Aula 2](etapa01-aula02/index.md) | 28/07/2026 | 1 | Primeiros nós: tópicos e serviços | <span class="pb-tag ok">dada</span> |
-| [Aula 3](etapa02-aula03/index.md) | 04/08/2026 | 2 | Comunicação e visão computacional | <span class="pb-tag next">atual</span> |
-| Aula 4 | 11/08/2026 | 2 | Leitura do TP1 e mentoria de projeto | <span class="pb-tag soon">a seguir</span> |
+| [Aula 3](etapa02-aula03/index.md) | 04/08/2026 | 2 | Comunicação e visão computacional | <span class="pb-tag ok">dada</span> |
+| [Aula 4](etapa02-aula03/index.md) | 11/08/2026 | 2 | Pipeline de visão: continuação e mentoria de projeto | <span class="pb-tag ok">dada</span> |
+| [Aula 5](etapa02-aula03/index.md) | 18/08/2026 | 2 | Fechamento do pipeline de visão e leitura do TP1 | <span class="pb-tag ok">dada</span> |
+| [Aula 6](etapa03-aula06/index.md) | 25/08/2026 | 3 | Interfaces próprias e detecção inteligente | <span class="pb-tag next">atual</span> |
+| Aula 7 | 01/09/2026 | 4 | SLAM e percepção veicular | <span class="pb-tag soon">a seguir</span> |
+
+!!! note "Por que as Aulas 4 e 5 apontam para a página da Aula 3"
+    O material da Aula 3 é denso e foi trabalhado ao longo de três encontros — 04, 11 e 18/08 —, com a leitura oficial do TP1 no último deles. As datas do calendário não mudaram; o que mudou foi o ritmo, e isso é normal num bloco prático. As três aulas compartilham a mesma página porque compartilham o mesmo conteúdo.
+
+    Consequência prática: a **Etapa 3 tem um encontro só**, o de 25/08. Por isso a Aula 6 cobre interfaces próprias em profundidade e apenas *aponta* para detecção inteligente, que volta com calma na Etapa 4.
 
 ## As etapas do semestre
 

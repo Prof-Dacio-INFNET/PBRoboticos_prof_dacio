@@ -54,22 +54,18 @@ Aulas às **terças, 07h00–09h30, sala SJ205** · Prof. Dácio Moreira de Souz
 
 ## Aula mais recente
 
-**Aula 3 — terça, 04/08/2026 — Comunicação e Visão Computacional** <span class="pb-tag next">atual</span>
+**Aula 6 — terça, 25/08/2026 — Interfaces próprias e detecção inteligente** <span class="pb-tag next">atual</span>
 
-O tópico deixa de carregar texto e passa a carregar **imagem**. Montamos o pipeline `câmera → segmentação HSV → contagem → serviço`, que é literalmente o esqueleto dos itens 3 e 4 do TP1.
+O seu projeto para de falar a língua de outra pessoa. Até agora tudo viajou em mensagens prontas; hoje você cria as suas, para dizer o que um `Int32` não comporta: qual classe, com que confiança, e onde.
 
-[Conteúdo e slides da aula](aulas/etapa02-aula03/index.md){ .md-button .md-button--primary }
-[Exemplo executável](exemplos/aula03-visao/index.md){ .md-button }
-[Tarefa da semana](tutoriais/tarefa-aula03-visao.md){ .md-button }
+[Conteúdo da aula](aulas/etapa03-aula06/index.md){ .md-button .md-button--primary }
+[Exemplo executável](exemplos/aula06-interfaces/index.md){ .md-button }
+[Tarefa da semana](tutoriais/tarefa-aula06-interfaces.md){ .md-button }
 
-!!! warning "Avisos de 04/08 — leia antes de rodar o exemplo da Aula 3"
-    **1. `KeyError: 16` no `cv_bridge`.** Se você instalou OpenCV ou NumPy com `pip` **fora de um venv**, o exemplo da Aula 3 quebra com um `KeyError: 16` que não parece ter relação com nada. O material foi corrigido com o diagnóstico e a cura completa: [o aviso na página da aula](aulas/etapa02-aula03/index.md#cv_bridge-e-o-que-fazer-quando-ele-nao-coopera). **Nada trava:** o exemplo detecta o problema sozinho no import e converte a imagem na mão. A regra da disciplina continua a mesma — **bibliotecas do sistema vêm do `apt`; o `uv` só dentro de um venv**, nunca com `sudo`, nunca com `--system`.
+!!! danger "TP1 vence nesta sexta, 28/08 — e a entrega tem um passo a passo"
+    Antes de qualquer coisa nova, feche o TP1. O [checklist de entrega](tutoriais/checklist-entrega-tp1.md) cobre repositório, evidências, branch `entrega-tp1`, tag `tp1`, ZIP, PDF e a conferência em janela anônima — que é a que separa entrega boa de entrega perdida. **Se o avaliador não consegue abrir, não existe.**
 
-    **2. `Exception ignored in: <function Future.__del__ …>` ao sair com `Ctrl+C`.** É ruído conhecido do `rclpy` do Humble na coleta de lixo do desligamento — não é erro do seu código. A linha que importa é `process has finished cleanly`.
-
-    **3. Rota VirtualBox.** Quem usa (ou vai usar) as máquinas do **laboratório**, ou não consegue WSL2 na sua máquina, agora tem um guia próprio: [ROS 2 Humble no VirtualBox](tutoriais/setup-ros2-humble-virtualbox.md). Do ROS 2 em diante, tudo é igual às outras rotas — o que muda é a webcam, as pastas compartilhadas e a rede.
-
-    **4. O `check-ambiente.sh` ficou mais esperto.** Ele detecta a sua rota e agora também confere de onde vêm o OpenCV e o NumPy: `curl -sSL https://raw.githubusercontent.com/Prof-Dacio-INFNET/PBRoboticos_prof_dacio/main/recursos/check-ambiente.sh | bash`
+    A tarefa da Aula 6 é do TP2 e pode esperar o fim de semana.
 
 ## Calendário de entregas
 
