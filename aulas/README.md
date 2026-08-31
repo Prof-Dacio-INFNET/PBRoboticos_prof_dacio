@@ -11,8 +11,8 @@ O bloco tem dez etapas de conteúdo distribuídas em dois trimestres (26T3, de 2
 | [Aula 3](etapa02-aula03/index.md) | 04/08/2026 | 2 | Comunicação e visão computacional | <span class="pb-tag ok">dada</span> |
 | [Aula 4](etapa02-aula03/index.md) | 11/08/2026 | 2 | Pipeline de visão: continuação e mentoria de projeto | <span class="pb-tag ok">dada</span> |
 | [Aula 5](etapa02-aula03/index.md) | 18/08/2026 | 2 | Fechamento do pipeline de visão e leitura do TP1 | <span class="pb-tag ok">dada</span> |
-| [Aula 6](etapa03-aula06/index.md) | 25/08/2026 | 3 | Interfaces próprias e detecção inteligente | <span class="pb-tag next">atual</span> |
-| Aula 7 | 01/09/2026 | 4 | Ações: tarefas longas, feedback e cancelamento | <span class="pb-tag soon">a seguir</span> |
+| [Aula 6](etapa03-aula06/index.md) | 25/08/2026 | 3 | Interfaces próprias e detecção inteligente | <span class="pb-tag ok">dada</span> |
+| [Aula 7](etapa04-aula07/index.md) | 01/09/2026 | 4 | Ações: tarefas longas, feedback e cancelamento | <span class="pb-tag next">próxima</span> |
 | Aula 8 | 08/09/2026 | 4 | Percepção veicular: detecção treinada e métrica | <span class="pb-tag soon">a seguir</span> |
 | Aula 9 | 15/09/2026 | 5 | SLAM, TF, URDF e parametrização em YAML | <span class="pb-tag soon">a seguir</span> |
 | Aula 10 | 22/09/2026 | 5 | Navegação autônoma + aterrissagem do TP2 | <span class="pb-tag soon">a seguir</span> |
@@ -52,8 +52,8 @@ Esta tabela existe para uma pergunta específica: **a redistribuição das aulas
 | G1.5 | relatório fechado | Aula 6 · 25/08 (clínica) | 26/08 | 1 dia |
 | G2.0 | pacote de interfaces compilando | Aula 6 · 25/08 | 04/09 | 10 dias |
 | G2.1 | `.msg`/`.srv` do domínio | Aula 6 · 25/08 | 08/09 | 14 dias |
-| G2.2 | action com servidor respondendo | Aula 7 · 01/09 | 12/09 | 11 dias |
-| G2.3 | action com feedback e cancelamento | Aula 7 · 01/09 | 16/09 | 15 dias |
+| G2.2 | action com servidor respondendo | [Aula 7](etapa04-aula07/index.md) · 01/09 | 12/09 | 11 dias |
+| G2.3 | action com feedback e cancelamento | [Aula 7](etapa04-aula07/index.md) · 01/09 | 16/09 | 15 dias |
 | G2.4 | detecção evoluída com métrica declarada | Aula 8 · 08/09 | 19/09 | 11 dias |
 | G2.5 | YAML + URDF no RViz2 com TF coerente | Aula 9 · 15/09 | 22/09 | 7 dias |
 

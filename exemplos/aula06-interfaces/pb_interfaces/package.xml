@@ -16,6 +16,8 @@
 
   <!-- Deteccoes.msg usa std_msgs/Header: a dependencia precisa estar aqui -->
   <depend>std_msgs</depend>
+  <!-- toda action arrasta action_msgs (goal id, status): sem isto nao compila -->
+  <depend>action_msgs</depend>
 
   <export>
     <build_type>ament_cmake</build_type>

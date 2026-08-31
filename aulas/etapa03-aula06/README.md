@@ -126,6 +126,7 @@ ros2_ws/src/
 │   ├── msg/Deteccao.msg
 │   ├── msg/Deteccoes.msg
 │   ├── srv/StatusVisao.srv
+│   ├── action/VarrerCena.action   # entra na Aula 7 — o pacote cresce
 │   ├── CMakeLists.txt
 │   └── package.xml
 └── aula06_percepcao/       <- ament_python, os seus nós, dependendo do de cima
@@ -253,4 +254,6 @@ Rode o exemplo e observe: quando os dois objetos se aproximam e se encostam, a c
 
 ## Para a próxima aula (01/09)
 
-Começa a **Etapa 4 — SLAM e percepção veicular**, e com ela o TP2 entra no radar. Chegue com o TP1 entregue e com o seu pacote de interfaces compilando: a Etapa 4 assume que o seu projeto já tem vocabulário próprio.
+**[Aula 7 — Ações: tarefas longas, feedback e cancelamento](../etapa04-aula07/index.md)**, abrindo a Etapa 4. É a terceira forma de comunicação do ROS 2, e a única que serve para tarefa que demora, informa progresso e pode ser interrompida — o que é a descrição de quase tudo que um robô faz. Ela também é o alicerce da navegação: o Nav2 é construído sobre ações.
+
+Chegue com o TP1 entregue e com o seu pacote de interfaces compilando. A Aula 7 **acrescenta** um `.action` a esse mesmo pacote, e assume que ele já existe.

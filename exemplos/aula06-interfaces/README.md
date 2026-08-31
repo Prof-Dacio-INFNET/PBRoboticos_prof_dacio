@@ -7,7 +7,8 @@ aula06-interfaces/
 ├── pb_interfaces/        # ament_cmake -- SÓ interfaces, nenhum nó
 │   ├── msg/Deteccao.msg
 │   ├── msg/Deteccoes.msg
-│   └── srv/StatusVisao.srv
+│   ├── srv/StatusVisao.srv
+│   └── action/VarrerCena.action   # acrescentada na Aula 7
 └── aula06_percepcao/     # ament_python -- os nós, dependendo do de cima
     ├── detector.py       # segmenta e publica Deteccoes; serve StatusVisao
     ├── monitor.py        # lê /vision/deteccoes e imprime uma linha legível

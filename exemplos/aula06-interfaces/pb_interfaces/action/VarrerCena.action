@@ -1,0 +1,22 @@
+# Varre a cena por um tempo e relata o que encontrou.
+#
+# Por que ACTION e nao servico: isto demora segundos. Um servico bloquearia
+# quem chamou o tempo todo, sem dizer nada, e sem poder ser interrompido.
+# Uma action tem tres partes -- objetivo, resultado e feedback -- separadas
+# por ---, e pode ser CANCELADA no meio.
+
+# ---------- Goal: o que se pede ----------
+float32 duracao_s          # por quanto tempo observar
+string  classe_alvo        # o que procurar
+uint32  minimo_para_parar  # 0 = observa a duracao inteira; N = termina cedo ao ver N
+---
+# ---------- Result: o que volta no fim ----------
+uint32  total_visto
+float32 confianca_media
+uint32  quadros_analisados
+string  resumo
+---
+# ---------- Feedback: o que volta DURANTE ----------
+float32 decorrido_s
+uint32  vistos_ate_agora
+float32 progresso          # 0.0 a 1.0

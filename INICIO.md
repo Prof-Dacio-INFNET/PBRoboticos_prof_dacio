@@ -54,18 +54,20 @@ Aulas às **terças, 07h00–09h30, sala SJ205** · Prof. Dácio Moreira de Souz
 
 ## Aula mais recente
 
-**Aula 6 — terça, 25/08/2026 — Interfaces próprias e detecção inteligente** <span class="pb-tag next">atual</span>
+**Aula 7 — terça, 01/09/2026 — Ações: tarefas longas, feedback e cancelamento** <span class="pb-tag next">atual</span>
 
-O seu projeto para de falar a língua de outra pessoa. Até agora tudo viajou em mensagens prontas; hoje você cria as suas, para dizer o que um `Int32` não comporta: qual classe, com que confiança, e onde.
+Tópico e serviço não cobrem a tarefa que **demora**, precisa dizer como está indo e às vezes precisa parar no meio. Essa é a **action** — e é sobre ela que a navegação do resto do semestre é construída: o `NavigateToPose` do Nav2 é uma action.
 
-[Conteúdo da aula](aulas/etapa03-aula06/index.md){ .md-button .md-button--primary }
-[Exemplo executável](exemplos/aula06-interfaces/index.md){ .md-button }
-[Tarefa da semana](tutoriais/tarefa-aula06-interfaces.md){ .md-button }
+[Conteúdo e slides da aula](aulas/etapa04-aula07/index.md){ .md-button .md-button--primary }
+[Exemplo executável](exemplos/aula07-acoes/index.md){ .md-button }
+[Tarefa da semana](tutoriais/tarefa-aula07-acoes.md){ .md-button }
 
-!!! danger "TP1 vence nesta sexta, 28/08 — e a entrega tem um passo a passo"
-    Antes de qualquer coisa nova, feche o TP1. O [checklist de entrega](tutoriais/checklist-entrega-tp1.md) cobre repositório, evidências, branch `entrega-tp1`, tag `tp1`, ZIP, PDF e a conferência em janela anônima — que é a que separa entrega boa de entrega perdida. **Se o avaliador não consegue abrir, não existe.**
+!!! info "TP1 entregue — o TP2 começa agora, e ele tem seis gates com data"
+    Os dois primeiros gates do TP2 já foram dados na [Aula 6](aulas/etapa03-aula06/index.md) (**G2.0** e **G2.1**, pacote de interfaces e `.msg`/`.srv` do domínio). Os dois seguintes são a aula de amanhã: **G2.2** (action com servidor respondendo, vence 12/09) e **G2.3** (feedback e cancelamento **demonstrados**, vence 16/09).
 
-    A tarefa da Aula 6 é do TP2 e pode esperar o fim de semana.
+    O G2.3 é o que mais reprova, e não por dificuldade de código: um servidor que não pode ser interrompido compila, roda e entrega o resultado certo. Ele só não cancela — e isso não produz erro nenhum. Veja o [mapa de cobertura](aulas/index.md#mapa-de-cobertura-o-que-cada-aula-entrega) para saber onde cada gate é ensinado.
+
+    Se você ainda não fechou o TP1, a [escada de recuperação](tutoriais/checklist-entrega-tp1.md) continua valendo — fale comigo.
 
 ## Calendário de entregas
 
