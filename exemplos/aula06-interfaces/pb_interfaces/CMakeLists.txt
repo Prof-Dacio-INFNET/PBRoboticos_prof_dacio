@@ -9,6 +9,7 @@ find_package(action_msgs REQUIRED)       # toda action depende deste
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Deteccao.msg"
   "msg/Deteccoes.msg"
+  "msg/ComandoMovimento.msg"              # Aula 7: a fronteira perceber/agir
   "srv/StatusVisao.srv"
   "action/VarrerCena.action"             # acrescentado na Aula 7: o pacote CRESCE
   DEPENDENCIES std_msgs action_msgs      # esqueca e o Header ou a action nao resolvem

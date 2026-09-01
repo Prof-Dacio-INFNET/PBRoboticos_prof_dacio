@@ -4,7 +4,71 @@
 
 [:material-file-pdf-box: Slides da Aula 7 (PDF)](apresentacao-aula07.pdf){ .md-button .md-button--primary }
 [:material-code-tags: Exemplo `aula07-acoes`](../../exemplos/aula07-acoes/index.md){ .md-button }
+[:material-webcam: Demo da abertura `aula07-demo-visual`](../../exemplos/aula07-demo-visual/index.md){ .md-button }
 [:material-clipboard-check: Tarefa da semana](../../tutoriais/tarefa-aula07-acoes.md){ .md-button }
+
+## Abertura — duas demonstrações, e o que elas escondem
+
+A aula começa com a webcam ligada e nenhum slide. São dois minutos cada, e as duas mostram a mesma coisa por caminhos diferentes: **o que hoje é um desenho na tela, amanhã é um comando no motor.**
+
+### Demo 1 — a seta que um dia será um motor
+
+Um objeto vermelho aparece na imagem. O programa acha a maior mancha vermelha e desenha, sobre a própria imagem, a seta do movimento que a câmera precisaria fazer: primeiro **centralizar** — esquerda, direita, cima, baixo — e depois **aproximar** ou **afastar**, até a área do alvo bater com a esperada. Quando está tudo certo, o comando vira `PARADO`, em verde.
+
+```bash
+ros2 launch demo_visual demo1.launch.py
+ros2 topic echo /demo/comando        # noutro terminal
+```
+
+Repare no segundo terminal: **a seta e a mensagem são a mesma informação.** O nó publica `pb_interfaces/msg/ComandoMovimento`, e quem consome isso hoje é um desenho. Trocar o desenho por um driver de tração não muda uma linha do lado da percepção.
+
+### Demo 2 — a folha que chama um serviço
+
+Cada aluno recebe uma folha com uma forma impressa. Quando a forma aparece na câmera, um **serviço** é chamado — um por forma — e o "robô" responde:
+
+| Marcador | Serviço | O que seria no robô |
+|---|---|---|
+| triângulo | `/robo/parar` | motores em zero, freio acionado |
+| quadrado | `/robo/seguir` | controle de trajetória assumindo |
+| círculo | `/robo/girar` | rotação no próprio eixo |
+| cruz | `/robo/emergencia` | corte de potência, requer rearme |
+
+```bash
+ros2 launch demo_visual demo2.launch.py
+```
+
+A folha do **alvo vermelho** do Demo 1 não dispara nada — e isso é de propósito. O detector exige que o marcador seja preto, e a folha vermelha é a demonstração ao vivo de que cor e forma são pistas independentes.
+
+### O que as duas demonstrações realmente mostram
+
+Elas não são sobre visão computacional. São sobre **o formato do comando**, e é por aí que a aula inteira se organiza:
+
+| O que aconteceu | Natureza do comando | Mecanismo do ROS 2 |
+|---|---|---|
+| seta redesenhada a cada quadro | fluxo contínuo, ninguém espera resposta | **tópico** |
+| folha levantada uma vez | evento pontual, com confirmação | **serviço** |
+| *"vá até a bancada e me avise quando chegar"* | demora, informa progresso, pode ser cancelado | **action** ← hoje |
+
+Os dois primeiros vocês já sabem fazer. O terceiro é o assunto de hoje, e é o que falta para o robô parar de obedecer a comandos instantâneos e começar a **executar tarefas**.
+
+## Revisão com o demo na tela: interfaces e percepção
+
+Antes de seguir, vale reler o demo com os olhos da [Aula 6](../etapa03-aula06/index.md), porque ele é um exemplo completo daquilo — e agora com câmera de verdade em vez de cena sintética.
+
+**O `ComandoMovimento` é uma interface própria, e ela existe por um motivo específico.** O nó poderia simplesmente desenhar a seta e acabou. Publicar a decisão como mensagem separa **perceber** de **agir**: quem enxerga não sabe o que acontece depois, quem age não sabe como foi detectado. Essa fronteira é o que permite trocar qualquer um dos dois lados sem tocar no outro — e é a razão de o ROS 2 existir.
+
+**A percepção é a mesma de sempre, e as armadilhas também.** Duas que aparecem no código do demo e valem parar:
+
+*Vermelho ocupa as duas pontas do círculo de matiz* (0–10 **e** 170–180). O `piloto.py` usa as duas faixas. Com uma só, metade dos vermelhos escapa, e o sintoma — "às vezes detecta, às vezes não" — é muito pior do que não detectar nunca, porque parece instabilidade e não erro.
+
+*Saturação não significa nada quando não há luz.* O detector de marcadores decide "isto é preto?" pelo canal **V**, nunca pelo **S**. Num pixel quase preto, `S = (max−min)/max` com `max` minúsculo é ruído puro: um preto com um pingo de ruído mede saturação 200. Na primeira versão deste código, foi exatamente isso que rejeitou todos os marcadores — e o erro não apareceu no teste sem ruído.
+
+**E o `Deteccao`/`Deteccoes` continua servindo.** O Demo 1 publica em `/vision/deteccoes` a mesma mensagem da Aula 6, agora preenchida por uma câmera real. A interface não mudou quando a fonte mudou — que é precisamente o que se espera de uma interface bem escolhida.
+
+!!! tip "Debounce: o que separa *detectou* de *decidiu*"
+    O detector do Demo 2 só chama o serviço depois de ver a forma em **três quadros seguidos**, e depois espera três segundos antes de repetir. Sem isso, o serviço seria chamado dezenas de vezes por segundo enquanto a folha estiver levantada.
+
+    Isso vale para o TP de vocês: percepção produz observações a 30 Hz; decisão não pode acontecer a 30 Hz. Onde você põe essa barreira é uma decisão de projeto, e ela tem nome.
 
 ## A ideia da aula em uma frase
 
@@ -16,9 +80,9 @@ Essa terceira forma é a **action**, e ela é a base de tudo que vem daqui em di
 
 Ao final da aula você deve conseguir justificar a escolha entre tópico, serviço e action a partir da natureza da tarefa, e não por gosto; escrever um `.action` com os três blocos e explicar o papel de cada um; implementar um servidor que aceita ou **rejeita** objetivos, publica feedback periódico e responde a cancelamento; explicar por que um servidor aparentemente correto não cancela, e corrigir isso; e usar `ros2 action send_goal --feedback` para exercitar tudo isso sem escrever cliente nenhum.
 
-## Antes de mais nada: o TP1 foi entregue
+## Dez minutos para olhar para trás: o TP1 foi entregue
 
-Reserve os dez primeiros minutos para olhar para trás. Não é cerimônia — é o único momento em que a informação ainda está fresca e ainda é barata de aproveitar.
+Antes do conteúdo novo, olhe para a entrega da semana passada. Não é cerimônia — é o único momento em que a informação ainda está fresca e ainda é barata de aproveitar.
 
 Três perguntas, respondidas por escrito no seu `PROJETO.md`, na seção de retrospectiva:
 
@@ -40,6 +104,7 @@ cd /tmp && git clone --depth 1 https://github.com/Prof-Dacio-INFNET/PBRoboticos_
 # 2) copiar. O pb_interfaces vem DE NOVO porque ele mudou: ganhou a action
 cp -r /tmp/PBRoboticos_prof_dacio/exemplos/aula06-interfaces/pb_interfaces \
       /tmp/PBRoboticos_prof_dacio/exemplos/aula06-interfaces/aula06_percepcao \
+      /tmp/PBRoboticos_prof_dacio/exemplos/aula07-demo-visual/demo_visual \
       /tmp/PBRoboticos_prof_dacio/exemplos/aula07-acoes/aula07_acoes \
       ~/projeto-pb-SEU-USUARIO/ros2_ws/src/
 
@@ -47,16 +112,18 @@ cp -r /tmp/PBRoboticos_prof_dacio/exemplos/aula06-interfaces/pb_interfaces \
 cd ~/projeto-pb-SEU-USUARIO/ros2_ws
 colcon build --packages-select pb_interfaces
 source install/setup.bash
-colcon build --packages-select aula06_percepcao aula07_acoes --symlink-install
+colcon build --packages-select aula06_percepcao demo_visual aula07_acoes --symlink-install
 source install/setup.bash
 ```
+
+O `pb_interfaces` vem **de novo** porque ele mudou duas vezes: ganhou o `ComandoMovimento.msg` (do demo) e a `VarrerCena.action` (do conteúdo de hoje). Interface não ganha pacote novo a cada aula — o pacote do projeto cresce.
 
 !!! tip "Rode antes de modificar"
     Compile e rode o exemplo **como ele veio**, antes da sua primeira alteração. Parece perda de tempo e é o contrário: quando algo quebrar depois, você sabe que o problema é seu e não do exemplo.
 
 ## Parte 1 — As três formas de conversar, e onde cada uma quebra
 
-Você já usou duas. A terceira existe porque as duas primeiras falham num caso específico e muito comum.
+A tabela da abertura já separou as três pela **natureza do comando**. Agora o detalhe que decide qual usar quando o caso não é óbvio.
 
 | | Tópico | Serviço | Action |
 |---|---|---|---|
@@ -66,7 +133,7 @@ Você já usou duas. A terceira existe porque as duas primeiras falham num caso 
 | Dá para cancelar | não faz sentido | não | **sim** |
 | Duração típica | contínua | milissegundos | segundos a minutos |
 
-Pense num pedido concreto: *"vá até a bancada e me avise quando chegar."*
+Volte ao pedido da abertura: *"vá até a bancada e me avise quando chegar."*
 
 Como **tópico** você publica a coordenada e torce. Ninguém confirma que chegou, e você não descobre se o caminho estava bloqueado. Como **serviço** o cliente fica travado esperando trinta segundos sem receber notícia nenhuma, e se você desistir no meio, o robô continua indo — porque o serviço não tem como ser cancelado. A **action** resolve os dois: o servidor confirma que aceitou, publica progresso enquanto anda, e para se você mandar parar.
 

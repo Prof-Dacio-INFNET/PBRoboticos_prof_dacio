@@ -12,6 +12,7 @@ Pacotes ROS 2 prontos para rodar, usados em aula e pensados para serem **copiado
 | [`aula02-comunicacao`](aula02-comunicacao/index.md) | Aula 2 | publisher, subscriber e serviço `/contagem`, com launch | estrutura de pacote do TP1 |
 | [`aula03-visao`](aula03-visao/index.md) | Aula 3 | `câmera → segmentação HSV → contagem → serviço`, tudo parametrizado | itens 3 e 4 do TP1 |
 | [`aula06-interfaces`](aula06-interfaces/index.md) | Aula 6 | pacote de interfaces próprias (`.msg`/`.srv`) e um nó publicando nelas | vocabulário próprio do TP2 |
+| [`aula07-demo-visual`](aula07-demo-visual/index.md) | Aula 7 | webcam real: setas de movimento e marcadores impressos disparando serviços | a ponte percepção → ação |
 | [`aula07-acoes`](aula07-acoes/index.md) | Aula 7 | action com feedback, sucesso antecipado e cancelamento real | gates G2.2 e G2.3 do TP2 |
 
 ## Exemplos por TP
