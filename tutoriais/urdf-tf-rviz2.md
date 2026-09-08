@@ -138,6 +138,23 @@ Mexa no slider `junta_pan`. A esfera vermelha gira em torno da câmera — e a T
 
 O RViz2 é bonito e é o pior lugar para depurar, porque ele esconde a diferença entre "não existe" e "não estou desenhando". Use as ferramentas de texto:
 
+!!! danger "Estes comandos exigem o launch RODANDO, em outro terminal"
+    TF não é um arquivo: é um **fluxo de mensagens**. Quem publica é o `robot_state_publisher`, e se ele não estiver no ar, não existe TF nenhuma para ler.
+
+    O sintoma de esquecer isso é silencioso e engana:
+
+    ```
+    [INFO] [view_frames]: Generating graph in frames.pdf file...
+    [INFO] [view_frames]: Result: tf2_msgs.srv.FrameGraph_Response(frame_yaml='[]')
+
+    [INFO] [tf2_echo]: Waiting for transform base_footprint -> camera_link:
+           Invalid frame ID "base_footprint" ... frame does not exist
+    ```
+
+    O `frame_yaml='[]'` é uma árvore **vazia** — e mesmo assim o `view_frames` gera o PDF, sem reclamar. O `tf2_echo` diz "frame does not exist", que soa como erro no seu URDF e não é: o frame não existe **porque ninguém o está publicando neste momento**.
+
+    Deixe o `ros2 launch` rodando numa aba e rode estes comandos em outra.
+
 ```bash
 # a arvore inteira, em PDF (gera frames.pdf no diretorio atual)
 ros2 run tf2_tools view_frames
@@ -149,6 +166,46 @@ ros2 run tf2_ros tf2_echo base_link camera_link
 O `tf2_echo` imprime translação e rotação a cada segundo. **É essa a resposta para "a que distância da roda"** — e repare que ela existe mesmo sem câmera nenhuma ligada, porque vem da descrição, não do sensor.
 
 Mexa o slider e rode `tf2_echo base_link marcador_alvo`: os números mudam. A TF é uma função do tempo.
+
+### Se as janelas abrem vazias (WSL2)
+
+Acontece: o RViz2 e o `joint_state_publisher_gui` aparecem como janelas no Windows, e as duas ficam **em branco**. O log não ajuda — ele diz `OpenGl version: 4.1 (GLSL 4.1)`, ou seja, o contexto gráfico foi criado. O que falha é o desenho.
+
+A causa quase sempre é o caminho 3D virtualizado do WSLg (o driver D3D12 do Mesa), que o motor de renderização do RViz2 não digere bem. É o **mesmo problema** da aceleração 3D no VirtualBox, e a cura tem a mesma forma: desistir da aceleração e desenhar por software — mais lento, e estável.
+
+**Primeiro, separe "RViz quebrado" de "WSLg quebrado".** Rode um aplicativo Qt sem 3D:
+
+```bash
+ros2 run turtlesim turtlesim_node
+```
+
+- **A tartaruga aparece, o RViz2 não** → o problema é o caminho 3D. Vá para a cura A.
+- **A tartaruga também fica em branco** → o problema é o WSLg/Qt em geral. Vá para a cura B.
+
+Essa bisseção custa trinta segundos e evita mexer em quatro variáveis de ambiente ao acaso.
+
+**Cura A — forçar renderização por software:**
+
+```bash
+export LIBGL_ALWAYS_SOFTWARE=1
+ros2 launch meu_robo_description ver_robo.launch.py
+```
+
+Funcionou? Torne permanente no `~/.bashrc`. O custo é o RViz2 ficar mais lento — irrelevante para um URDF, perceptível quando chegarmos em nuvens de pontos.
+
+**Cura B — forçar o Qt a usar X11 em vez de Wayland:**
+
+```bash
+export QT_QPA_PLATFORM=xcb
+ros2 launch meu_robo_description ver_robo.launch.py
+```
+
+**Se nenhuma das duas resolver**, na ordem: `wsl --shutdown` no PowerShell e reabrir (resolve o glitch de janela cinza do WSLg), depois `wsl --update`, e por último as duas curas combinadas.
+
+!!! tip "Você não precisa do RViz2 para fechar o G2.5"
+    Se a janela insistir em não colaborar, **o gate não depende dela**: `check_urdf` prova que o modelo é válido, e `view_frames` + `tf2_echo` provam que a TF está coerente — os três rodam no terminal. O print do RViz2 é evidência desejável, não a única.
+
+    Vale a mesma disciplina de sempre: separe o que você **precisa** demonstrar do que é confortável de ver.
 
 ## Passo 6 — Configurar o RViz2 na mão (uma vez)
 
@@ -169,6 +226,9 @@ Quase todos os casos são um destes cinco, e a ordem de checagem importa:
 | Sintoma | Causa provável | Como confirmar |
 |---|---|---|
 | tela cinza, nada desenhado | **Fixed Frame** aponta para um frame que não existe | o campo fica vermelho; troque para `base_footprint` |
+| **as duas janelas abrem totalmente vazias** | caminho 3D do WSLg | bisseção com `turtlesim` e `LIBGL_ALWAYS_SOFTWARE=1` — [seção acima](#se-as-janelas-abrem-vazias-wsl2) |
+| `view_frames` gera PDF com `frame_yaml='[]'` | **o launch não está rodando** — ninguém publica TF | deixe o `ros2 launch` numa aba e rode o comando em outra |
+| `tf2_echo`: `Invalid frame ID ... frame does not exist` | mesma causa: nada publicando, ou o nome do frame mudou | confira com `ros2 topic echo /tf_static --once` |
 | RobotModel vazio, sem erro | ninguém publicou `/robot_description` | `ros2 topic echo /robot_description --once` |
 | `No transform from [x] to [base_link]` | o `robot_state_publisher` não subiu, ou o link não está na árvore | `ros2 run tf2_tools view_frames` |
 | a TF existe mas o robô não se move | falta `/joint_states` | `ros2 topic echo /joint_states` — sem o GUI, ninguém publica |
