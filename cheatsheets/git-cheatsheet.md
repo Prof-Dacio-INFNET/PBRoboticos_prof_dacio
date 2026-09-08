@@ -45,7 +45,7 @@ git switch -                      # alterna para a branch anterior
 git restore ARQUIVO               # descartar alteração não commitada
 git pull --rebase                 # "rejected: fetch first" ao dar push
 gh auth login                     # "Permission denied" nesta máquina
-git merge --ff-only main          # se falhar em entrega-tpN: você commitou nela por engano — chame o professor
+git merge --ff-only main          # se falhar em entrega-tpN: voce commitou nela por engano
 ```
 
 ## Boas mensagens de commit

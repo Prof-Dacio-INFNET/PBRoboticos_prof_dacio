@@ -24,7 +24,7 @@ Ela **não** é a escolha adequada em dois casos. Em **Mac com chip Apple (M1–
 !!! warning "Windows: VirtualBox e WSL2 disputam o mesmo hardware"
     O WSL2 liga o Hyper-V, e com o Hyper-V ligado o VirtualBox deixa de usar a virtualização por hardware diretamente — ele passa a rodar *sobre* o Hyper-V, num modo bem mais lento (o ícone de tartaruga verde na barra da VM é esse aviso). O sintoma típico é uma VM que engasga, ou a mensagem `VT-x is not available`.
 
-    A cura é escolher **uma** rota naquela máquina. Desligar o Hyper-V no boot é possível, é operação de administrador e **derruba o WSL2 junto** — só faz sentido se você decidiu abandonar o WSL2 nessa máquina. Se estiver nessa situação, fale comigo antes de mexer no boot.
+    A cura é escolher **uma** rota naquela máquina. Desligar o Hyper-V no boot é possível, é operação de administrador e **derruba o WSL2 junto** — só faz sentido se você decidiu abandonar o WSL2 nessa máquina. Se não for esse o caso, não mexa no boot: escolher a outra rota é mais barato e reversível.
 
 ## Passo 1 — Baixar o que é preciso
 
@@ -195,4 +195,4 @@ Isso não é burocracia da disciplina — é o motivo pelo qual o repositório �
 
 **➡️ Próximo passo: [Workspace Colcon e o seu primeiro pacote ROS 2](workspace-colcon.md)** — a partir dali, a rota deixa de importar.
 
-Dúvidas: traga na aula ou no Infnet.Online. Ao pedir ajuda, diga **em qual rota você está** (WSL2, VirtualBox ou nativo) e cole a saída de `lsb_release -a` — metade do diagnóstico vem daí.
+Ao registrar um problema, diga **em qual rota você está** (WSL2, VirtualBox ou nativo) e cole a saída de `lsb_release -a` — metade do diagnóstico vem daí.

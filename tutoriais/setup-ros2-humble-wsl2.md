@@ -231,4 +231,4 @@ O `header.stamp` das mensagens continua no relógio de parede — ele é o carim
 
 **➡️ Próximo passo: tutorial "Workspace Colcon e o seu primeiro pacote ROS 2"** — é lá que você aprende a compilar e cria seu primeiro nó.
 
-Dúvidas: traga na aula ou no Infnet.Online. Referências: docs oficiais ROS 2 Humble (https://docs.ros.org/en/humble/) e bibliografia A/B do bloco (O'Reilly).
+Referências: docs oficiais do ROS 2 Humble (https://docs.ros.org/en/humble/) e a bibliografia A/B do bloco (O'Reilly).

@@ -131,7 +131,7 @@ git checkout dev                                            # 4) volte a trabalh
 | Sintoma | Causa/solução |
 |---|---|
 | **Aceitei, mas o repositório dá 404** | **Convite pendente no e-mail** (Parte B, passo 4). Aceite pelo link do e-mail ou em `github.com/orgs/Prof-Dacio-INFNET/invitation`; confira o spam |
-| Aceitei sem escolher meu nome na lista | Avise o professor — ele vincula sua conta ao roster |
+| Aceitei sem escolher meu nome na lista | Registre a ocorrência no Infnet.Online com o seu usuário do GitHub; o vínculo com o roster é feito depois |
 | `Permission denied` no clone/push | `gh auth login` nesta máquina; confirme que é o **seu** `projeto-pb-…` |
 | `rejected: fetch first` no push | Você editou em outra máquina sem pull. `git pull`, resolva, `git push` |
 | "Meu trabalho não apareceu na correção" | Estava numa branch não mergeada na `main` — merge antes da tag |
@@ -147,4 +147,4 @@ git checkout dev                                            # 4) volte a trabalh
 - Correção e entrega olham a **`main`**; estruturas protegidas do repositório não se alteram nem removem.
 - O repositório é **privado**: não torne público nem copie de colegas — commits têm autor, data e hora.
 - Uso de IA generativa: siga a orientação da disciplina (declaração de uso no relatório; a arguição valida a autoria).
-- Dúvidas de git **não são vergonha** — traga na aula ou no Infnet.Online.
+- Dúvidas de git **não são vergonha**: quase todo caso comum está resolvido neste manual e no [cheatsheet de git](../cheatsheets/git-cheatsheet.md).

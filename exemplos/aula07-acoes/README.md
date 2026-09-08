@@ -57,6 +57,9 @@ ros2 run aula07_acoes cliente_varredura --ros-args -p duracao_s:=30.0
 # o servidor aceita, e o resultado volta com "cancelada em N.Ns"
 ```
 
+!!! warning "Se o `send_goal` disser `The passed action type is invalid`"
+    É o terminal, não a action. `ros2 action list` e `ros2 action info` continuam funcionando porque perguntam ao **grafo**; o `send_goal` precisa **importar o tipo** da sua máquina. Confira com `python3 -c "from pb_interfaces.action import VarrerCena; print('ok')"` e resolva com `source install/setup.bash` **neste** terminal.
+
 ## Os três experimentos que valem a aula
 
 **1. A rejeição.** Peça algo absurdo e veja o servidor recusar antes de começar:

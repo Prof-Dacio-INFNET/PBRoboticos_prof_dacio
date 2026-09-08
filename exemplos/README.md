@@ -14,6 +14,7 @@ Pacotes ROS 2 prontos para rodar, usados em aula e pensados para serem **copiado
 | [`aula06-interfaces`](aula06-interfaces/index.md) | Aula 6 | pacote de interfaces próprias (`.msg`/`.srv`) e um nó publicando nelas | vocabulário próprio do TP2 |
 | [`aula07-demo-visual`](aula07-demo-visual/index.md) | Aula 7 | webcam real: setas de movimento e marcadores impressos disparando serviços | a ponte percepção → ação |
 | [`aula07-acoes`](aula07-acoes/index.md) | Aula 7 | action com feedback, sucesso antecipado e cancelamento real | gates G2.2 e G2.3 do TP2 |
+| [`aula09-urdf`](aula09-urdf/index.md) | Aula 9 | URDF mínimo com câmera, TF e RViz2 | gate G2.5 do TP2 |
 
 ## Exemplos por TP
 

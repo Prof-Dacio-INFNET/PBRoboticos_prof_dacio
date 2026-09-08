@@ -67,6 +67,9 @@ Um objetivo não é uma mensagem: é uma **entidade**, com identidade e com esta
 
     O [mapa de cobertura](aulas/index.md#mapa-de-cobertura-o-que-cada-aula-entrega) mostra onde cada gate é ensinado e quanta folga sobra até vencer.
 
+!!! tip "Leitura prévia para 15/09: URDF, TF e RViz2"
+    O gate **G2.5** virou tutorial, para a Aula 9 ser clínica e não primeira exposição: **[URDF, TF e RViz2 — do zero ao robô na tela](tutoriais/urdf-tf-rviz2.md)**, começando na instalação. Faça antes de 15/09 e chegue com o robô aparecendo no RViz2.
+
 ## Calendário de entregas
 
 Todas as entregas são no **Moodle**, na sexta-feira indicada, com o repositório atualizado e a tag correspondente empurrada.

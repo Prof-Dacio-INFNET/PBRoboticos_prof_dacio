@@ -257,6 +257,8 @@ No resto do semestre, ação deixa de ser assunto e vira infraestrutura. `Naviga
 |---|---|
 | a action não aparece em `ros2 action list` | o servidor não subiu, ou o `pb_interfaces` não foi recompilado depois de ganhar o `.action` |
 | erro de compilação mencionando `action_msgs` | falta `<depend>action_msgs</depend>` no `package.xml` **e** `action_msgs` em `DEPENDENCIES` |
+| **`The passed action type is invalid`** no `send_goal` | terminal sem `source install/setup.bash`. Engana porque `ros2 action list` e `info` continuam funcionando: eles perguntam ao grafo, não ao seu código |
+| `Package 'aula07_acoes' not found` | mesma causa, no `ros2 run` |
 | `ModuleNotFoundError: pb_interfaces.action` | compilou as interfaces mas não deu `source install/setup.bash` — em **todos** os terminais |
 | o cliente fica pendurado para sempre | o servidor não chamou `succeed()`, `abort()` nem `canceled()`. Todo caminho de saída do `execute_callback` precisa fechar o objetivo |
 | **o cancelamento não faz nada, e não há erro** | executor de uma thread só — [Parte 4](#parte-4-o-bug-que-nao-da-erro) |

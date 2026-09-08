@@ -1,0 +1,129 @@
+<?xml version="1.0"?>
+<!--
+  meu_robo.urdf — o esqueleto mínimo de um robô com câmera.
+
+  Um URDF descreve DUAS coisas ao mesmo tempo, e confundi-las é a origem de
+  metade dos problemas:
+
+    1. a APARÊNCIA  (<visual>)   — o que o RViz2 desenha
+    2. a GEOMETRIA  (<joint>)    — onde cada peça está em relação às outras
+
+  A segunda é a que importa de verdade. É dela que sai a árvore de TF, e é a
+  TF que responde à pergunta que todo sistema de percepção faz mais cedo ou
+  mais tarde: "esse objeto que a câmera viu está a que distância da roda?"
+-->
+<robot name="meu_robo">
+
+  <!-- ================= materiais (só cor, só para o RViz2) ================= -->
+  <material name="cinza">    <color rgba="0.35 0.35 0.38 1.0"/></material>
+  <material name="preto">    <color rgba="0.10 0.10 0.10 1.0"/></material>
+  <material name="ambar">    <color rgba="0.99 0.64 0.07 1.0"/></material>
+  <material name="vermelho"> <color rgba="0.84 0.07 0.07 1.0"/></material>
+
+  <!-- ================= base ================= -->
+  <!--
+    base_link é o link RAIZ por convenção. Todo robô tem um, e é dele que a
+    árvore de TF pende. O nome não é obrigatório, mas fugir da convenção
+    custa caro depois: Nav2, SLAM e ferramentas de TF procuram por ele.
+  -->
+  <link name="base_link">
+    <visual>
+      <geometry><box size="0.30 0.20 0.08"/></geometry>
+      <material name="cinza"/>
+    </visual>
+    <collision>
+      <geometry><box size="0.30 0.20 0.08"/></geometry>
+    </collision>
+    <inertial>
+      <mass value="2.0"/>
+      <inertia ixx="0.01" ixy="0.0" ixz="0.0" iyy="0.01" iyz="0.0" izz="0.01"/>
+    </inertial>
+  </link>
+
+  <!-- ================= rodas ================= -->
+  <!--
+    'continuous' = gira sem limite. É o tipo certo para roda.
+    O <origin> do JOINT é onde a roda fica em relação à base; o <origin> do
+    <visual> dentro do link é só para deitar o cilindro. Trocar um pelo outro
+    é o erro nº 1 de quem começa.
+  -->
+  <link name="roda_esquerda">
+    <visual>
+      <origin rpy="1.5708 0 0" xyz="0 0 0"/>
+      <geometry><cylinder radius="0.05" length="0.03"/></geometry>
+      <material name="preto"/>
+    </visual>
+  </link>
+  <joint name="junta_roda_esquerda" type="continuous">
+    <parent link="base_link"/>
+    <child  link="roda_esquerda"/>
+    <origin xyz="0 0.115 -0.04" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+  </joint>
+
+  <link name="roda_direita">
+    <visual>
+      <origin rpy="1.5708 0 0" xyz="0 0 0"/>
+      <geometry><cylinder radius="0.05" length="0.03"/></geometry>
+      <material name="preto"/>
+    </visual>
+  </link>
+  <joint name="junta_roda_direita" type="continuous">
+    <parent link="base_link"/>
+    <child  link="roda_direita"/>
+    <origin xyz="0 -0.115 -0.04" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+  </joint>
+
+  <!-- ================= mastro e câmera ================= -->
+  <!--
+    'fixed' = não se move nunca. Parece inútil e é o tipo mais usado: toda
+    peça aparafusada no robô é uma junta fixa. Ela existe para que a TF saiba
+    a distância entre as peças, não para se mexer.
+  -->
+  <link name="mastro">
+    <visual>
+      <origin xyz="0 0 0.10"/>
+      <geometry><cylinder radius="0.012" length="0.20"/></geometry>
+      <material name="cinza"/>
+    </visual>
+  </link>
+  <joint name="junta_mastro" type="fixed">
+    <parent link="base_link"/>
+    <child  link="mastro"/>
+    <origin xyz="-0.10 0 0.04" rpy="0 0 0"/>
+  </joint>
+
+  <link name="camera_link">
+    <visual>
+      <geometry><box size="0.03 0.08 0.03"/></geometry>
+      <material name="ambar"/>
+    </visual>
+  </link>
+  <joint name="junta_camera" type="fixed">
+    <parent link="mastro"/>
+    <child  link="camera_link"/>
+    <origin xyz="0.02 0 0.21" rpy="0 0.20 0"/>
+  </joint>
+
+  <!-- ================= junta que se mexe, para o slider ================= -->
+  <!--
+    'revolute' = gira COM limite. Aqui é o pan da câmera. É esta junta que o
+    joint_state_publisher_gui vai te deixar mover com um slider — e ver a TF
+    mudar ao vivo é o momento em que a ficha cai.
+  -->
+  <link name="marcador_alvo">
+    <visual>
+      <geometry><sphere radius="0.02"/></geometry>
+      <material name="vermelho"/>
+    </visual>
+  </link>
+  <joint name="junta_pan" type="revolute">
+    <parent link="camera_link"/>
+    <child  link="marcador_alvo"/>
+    <origin xyz="0.25 0 0" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-1.57" upper="1.57" effort="1.0" velocity="1.0"/>
+  </joint>
+
+</robot>

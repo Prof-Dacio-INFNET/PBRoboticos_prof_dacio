@@ -178,6 +178,40 @@ while True:
 
 Checar cancelamento no fim em vez do começo faz o servidor demorar um ciclo inteiro para obedecer. Com 200 ms ninguém nota; com dois segundos, o operador aperta parar e o robô anda mais dois segundos.
 
+### A armadilha do terminal sem `source`
+
+!!! danger "`The passed action type is invalid` — e as duas linhas que enganam"
+    Se o `send_goal` responder isso, quase sempre **não é** a action que está errada: é o terminal.
+
+    Repare no que acontece num terminal sem `source install/setup.bash`:
+
+    ```bash
+    ros2 action list                      # /varrer_cena          <- FUNCIONA
+    ros2 action info /varrer_cena -t      # tipo certo, servidor  <- FUNCIONA
+    ros2 action send_goal ... VarrerCena  # The passed action type is invalid
+    ros2 run aula07_acoes cliente_varredura   # Package 'aula07_acoes' not found
+    ```
+
+    As duas primeiras funcionam porque **perguntam ao grafo** pela rede: elas leem o que o servidor anuncia e nunca precisam do seu código. As duas últimas precisam **importar o tipo** e **achar o pacote** na sua máquina, e é aí que a falta do `source` aparece.
+
+    Essa é a armadilha: **as ferramentas que funcionam te convencem de que o ambiente está certo.** A mensagem "action type is invalid" te manda olhar para o `.action`, que está perfeito.
+
+    Diagnóstico em cinco segundos:
+
+    ```bash
+    python3 -c "from pb_interfaces.action import VarrerCena; print('interfaces ok')"
+    ros2 pkg list | grep aula07_acoes
+    ```
+
+    Se o primeiro der `ModuleNotFoundError` ou o segundo não imprimir nada, a cura é sempre a mesma, **neste terminal**:
+
+    ```bash
+    cd ~/projeto-pb-SEU-USUARIO/ros2_ws
+    source install/setup.bash
+    ```
+
+    Quem cansar de repetir pode pôr essa linha no `~/.bashrc`. O preço é que ela esconde o problema no dia em que você tiver dois workspaces — e aí o sintoma volta, mais confuso.
+
 ## Parte 4 — O bug que não dá erro
 
 Escreva um servidor correto em tudo: `cancel_callback` aceitando, `is_cancel_requested` no lugar certo, `canceled()` chamado. Rode. Peça cancelamento. **Não cancela.** E não aparece erro nenhum, em lugar nenhum.
@@ -199,7 +233,30 @@ rclpy.spin(no, executor=MultiThreadedExecutor())     # no main()
 
     E generalize: teste procura erro. Funcionalidade que simplesmente **não acontece** só aparece se você a exercitar de propósito. É por isso que o G2.3 pede cancelamento demonstrado — um print de código não prova nada.
 
-## Parte 5 — O que isso vira daqui para frente
+## Parte 5 — Introdução à percepção veicular
+
+Os quinze minutos finais abrem o assunto da próxima aula, e ele começa por uma pergunta que o seu pipeline atual não consegue responder.
+
+O Demo 1 da aula passada achava a maior mancha vermelha e dizia onde ela estava **em pixels**. Pixel é coordenada na imagem, e um robô não anda em pixels. A pergunta que trava todo projeto de percepção mais cedo ou mais tarde é:
+
+> *"Esse objeto que a câmera viu está a que distância da roda?"*
+
+Percepção veicular é o nome que se dá a resolver isso num veículo em movimento, e ela junta três coisas que vocês vão ver separadas antes de ver juntas.
+
+**Detectar melhor do que por cor.** Segmentação por HSV responde "onde há vermelho". Um carro não é vermelho, um pedestre não é vermelho, e uma placa de pare é vermelha e um pano vermelho também. Detectar exige um modelo treinado, e com ele vem uma obrigação nova: **declarar uma métrica**. "Ficou bom" deixa de ser resposta aceitável — é isso que o gate **G2.4** cobra, e é o assunto de 15/09.
+
+**Saber onde as coisas estão.** Não basta detectar: é preciso situar a detecção no espaço do robô. Isso é **TF**, e a descrição de onde cada sensor está montado é **URDF**. Sem isso, "vi um obstáculo" não vira "freie", porque ninguém sabe se o obstáculo está a dois metros ou a vinte centímetros.
+
+**Decidir com atraso.** Num veículo, entre ver e agir existe tempo — de captura, de processamento, de atuação. Vocês já mediram o primeiro na Aula 3 e já discutiram o terceiro hoje, quando falamos que checar o cancelamento no fim do laço custa um ciclo. Num robô de bancada isso irrita; a 30 km/h, isso é distância percorrida.
+
+!!! tip "O que fazer nesta semana"
+    O URDF e a TF **não** vão ser apresentados do zero na aula que vem — o tutorial já está publicado, e a Aula 9 será clínica em cima dele:
+
+    **[URDF, TF e RViz2 — do zero ao robô na tela](../../tutoriais/urdf-tf-rviz2.md)**
+
+    Ele começa na instalação (`joint-state-publisher-gui`, `xacro`, `tf2-tools`, `check_urdf`), monta um robô com câmera, e termina com a árvore de TF validada. Faça antes de 15/09 e chegue com o modelo aparecendo no RViz2 — quem chegar sem isso vai gastar a aula instalando pacote.
+
+## Parte 6 — O que isso vira daqui para frente
 
 No TP2, **G2.2** e **G2.3** são exatamente esta aula. O documento de gates avisa da armadilha — *"implementar a Action como um publisher com nome bonito"* — e agora vocês sabem qual é o teste que separa uma coisa da outra: se o seu servidor não pode ser parado no meio, ele não é uma action, é um serviço lento com mais código.
 
@@ -218,6 +275,8 @@ No resto do semestre, ação deixa de ser assunto e vira infraestrutura. O `Navi
 | tudo vira `ABORTED` logo no começo | a percepção não está no ar; use o `varredura.launch.py`, que sobe os dois nós |
 | `Goal was rejected` | pode ser sucesso: duração fora da faixa, ou já existe uma varredura em curso |
 | o cancelamento demora um ciclo | `is_cancel_requested` está no fim do laço; mova para o começo |
+| **`The passed action type is invalid`** no `send_goal` | terminal sem `source install/setup.bash`. O `action list` e o `action info` continuam funcionando, porque perguntam ao grafo — [veja o aviso acima](#a-armadilha-do-terminal-sem-source) |
+| `Package 'aula07_acoes' not found` no `ros2 run` | mesma causa: o overlay do workspace não está neste terminal |
 | `ModuleNotFoundError: pb_interfaces.action` | compilou mas não deu `source install/setup.bash` neste terminal |
 | erro de compilação citando `action_msgs` | falta a dependência no `package.xml` **e** no `DEPENDENCIES` do CMake |
 | feedback não aparece | faltou a flag `--feedback` no `send_goal` |
@@ -225,4 +284,8 @@ No resto do semestre, ação deixa de ser assunto e vira infraestrutura. O `Navi
 
 ## Para a próxima aula (15/09)
 
-**Percepção veicular: detecção treinada e métrica declarada** — o gate **G2.4**, que vence em 19/09. É onde a segmentação por cor dá lugar a um detector treinado, e onde você vai ter que declarar uma métrica em vez de dizer "ficou bom". Chegue com a sua action funcionando nos três desfechos.
+**Percepção veicular: detecção treinada e métrica declarada** (gate **G2.4**, vence 19/09) e **clínica de URDF e TF** (gate **G2.5**, vence 22/09).
+
+A Aula 9 carrega dois gates, então parte dela virou leitura prévia. **Faça o tutorial [URDF, TF e RViz2](../../tutoriais/urdf-tf-rviz2.md) antes de 15/09** — ele começa na instalação e termina com a árvore de TF validada. Quem chegar sem ele vai gastar a aula instalando pacote em vez de resolvendo o próprio modelo.
+
+Chegue também com a sua action funcionando nos três desfechos: sucesso, cancelamento e abort.

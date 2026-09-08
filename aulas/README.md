@@ -14,7 +14,7 @@ O bloco tem dez etapas de conteúdo distribuídas em dois trimestres (26T3, de 2
 | [Aula 6](etapa03-aula06/index.md) | 25/08/2026 | 3 | Interfaces próprias e detecção inteligente | <span class="pb-tag ok">dada</span> |
 | [Aula 7](etapa04-aula07/index.md) | 01/09/2026 | 4 | Abertura com webcam; ações apresentadas | <span class="pb-tag ok">dada</span> |
 | [Aula 8](etapa04-aula08/index.md) | 08/09/2026 | 4 | Ações a fundo: o ciclo de vida de um objetivo | <span class="pb-tag next">próxima</span> |
-| Aula 9 | 15/09/2026 | 5 | Detecção treinada e métrica declarada · URDF e YAML | <span class="pb-tag soon">a seguir</span> |
+| Aula 9 | 15/09/2026 | 5 | Detecção treinada e métrica declarada · clínica de URDF e TF | <span class="pb-tag soon">a seguir</span> |
 | Aula 10 | 22/09/2026 | 5 | Navegação autônoma + aterrissagem do TP2 | <span class="pb-tag soon">a seguir</span> |
 
 !!! note "Por que as Aulas 4 e 5 apontam para a página da Aula 3"
@@ -55,7 +55,7 @@ Esta tabela existe para uma pergunta específica: **a redistribuição das aulas
 | G2.2 | action com servidor respondendo | [Aula 8](etapa04-aula08/index.md) · 08/09 | 12/09 | 4 dias |
 | G2.3 | action com feedback e cancelamento | [Aula 8](etapa04-aula08/index.md) · 08/09 | 16/09 | 8 dias |
 | G2.4 | detecção evoluída com métrica declarada | Aula 9 · 15/09 | 19/09 | 4 dias |
-| G2.5 | YAML + URDF no RViz2 com TF coerente | Aula 9 · 15/09 | 22/09 | 7 dias |
+| G2.5 | YAML + URDF no RViz2 com TF coerente | [tutorial](../tutoriais/urdf-tf-rviz2.md) publicado 08/09 + clínica na Aula 9 · 15/09 | 22/09 | 14 dias |
 
 ### O que a redistribuição custou, dito com todas as letras
 
@@ -73,7 +73,7 @@ A Aula 7 (01/09) foi ocupada pelas demonstrações com a webcam e pelos cartões
 
 O efeito colateral é que a **Aula 9 (15/09) carrega dois gates**: G2.4 (detecção treinada com métrica) e G2.5 (YAML, URDF e TF no RViz2). Todos continuam sendo ensinados antes de vencer, mas a folga do G2.4 caiu para quatro dias e a aula ficou densa.
 
-**A mitigação é tirar o URDF da aula e transformá-lo em leitura prévia.** Parametrização em YAML a turma já pratica desde a Aula 3 (`ros2 param set`, `config/*.yaml`); o que é realmente novo no G2.5 é URDF e TF no RViz2, e isso é mecânico o bastante para caber num tutorial. Com o tutorial publicado antes, a Aula 9 vira clínica em vez de primeira exposição.
+**A mitigação foi aplicada: o URDF saiu da aula e virou leitura prévia.** O tutorial [URDF, TF e RViz2](../tutoriais/urdf-tf-rviz2.md) foi publicado em 08/09, cobrindo desde a instalação até a árvore de TF validada, o que devolve ao G2.5 uma folga de catorze dias e deixa a Aula 9 como clínica. Parametrização em YAML a turma já pratica desde a Aula 3 (`ros2 param set`, `config/*.yaml`); o que era realmente novo no G2.5 é URDF e TF, e isso é mecânico o bastante para caber num tutorial.
 
 **As folgas de quatro dias — G2.2 e G2.4 — são o novo ponto a vigiar.** Quatro dias é o suficiente para quem sai da aula com o exemplo rodando, e insuficiente para quem sai com o exemplo quebrado. É por isso que as duas aulas têm bloco de mão na massa com todo mundo executando, e não só demonstração no projetor.
 

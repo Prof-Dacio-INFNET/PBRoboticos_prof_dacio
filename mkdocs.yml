@@ -132,6 +132,7 @@ nav:
       - "Tarefa da Aula 3 — pipeline de visão": tutoriais/tarefa-aula03-visao.md
       - "Tarefa da Aula 6 — interfaces próprias": tutoriais/tarefa-aula06-interfaces.md
       - "Tarefa da Aula 7 — ações": tutoriais/tarefa-aula07-acoes.md
+      - "URDF, TF e RViz2": tutoriais/urdf-tf-rviz2.md
       - "Checklist de entrega do TP1": tutoriais/checklist-entrega-tp1.md
       - "Uso de IA na disciplina": tutoriais/orientacao-uso-ia.md
 
@@ -153,6 +154,7 @@ nav:
       - "Aula 6 — interfaces próprias": exemplos/aula06-interfaces/index.md
       - "Aula 7 — demo com webcam": exemplos/aula07-demo-visual/index.md
       - "Aula 7 — ações": exemplos/aula07-acoes/index.md
+      - "Aula 9 — URDF e TF": exemplos/aula09-urdf/index.md
       - TP1: exemplos/tp1/index.md
       - TP2: exemplos/tp2/index.md
       - TP3: exemplos/tp3/index.md
