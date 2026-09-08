@@ -80,15 +80,43 @@ Este passo economiza a tarde. O `check_urdf` lê o arquivo e imprime a árvore:
 check_urdf ~/projeto-pb-SEU-USUARIO/ros2_ws/src/meu_robo_description/urdf/meu_robo.urdf
 ```
 
-Esperado: `robot name is: meu_robo`, seguido da hierarquia começando em `base_link`. Se ele reclamar, **pare aqui** — um URDF inválido produz, mais adiante, sintomas que não parecem ter relação com o arquivo.
+Esperado: `robot name is: meu_robo`, seguido da hierarquia começando em `base_footprint`. Se ele reclamar, **pare aqui** — um URDF inválido produz, mais adiante, sintomas que não parecem ter relação com o arquivo.
 
 As três regras que o `check_urdf` verifica e que quebram na prática:
 
 **Um link não pode ser filho de duas juntas.** URDF é uma **árvore**, não um grafo. Se a sua câmera está presa no mastro, o pai dela é o mastro — não a base também.
 
-**Tem que existir exatamente uma raiz.** O link que não é filho de junta nenhuma. Por convenção ele se chama `base_link`, e fugir da convenção custa caro: Nav2, SLAM e as ferramentas de TF procuram por esse nome.
+**Tem que existir exatamente uma raiz.** O link que não é filho de junta nenhuma. No exemplo é o `base_footprint` — um link **sem forma e sem massa**, na projeção do robô no chão. Ele existe por duas razões concretas, e a próxima seção é sobre isso.
 
 **Junta `revolute` precisa de `<limit>`.** Sem limite, use `continuous` — que é o tipo certo para roda.
+
+### Por que a raiz é um link vazio
+
+Se você puser `<inertial>` no link raiz, o `robot_state_publisher` avisa assim que sobe:
+
+```
+[WARN] [kdl_parser]: The root link base_link has an inertia specified in the URDF,
+but KDL does not support a root link with an inertia. As a workaround, you can add
+an extra dummy link to your URDF.
+```
+
+**Não é bug e não quebra nada** — o robô aparece, a TF funciona. Mas o aviso está te dizendo uma coisa verdadeira: o KDL, a biblioteca de cinemática que o `robot_state_publisher` usa por baixo, não sabe o que fazer com massa na raiz da árvore.
+
+A saída que o próprio aviso sugere é a que o exemplo usa, e ela é a **convenção da área**, não uma gambiarra:
+
+```xml
+<link name="base_footprint"/>          <!-- sem forma, sem massa -->
+
+<joint name="junta_base" type="fixed">
+  <parent link="base_footprint"/>
+  <child  link="base_link"/>
+  <origin xyz="0 0 0.09"/>             <!-- a altura do robo, explicita -->
+</joint>
+```
+
+O `base_footprint` fica **no chão**, na projeção vertical do robô; o `base_link` fica **no corpo**. A distância entre os dois é a altura do robô, e escrevê-la aqui a deixa explícita em vez de escondida.
+
+Isso importa além do aviso: **é o par que o Nav2 e o SLAM esperam encontrar** no TP3. Um robô que navega precisa saber onde ele toca o chão, não só onde fica o centro da carcaça.
 
 ## Passo 4 — Ver o robô
 
@@ -126,7 +154,7 @@ Mexa o slider e rode `tf2_echo base_link marcador_alvo`: os números mudam. A TF
 
 O exemplo já vem com um `.rviz` salvo, mas você precisa saber montar do zero — na hora que quebrar, será isso que vai fazer.
 
-1. **Fixed Frame** (em *Global Options*): escolha `base_link`. Este é o campo que mais causa "não aparece nada": o RViz2 desenha tudo em relação a um frame, e se ele não existe, a tela fica vazia — sem erro visível.
+1. **Fixed Frame** (em *Global Options*): escolha `base_footprint`. Este é o campo que mais causa "não aparece nada": o RViz2 desenha tudo em relação a um frame, e se ele não existe, a tela fica vazia — sem erro visível.
 2. *Add* → **RobotModel**. Em *Description Topic*, `/robot_description`.
 3. *Add* → **TF**. Marque *Show Names*.
 4. *File → Save Config As*, dentro do seu pacote, em `rviz/`.
@@ -140,11 +168,25 @@ Quase todos os casos são um destes cinco, e a ordem de checagem importa:
 
 | Sintoma | Causa provável | Como confirmar |
 |---|---|---|
-| tela cinza, nada desenhado | **Fixed Frame** aponta para um frame que não existe | o campo fica vermelho; troque para `base_link` |
+| tela cinza, nada desenhado | **Fixed Frame** aponta para um frame que não existe | o campo fica vermelho; troque para `base_footprint` |
 | RobotModel vazio, sem erro | ninguém publicou `/robot_description` | `ros2 topic echo /robot_description --once` |
 | `No transform from [x] to [base_link]` | o `robot_state_publisher` não subiu, ou o link não está na árvore | `ros2 run tf2_tools view_frames` |
 | a TF existe mas o robô não se move | falta `/joint_states` | `ros2 topic echo /joint_states` — sem o GUI, ninguém publica |
 | peças no lugar errado | `<origin>` do **joint** confundido com o do **visual** | é o erro nº 1; o do joint posiciona a peça, o do visual só deita a forma |
+| ao sair, `joint_state_publisher_gui ... exit code -2` | **não é erro** — é ruído de encerramento | veja o aviso abaixo |
+
+!!! note "`exit code -2` ao dar Ctrl+C não é falha"
+    Ao encerrar o launch, você vai ver:
+
+    ```
+    [ERROR] [joint_state_publisher_gui-2]: process has died [pid 3890, exit code -2, ...]
+    [INFO] [robot_state_publisher-1]: process has finished cleanly
+    [INFO] [rviz2-3]: process has finished cleanly
+    ```
+
+    Código de saída **negativo** significa "terminado por sinal", e `-2` é o sinal 2, que é o próprio `SIGINT` do seu `Ctrl+C`. Ou seja: o processo **obedeceu**. O `joint_state_publisher_gui` é uma janela Qt e não instala um tratador de `SIGINT` que saia com código zero, então o launch classifica como `ERROR` o que na prática é encerramento normal.
+
+    É a mesma família do `Exception ignored in: <function Future.__del__ …>` da Aula 3: **ruído de desligamento com cara de falha**. As linhas que importam são os dois `process has finished cleanly`.
 
 !!! danger "O erro que consome uma tarde: `origin` do joint × `origin` do visual"
     Um `<origin>` dentro de `<visual>` move **só o desenho**. Um `<origin>` dentro de `<joint>` move **a peça e tudo que pende dela**, e é ele que entra na TF.
@@ -197,7 +239,7 @@ ros2 launch <seu_pacote> ver_robo.launch.py   # a metade URDF
 ros2 run tf2_tools view_frames                # a prova de que a TF esta coerente
 ```
 
-E "TF coerente" tem um teste objetivo: `view_frames` produz **uma árvore só**, sem frames órfãos, com `base_link` na raiz. Duas árvores separadas significam que falta uma junta ligando as partes — e é o achado mais comum na correção.
+E "TF coerente" tem um teste objetivo: `view_frames` produz **uma árvore só**, sem frames órfãos, com `base_footprint` na raiz e `base_link` logo abaixo. Duas árvores separadas significam que falta uma junta ligando as partes — e é o achado mais comum na correção.
 
 **Evidência para commitar** em `docs/evidencias/tp2/`: o `frames.pdf` do `view_frames`, um print do RViz2 com o modelo e a TF visíveis, e o `ros2 param dump` do seu nó parametrizado.
 

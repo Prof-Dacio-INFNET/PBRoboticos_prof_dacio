@@ -20,12 +20,32 @@
   <material name="ambar">    <color rgba="0.99 0.64 0.07 1.0"/></material>
   <material name="vermelho"> <color rgba="0.84 0.07 0.07 1.0"/></material>
 
-  <!-- ================= base ================= -->
+  <!-- ================= raiz: base_footprint ================= -->
   <!--
-    base_link é o link RAIZ por convenção. Todo robô tem um, e é dele que a
-    árvore de TF pende. O nome não é obrigatório, mas fugir da convenção
-    custa caro depois: Nav2, SLAM e ferramentas de TF procuram por ele.
+    Um link SEM forma e SEM massa, na projeção do robô no chão. Parece inútil
+    e tem duas razões muito concretas:
+
+    1. O KDL, que o robot_state_publisher usa por baixo, NÃO aceita massa no
+       link raiz. Se você puser <inertial> na raiz, ele avisa:
+         "The root link ... has an inertia specified ... KDL does not support"
+       e sugere exatamente isto: um link extra na raiz.
+
+    2. É a convenção que o Nav2 e o SLAM esperam encontrar no TP3. O
+       base_footprint fica no CHÃO; o base_link fica no corpo. A distância
+       entre os dois é a altura do robô, e é por isso que ela é explícita
+       aqui em vez de estar escondida em algum lugar.
   -->
+  <link name="base_footprint"/>
+
+  <joint name="junta_base" type="fixed">
+    <parent link="base_footprint"/>
+    <child  link="base_link"/>
+    <!-- 0.09 = raio da roda (0.05) + o quanto a roda desce da base (0.04).
+         Com isso, base_footprint cai exatamente onde a roda toca o chão. -->
+    <origin xyz="0 0 0.09" rpy="0 0 0"/>
+  </joint>
+
+  <!-- ================= corpo ================= -->
   <link name="base_link">
     <visual>
       <geometry><box size="0.30 0.20 0.08"/></geometry>

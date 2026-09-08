@@ -7,7 +7,7 @@ O tutorial passo a passo, com instalação e configuração, está em **[URDF, T
 ```
 aula09-urdf/
 └── meu_robo_description/
-    ├── urdf/meu_robo.urdf        # 6 links, 5 juntas, raiz em base_link
+    ├── urdf/meu_robo.urdf        # 7 links, 6 juntas, raiz em base_footprint
     ├── launch/ver_robo.launch.py # robot_state_publisher + gui + rviz2
     └── rviz/meu_robo.rviz        # config salva DENTRO do pacote, de propósito
 ```
@@ -40,7 +40,8 @@ check_urdf src/meu_robo_description/urdf/meu_robo.urdf
 
 | Link | Junta que o prende | Tipo | Por quê |
 |---|---|---|---|
-| `base_link` | — | — | a **raiz**. Todo robô tem uma, e por convenção é este nome |
+| `base_footprint` | — | — | a **raiz**: sem forma e sem massa, na projeção do robô no chão. O KDL não aceita massa na raiz, e este é o par que Nav2 e SLAM esperam |
+| `base_link` | `junta_base` | `fixed` | o corpo. A distância até o `base_footprint` é a altura do robô, escrita explicitamente |
 | `roda_esquerda` / `roda_direita` | `junta_roda_*` | `continuous` | roda gira sem limite — é o tipo certo |
 | `mastro` | `junta_mastro` | `fixed` | peça aparafusada. Parece inútil e é o tipo mais usado |
 | `camera_link` | `junta_camera` | `fixed` | onde o sensor está montado, com inclinação de 0,2 rad |
@@ -62,7 +63,7 @@ Os números mudam enquanto você arrasta. TF é uma função do tempo, e ver iss
 ros2 run tf2_tools view_frames     # gera frames.pdf
 ```
 
-Uma árvore só, `base_link` na raiz, sem órfãos. **Duas árvores separadas** significam que falta uma junta ligando as partes — é o achado mais comum na correção do G2.5.
+Uma árvore só, `base_footprint` na raiz, sem órfãos. **Duas árvores separadas** significam que falta uma junta ligando as partes — é o achado mais comum na correção do G2.5.
 
 **3. Troque um `<origin>` de lugar, de propósito.** Mova o `<origin>` da `junta_camera` para dentro do `<visual>` do `camera_link`, recompile e compare o `tf2_echo`. No RViz2 continua *parecendo* certo; a TF fica errada.
 
