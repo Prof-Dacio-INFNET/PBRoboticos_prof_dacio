@@ -95,7 +95,11 @@ markdown_extensions:
       pygments_lang_class: true
   - pymdownx.inlinehilite
   - pymdownx.keys
-  - pymdownx.superfences
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
   - pymdownx.tabbed:
       alternate_style: true
   - pymdownx.tasklist:
@@ -114,6 +118,7 @@ nav:
       - "Aula 3 — Comunicação e visão computacional": aulas/etapa02-aula03/index.md
       - "Aula 6 — Interfaces próprias e detecção inteligente": aulas/etapa03-aula06/index.md
       - "Aula 7 — Ações: tarefas longas, feedback e cancelamento": aulas/etapa04-aula07/index.md
+      - "Aula 8 — Ações a fundo: o ciclo de vida de um objetivo": aulas/etapa04-aula08/index.md
 
   - Tutoriais:
       - tutoriais/index.md

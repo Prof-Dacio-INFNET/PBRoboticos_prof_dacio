@@ -268,4 +268,6 @@ No resto do semestre, ação deixa de ser assunto e vira infraestrutura. `Naviga
 
 ## Para a próxima aula (08/09)
 
-**Percepção veicular: detecção treinada e métrica declarada** — o gate **G2.4**. É onde a segmentação por cor finalmente dá lugar a um detector treinado, e onde você vai ter que declarar uma métrica em vez de dizer "ficou bom". Chegue com a sua action funcionando: a varredura de hoje é o esqueleto que vai chamar o detector de lá.
+**[Aula 8 — Ações a fundo: o ciclo de vida de um objetivo](../etapa04-aula08/index.md)**. Hoje as ações foram apresentadas; na próxima elas são trabalhadas até o fim — a máquina de estados de um objetivo, a diferença entre **abortado** e **cancelado**, e o cancelamento demonstrado com todo mundo rodando. É a aula que fecha os gates **G2.2** e **G2.3**.
+
+Chegue com o exemplo `aula07-acoes` compilando. A Aula 8 começa de onde ele parou.

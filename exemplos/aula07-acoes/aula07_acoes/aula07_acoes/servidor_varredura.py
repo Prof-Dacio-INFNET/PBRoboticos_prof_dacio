@@ -34,6 +34,11 @@ class ServidorVarredura(Node):
         super().__init__('servidor_varredura')
         self.ultimo = Deteccoes()
         self.quadros = 0
+        self.recebido_em = None       # quando chegou a ultima percepcao (monotonico)
+        self.ocupado = False          # um objetivo por vez -- ver aceitar_objetivo()
+
+        self.declare_parameter('timeout_percepcao_s', 3.0)
+        self.declare_parameter('carencia_s', 3.0)
 
         # Assina a percepcao da Aula 6. Se ela nao estiver no ar, a varredura
         # roda mesmo assim e relata zero -- degradar, nao quebrar.
@@ -57,10 +62,25 @@ class ServidorVarredura(Node):
     def _ao_receber(self, msg):
         self.ultimo = msg
         self.quadros += 1
+        self.recebido_em = time.monotonic()
 
     # -------------------------------------------------------- politicas
     def aceitar_objetivo(self, goal_request):
         """Chamado ANTES de executar. E aqui que se recusa pedido absurdo."""
+        # Um objetivo por vez. Por padrao o rclpy aceita quantos vierem e executa
+        # todos em paralelo -- o que quase sempre esta errado num robo fisico: ele
+        # tem um braco so. Rejeitar enquanto ocupado e a politica honesta, e o
+        # cliente descobre na hora em vez de descobrir por comportamento estranho.
+        if self.ocupado:
+            self.get_logger().warn('objetivo REJEITADO: ja existe uma varredura em curso')
+            return GoalResponse.REJECT
+        # Honestidade sobre o limite disto: 'ocupado' so vira True quando a
+        # execucao COMECA, entao dois pedidos que chegam no mesmo milissegundo
+        # podem passar os dois. Para uma aula, a janela e irrelevante; para um
+        # robo de verdade, a serializacao correta vive no handle_accepted_callback,
+        # com fila. Saber onde a sua solucao simples quebra faz parte de escolher
+        # a solucao simples.
+
         d = goal_request.duracao_s
         if not (0.0 < d <= 120.0):
             self.get_logger().warn('objetivo REJEITADO: duracao_s=%.1f fora de (0, 120]' % d)
@@ -80,9 +100,18 @@ class ServidorVarredura(Node):
 
     # -------------------------------------------------------- execucao
     def executar(self, goal_handle):
+        self.ocupado = True
+        try:
+            return self._executar(goal_handle)
+        finally:
+            self.ocupado = False           # solta a vaga em QUALQUER saida
+
+    def _executar(self, goal_handle):
         pedido = goal_handle.request
         alvo = pedido.classe_alvo
         limite = pedido.minimo_para_parar
+        timeout = float(self.get_parameter('timeout_percepcao_s').value)
+        carencia = float(self.get_parameter('carencia_s').value)
 
         inicio = time.monotonic()          # monotonico: nao anda para tras
         quadros_no_inicio = self.quadros
@@ -98,6 +127,19 @@ class ServidorVarredura(Node):
                 return self._resultado(picos, soma_conf, amostras,
                                        self.quadros - quadros_no_inicio,
                                        'cancelada em %.1fs' % decorrido)
+
+            # ---- 1b. ABORTAR e diferente de CANCELAR ----
+            # Cancelar e decisao de quem pediu. Abortar e decisao do servidor:
+            # ele desistiu porque a tarefa deixou de ser possivel. Aqui, ficar
+            # sem percepcao e exatamente isso -- varrer a cena sem imagem nao e
+            # uma varredura ruim, e uma varredura que nao esta acontecendo.
+            mudo = (self.recebido_em is None or (time.monotonic() - self.recebido_em) > timeout)
+            if decorrido > carencia and mudo:
+                goal_handle.abort()
+                self.get_logger().error('varredura ABORTADA: sem percepcao ha mais de %.1fs' % timeout)
+                return self._resultado(picos, soma_conf, amostras,
+                                       self.quadros - quadros_no_inicio,
+                                       'abortada: percepcao muda ha mais de %.1fs' % timeout)
 
             # ---- 2. amostra a percepcao ----
             vistos = sum(1 for d in self.ultimo.deteccoes if d.classe == alvo)

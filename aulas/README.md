@@ -12,9 +12,9 @@ O bloco tem dez etapas de conteúdo distribuídas em dois trimestres (26T3, de 2
 | [Aula 4](etapa02-aula03/index.md) | 11/08/2026 | 2 | Pipeline de visão: continuação e mentoria de projeto | <span class="pb-tag ok">dada</span> |
 | [Aula 5](etapa02-aula03/index.md) | 18/08/2026 | 2 | Fechamento do pipeline de visão e leitura do TP1 | <span class="pb-tag ok">dada</span> |
 | [Aula 6](etapa03-aula06/index.md) | 25/08/2026 | 3 | Interfaces próprias e detecção inteligente | <span class="pb-tag ok">dada</span> |
-| [Aula 7](etapa04-aula07/index.md) | 01/09/2026 | 4 | Ações: tarefas longas, feedback e cancelamento | <span class="pb-tag next">próxima</span> |
-| Aula 8 | 08/09/2026 | 4 | Percepção veicular: detecção treinada e métrica | <span class="pb-tag soon">a seguir</span> |
-| Aula 9 | 15/09/2026 | 5 | SLAM, TF, URDF e parametrização em YAML | <span class="pb-tag soon">a seguir</span> |
+| [Aula 7](etapa04-aula07/index.md) | 01/09/2026 | 4 | Abertura com webcam; ações apresentadas | <span class="pb-tag ok">dada</span> |
+| [Aula 8](etapa04-aula08/index.md) | 08/09/2026 | 4 | Ações a fundo: o ciclo de vida de um objetivo | <span class="pb-tag next">próxima</span> |
+| Aula 9 | 15/09/2026 | 5 | Detecção treinada e métrica declarada · URDF e YAML | <span class="pb-tag soon">a seguir</span> |
 | Aula 10 | 22/09/2026 | 5 | Navegação autônoma + aterrissagem do TP2 | <span class="pb-tag soon">a seguir</span> |
 
 !!! note "Por que as Aulas 4 e 5 apontam para a página da Aula 3"
@@ -52,9 +52,9 @@ Esta tabela existe para uma pergunta específica: **a redistribuição das aulas
 | G1.5 | relatório fechado | Aula 6 · 25/08 (clínica) | 26/08 | 1 dia |
 | G2.0 | pacote de interfaces compilando | Aula 6 · 25/08 | 04/09 | 10 dias |
 | G2.1 | `.msg`/`.srv` do domínio | Aula 6 · 25/08 | 08/09 | 14 dias |
-| G2.2 | action com servidor respondendo | [Aula 7](etapa04-aula07/index.md) · 01/09 | 12/09 | 11 dias |
-| G2.3 | action com feedback e cancelamento | [Aula 7](etapa04-aula07/index.md) · 01/09 | 16/09 | 15 dias |
-| G2.4 | detecção evoluída com métrica declarada | Aula 8 · 08/09 | 19/09 | 11 dias |
+| G2.2 | action com servidor respondendo | [Aula 8](etapa04-aula08/index.md) · 08/09 | 12/09 | 4 dias |
+| G2.3 | action com feedback e cancelamento | [Aula 8](etapa04-aula08/index.md) · 08/09 | 16/09 | 8 dias |
+| G2.4 | detecção evoluída com métrica declarada | Aula 9 · 15/09 | 19/09 | 4 dias |
 | G2.5 | YAML + URDF no RViz2 com TF coerente | Aula 9 · 15/09 | 22/09 | 7 dias |
 
 ### O que a redistribuição custou, dito com todas as letras
@@ -67,7 +67,15 @@ O material da Etapa 2 ocupou três encontros em vez de dois, e o encontro extra 
 
 **Parametrização e URDF** (G2.5) passa para a Aula 9, junto de SLAM e TF — que é onde URDF e RViz2 seriam necessários de qualquer forma. Aqui a redistribuição melhora a sequência em vez de piorar: ensinar URDF isolado é abstrato; ensinar URDF porque o SLAM precisa de TF coerente é concreto.
 
-**A folga mais apertada é a do G2.5, com sete dias.** É o ponto a vigiar. Se a Aula 9 atrasar como a Aula 3 atrasou, esse é o gate que estoura primeiro — e a resposta, se acontecer, é mover a data do gate, não fingir que dá tempo.
+### Segunda correção: a Aula 7 abriu ações, a Aula 8 as entrega
+
+A Aula 7 (01/09) foi ocupada pelas demonstrações com a webcam e pelos cartões, e ações ficaram **apresentadas, não trabalhadas**. A Aula 8 (08/09) passa a ser a entrega completa — ciclo de vida do objetivo, os três verbos de término, e o cancelamento demonstrado —, o que fecha G2.2 e G2.3 com quatro e oito dias de folga.
+
+O efeito colateral é que a **Aula 9 (15/09) carrega dois gates**: G2.4 (detecção treinada com métrica) e G2.5 (YAML, URDF e TF no RViz2). Todos continuam sendo ensinados antes de vencer, mas a folga do G2.4 caiu para quatro dias e a aula ficou densa.
+
+**A mitigação é tirar o URDF da aula e transformá-lo em leitura prévia.** Parametrização em YAML a turma já pratica desde a Aula 3 (`ros2 param set`, `config/*.yaml`); o que é realmente novo no G2.5 é URDF e TF no RViz2, e isso é mecânico o bastante para caber num tutorial. Com o tutorial publicado antes, a Aula 9 vira clínica em vez de primeira exposição.
+
+**As folgas de quatro dias — G2.2 e G2.4 — são o novo ponto a vigiar.** Quatro dias é o suficiente para quem sai da aula com o exemplo rodando, e insuficiente para quem sai com o exemplo quebrado. É por isso que as duas aulas têm bloco de mão na massa com todo mundo executando, e não só demonstração no projetor.
 
 ### E o que continua onde estava
 

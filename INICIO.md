@@ -54,20 +54,18 @@ Aulas às **terças, 07h00–09h30, sala SJ205** · Prof. Dácio Moreira de Souz
 
 ## Aula mais recente
 
-**Aula 7 — terça, 01/09/2026 — Ações: tarefas longas, feedback e cancelamento** <span class="pb-tag next">atual</span>
+**Aula 8 — terça, 08/09/2026 — Ações a fundo: o ciclo de vida de um objetivo** <span class="pb-tag next">atual</span>
 
-Tópico e serviço não cobrem a tarefa que **demora**, precisa dizer como está indo e às vezes precisa parar no meio. Essa é a **action** — e é sobre ela que a navegação do resto do semestre é construída: o `NavigateToPose` do Nav2 é uma action.
+Um objetivo não é uma mensagem: é uma **entidade**, com identidade e com estado. Dessa diferença decorre tudo o mais — o feedback, o cancelamento, e a distinção entre *falhou* e *foi interrompido*.
 
-[Conteúdo e slides da aula](aulas/etapa04-aula07/index.md){ .md-button .md-button--primary }
+[Conteúdo e slides da aula](aulas/etapa04-aula08/index.md){ .md-button .md-button--primary }
 [Exemplo executável](exemplos/aula07-acoes/index.md){ .md-button }
 [Tarefa da semana](tutoriais/tarefa-aula07-acoes.md){ .md-button }
 
-!!! info "TP1 entregue — o TP2 começa agora, e ele tem seis gates com data"
-    Os dois primeiros gates do TP2 já foram dados na [Aula 6](aulas/etapa03-aula06/index.md) (**G2.0** e **G2.1**, pacote de interfaces e `.msg`/`.srv` do domínio). Os dois seguintes são a aula de amanhã: **G2.2** (action com servidor respondendo, vence 12/09) e **G2.3** (feedback e cancelamento **demonstrados**, vence 16/09).
+!!! warning "Os dois gates mais reprovadores do TP2 fecham nesta semana"
+    **G2.2** vence em 12/09 e **G2.3** em 16/09. O G2.3 não pede código de cancelamento escrito — pede cancelamento **demonstrado**. Um servidor que não pode ser parado no meio compila, roda, entrega o resultado certo, e não passa.
 
-    O G2.3 é o que mais reprova, e não por dificuldade de código: um servidor que não pode ser interrompido compila, roda e entrega o resultado certo. Ele só não cancela — e isso não produz erro nenhum. Veja o [mapa de cobertura](aulas/index.md#mapa-de-cobertura-o-que-cada-aula-entrega) para saber onde cada gate é ensinado.
-
-    Se você ainda não fechou o TP1, a [escada de recuperação](tutoriais/checklist-entrega-tp1.md) continua valendo — fale comigo.
+    O [mapa de cobertura](aulas/index.md#mapa-de-cobertura-o-que-cada-aula-entrega) mostra onde cada gate é ensinado e quanta folga sobra até vencer.
 
 ## Calendário de entregas
 
