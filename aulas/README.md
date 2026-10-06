@@ -14,9 +14,9 @@ O bloco tem dez etapas de conteúdo distribuídas em dois trimestres (26T3, de 2
 | [Aula 6](etapa03-aula06/index.md) | 25/08/2026 | 3 | Interfaces próprias e detecção inteligente | <span class="pb-tag ok">dada</span> |
 | [Aula 7](etapa04-aula07/index.md) | 01/09/2026 | 4 | Abertura com webcam; ações apresentadas | <span class="pb-tag ok">dada</span> |
 | [Aula 8](etapa04-aula08/index.md) | 08/09/2026 | 4 | Ações a fundo: o ciclo de vida de um objetivo | <span class="pb-tag ok">dada</span> |
-| [Aula 9](etapa05-aula09/index.md) | 15/09/2026 | 5 | Detecção treinada e métrica declarada | <span class="pb-tag warn">parcial</span> |
-| [Aula 10](etapa05-aula10/index.md) | 22/09/2026 | 5 | Aterrissagem do TP2: clínica de URDF e bringup | <span class="pb-tag warn">parcial</span> |
-| [Aula 11](etapa06-aula11/index.md) | 29/09/2026 | 6 | O mundo, a deriva e o mapa que corrige | <span class="pb-tag warn">parcial</span> |
+| [Aula 9](etapa05-aula09/index.md) | 15/09/2026 | 5 | Detecção treinada e métrica declarada | <span class="pb-tag ok">dada</span> |
+| [Aula 10](etapa05-aula10/index.md) | 22/09/2026 | 5 | Aterrissagem do TP2: clínica de URDF e bringup | <span class="pb-tag ok">dada</span> |
+| [Aula 11](etapa06-aula11/index.md) | 29/09/2026 | 6 | O mundo, a deriva e o mapa que corrige | <span class="pb-tag ok">dada</span> |
 | [Aula 12](etapa06-aula12/index.md) | 06/10/2026 | 6 | O SLAM paga a conta da deriva | <span class="pb-tag next">próxima</span> |
 | Aula 13 | 13/10/2026 | 7 | Percepção: segmentação e módulo veicular | <span class="pb-tag soon">a seguir</span> |
 

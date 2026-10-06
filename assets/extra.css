@@ -157,7 +157,6 @@
 .pb-tag.ok    { background: #1B7F4B; color: #fff; }
 .pb-tag.next  { background: var(--pb-amber); color: #14213D; }
 .pb-tag.soon  { background: var(--pb-gray); color: #14213D; }
-.pb-tag.warn  { background: #B45309; color: #fff; }
 [data-md-color-scheme="slate"] .pb-tag.soon { background: #33415C; color: #E5E5E5; }
 
 /* Código: um pouco mais compacto, cabe mais linha na tela do aluno */
