@@ -62,6 +62,10 @@ cd /tmp && git clone --depth 1 https://github.com/Prof-Dacio-INFNET/PBRoboticos_
 cp -r /tmp/PBRoboticos_prof_dacio/exemplos/aula11-mundo/aula11_mundo "$PB_WS/src/"
 cp -r /tmp/PBRoboticos_prof_dacio/exemplos/aula12-slam/aula12_slam   "$PB_WS/src/"
 
+# 4) o comparador vai para a RAIZ do workspace, e não fica em /tmp:
+#    a tarefa da semana é feita depois da aula, e /tmp some no reboot
+cp /tmp/PBRoboticos_prof_dacio/exemplos/aula12-slam/comparar_mapas.py "$PB_WS/"
+
 cd "$PB_WS"
 colcon build --packages-select aula11_mundo aula12_slam
 source install/setup.bash
@@ -182,16 +186,63 @@ Num robô real você não tem a verdade: só tem o mapa. Como o nosso mundo é s
 ```bash
 # ── herda as variáveis do bloco de download ──
 : "${PB_WS:?defina PB_USER, PB_DIR e PB_WS — o bloco está no topo desta página}"
-cd /tmp/PBRoboticos_prof_dacio/exemplos/aula12-slam
+cd "$PB_WS"
 python3 comparar_mapas.py "$PB_DIR/maps/mapa.yaml"
 ```
 
 Ele reporta **cobertura** (quanto do mundo foi explorado) e **concordância** (quanto do que foi explorado bate), separadas de propósito: um mapa de 30% do mundo com 100% de concordância é um mapa certo e incompleto, que é um problema diferente de um mapa completo e torto.
 
+### Ver onde o mapa errou, e não só quanto
+
+O número diz **quanto**; a figura diz **onde** — e olhar para o lugar costuma explicar o número:
+
+```bash
+# ── herda as variáveis do bloco de download ──
+: "${PB_WS:?defina PB_USER, PB_DIR e PB_WS — o bloco está no topo desta página}"
+cd "$PB_WS"
+python3 comparar_mapas.py "$PB_DIR/maps/mapa.yaml" --imagem "$PB_DIR/maps/diferenca.png"
+```
+
+Cada célula sai pintada pela categoria: **azul** onde o SLAM achou a parede, **âmbar** onde ele não viu, **vermelho** onde inventou parede que não existe, e **cinza** no que ficou inexplorado. A legenda vai dentro da imagem, então ela entra no relatório sozinha.
+
+Uma deriva residual aparece como **dupla borda âmbar-e-vermelha** ao longo das paredes: o mapa inteiro deslocado alguns centímetros. Um fechamento de laço que não aconteceu aparece como um lado do cenário torto em relação ao outro. São assinaturas diferentes, e dá para distinguir olhando.
+
 !!! warning "A origem do mapa não é a origem do mundo"
     O quadro `map` nasce **onde o robô começou**, não onde o mundo começa — aqui, em `(2, 4)`. Errar esse desconto faz um mapa correto parecer péssimo, e é a primeira coisa a conferir quando o número vier baixo.
 
 Isto é a Aula 9 de novo, noutro objeto: **declarar a régua antes de olhar o resultado**, e desconfiar do agregado que esconde onde falhou.
+
+### As quatro janelas que vale deixar abertas
+
+O terminal prova; a tela convence. Com o sistema no ar, estas quatro mostram coisas diferentes ao mesmo tempo:
+
+```bash
+# ── herda as variáveis do bloco de download ──
+: "${PB_WS:?defina PB_USER, PB_DIR e PB_WS — o bloco está no topo desta página}"
+
+# 1. o mapa crescendo sobre o mundo real — já vem configurado no launch
+ros2 launch aula12_slam slam.launch.py rviz:=true
+
+# 2. o grafo: o slam_toolbox entrando entre o sensor e a TF
+ros2 run rqt_graph rqt_graph
+
+# 3. a deriva subindo, em gráfico e ao vivo
+ros2 run rqt_plot rqt_plot /deriva/data
+
+# 4. a correção que o SLAM publica, em número
+ros2 run tf2_ros tf2_echo map odom
+```
+
+As janelas 3 e 4 lado a lado são a aula inteira numa tela: **a curva que sobe é o erro, e o número ao lado é a correção que o anula**.
+
+!!! tip "A árvore de TF, ao vivo em vez de em PDF"
+    O `view_frames` gera um PDF estático — bom como evidência, ruim para acompanhar. Para ver a árvore mudando, existe o `rqt_tf_tree`, e o nome da invocação mudou entre versões. Confira o que a **sua** instalação tem antes de decorar:
+
+    ```bash
+    ros2 pkg executables rqt_tf_tree      # diz o que existe no seu sistema
+    ```
+
+    Se não aparecer nada, `sudo apt install ros-humble-rqt-tf-tree`. É o mesmo hábito de sempre: verificar em vez de assumir.
 
 ## Parte 4 — O que a navegação acrescenta
 
@@ -223,7 +274,7 @@ Ao terminar, quatro coisas são verdade: o `view_frames` mostra uma árvore só 
 | ligar o SLAM | `aula12_slam/config/slam.yaml` — as quatro linhas do topo |
 | tirar o placeholder | `map_odom:=false` ao incluir o mundo |
 | salvar | `ros2 run nav2_map_server map_saver_cli -f mapa` |
-| medir | `comparar_mapas.py`, do `aula12-slam` |
+| medir | `comparar_mapas.py` — ele fica na **raiz do workspace** (`$PB_WS`), não em `/tmp` |
 | conferir a árvore antes | `view_frames` e `tf2_echo`, da Aula 11 |
 
 ### Como adequar ao seu projeto
@@ -244,11 +295,18 @@ sleep 120
 
 ros2 run tf2_tools view_frames                        # uma árvore, map no topo
 ros2 run tf2_ros tf2_echo map odom --once             # a correção, diferente de zero
-mkdir -p "$PB_DIR/maps" && cd "$PB_DIR/maps"
-ros2 run nav2_map_server map_saver_cli -f mapa        # o par .pgm + .yaml
+mkdir -p "$PB_DIR/maps" && cd "$PB_DIR/maps" && \
+  ros2 run nav2_map_server map_saver_cli -f mapa      # o par .pgm + .yaml
+
+cd "$PB_WS"                                           # onde o comparador foi copiado
+python3 comparar_mapas.py "$PB_DIR/maps/mapa.yaml" \
+  --imagem "$PB_DIR/maps/diferenca.png"               # o número E a figura
 ```
 
-Guarde as saídas em `docs/evidencias/tp3/`, junto do número do comparador.
+Guarde as saídas em `docs/evidencias/tp3/`, junto do número do comparador e da figura da diferença.
+
+!!! tip "Se o `comparar_mapas.py` não for encontrado"
+    Ele foi copiado para a raiz do workspace no bloco de download justamente porque `/tmp` **não sobrevive ao reboot** — e esta tarefa é feita depois da aula. Se ainda assim ele reclamar que não achou o cenário, ele diz as três saídas possíveis na própria mensagem: rodar de dentro do material, copiá-lo para a raiz do workspace, ou sourcear o workspace.
 
 ## Desafio — quanto de mapa o fechamento de laço vale?
 

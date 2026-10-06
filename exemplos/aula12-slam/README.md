@@ -21,6 +21,7 @@ cd /tmp && rm -rf pb-a12 && \
   git clone --depth 1 https://github.com/Prof-Dacio-INFNET/PBRoboticos_prof_dacio.git pb-a12 && \
   cp -r pb-a12/exemplos/aula12-slam/aula12_slam "$PB_WS/src/" && \
   cp -r pb-a12/exemplos/aula11-mundo/aula11_mundo "$PB_WS/src/" && \
+  cp pb-a12/exemplos/aula12-slam/comparar_mapas.py "$PB_WS/" && \
   cd "$PB_WS" && colcon build --packages-select aula11_mundo aula12_slam && \
   source install/setup.bash
 ```
@@ -103,12 +104,27 @@ dá para dizer. Como o nosso mundo é sintético, a verdade existe:
 ```bash
 # ── herda as variáveis do bloco de download ──
 : "${PB_WS:?defina PB_USER, PB_DIR e PB_WS — o bloco está no topo desta página}"
-cd /tmp/pb-a12/exemplos/aula12-slam
+cd "$PB_WS"
 python3 comparar_mapas.py "$PB_DIR/maps/mapa.yaml"
 ```
 
 Ele reporta cobertura (quanto do mundo foi explorado), concordância (quanto do que
 foi explorado bate), paredes encontradas, perdidas e fantasmas.
+
+Com `--imagem`, ele também **desenha onde** errou:
+
+```bash
+# ── herda PB_USER, PB_DIR e PB_WS do bloco de download ──
+: "${PB_WS:?defina PB_USER, PB_DIR e PB_WS — o bloco está no topo desta página}"
+cd "$PB_WS"
+python3 comparar_mapas.py "$PB_DIR/maps/mapa.yaml" --imagem "$PB_DIR/maps/diferenca.png"
+```
+
+Azul onde achou a parede, âmbar onde não viu, vermelho onde inventou, cinza no
+inexplorado — com a legenda embutida, para a figura ir ao relatório sozinha.
+
+Deriva residual aparece como dupla borda âmbar-e-vermelha ao longo das paredes;
+laço não fechado aparece como um lado do cenário torto em relação ao outro.
 
 !!! warning "A origem do mapa não é a origem do mundo"
     O quadro `map` do SLAM nasce **onde o robô começou**, não onde o mundo começa.

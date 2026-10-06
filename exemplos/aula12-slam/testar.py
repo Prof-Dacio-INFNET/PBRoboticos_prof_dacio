@@ -99,6 +99,21 @@ conferir('concordancia despenca ou nao cobre', numero(saida_o, 'concordancia') <
          or 'nao cobre' in saida_o, f"{numero(saida_o, 'concordancia'):.1f}%")
 conferir('saida diferente de 0', rc_o != 0)
 
+print('5. a figura da diferenca sai, e muda quando o mapa muda')
+import os
+fig_bom, fig_torto = tmp / 'dif-bom.png', tmp / 'dif-torto.png'
+m = escrever_mapa(tmp / 'p3.yaml', mundo.grade, mundo.res, ORIGEM)
+rodar(m, '--imagem', str(fig_bom))
+m = escrever_mapa(tmp / 't3.yaml', np.roll(mundo.grade, 4, axis=1), mundo.res, ORIGEM)
+rodar(m, '--imagem', str(fig_torto))
+conferir('gera a figura', fig_bom.exists() and fig_torto.exists())
+if fig_bom.exists() and fig_torto.exists():
+    conferir('mapa bom e mapa torto dao figuras diferentes',
+             fig_bom.read_bytes() != fig_torto.read_bytes())
+    conferir('a figura do mapa torto e maior (mais cor, menos area lisa)',
+             os.path.getsize(fig_torto) > os.path.getsize(fig_bom),
+             f'{os.path.getsize(fig_bom)} -> {os.path.getsize(fig_torto)} bytes')
+
 print()
 if falhas:
     print(f'{len(falhas)} FALHA(S): ' + '; '.join(falhas))

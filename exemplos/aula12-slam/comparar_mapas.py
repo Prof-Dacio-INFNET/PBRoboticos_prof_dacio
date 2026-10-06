@@ -10,20 +10,54 @@ disciplina da Aula 9, agora aplicada a mapa em vez de detector.
     python3 comparar_mapas.py mapa.yaml --origem-robo 2.0 4.0
 
 Nao precisa de ROS 2. Precisa do par mapa.pgm + mapa.yaml que o map_saver_cli
-gera, e do pacote aula11_mundo ao lado (para saber onde ficam as paredes).
+gera, e do pacote aula11_mundo (para saber onde ficam as paredes) -- que ele
+procura ao lado, na raiz do workspace, em $PB_WS/src e no pacote instalado,
+nessa ordem. Copie-o para a raiz do workspace e ele sobrevive ao reboot: /tmp
+nao sobrevive, e a tarefa da semana e' feita depois da aula.
 
 SOBRE A ORIGEM: o quadro `map` do SLAM nasce onde o ROBO comecou, nao onde o
 mundo comeca. No nosso mundo o robo parte de (2, 4), entao e' esse o desconto
 entre os dois sistemas. Errar isto faz o mapa parecer pessimo estando certo.
 """
 import argparse
+import os
 import pathlib
 import sys
 
 import numpy as np
 
 AQUI = pathlib.Path(__file__).resolve().parent
-sys.path.insert(0, str(AQUI.parent / 'aula11-mundo' / 'aula11_mundo'))
+
+
+def achar_cenario() -> str:
+    """Acha o pacote aula11_mundo, que e' a VERDADE contra a qual se mede.
+
+    Este script roda durante a semana, fora da aula, e a essa altura a copia do
+    material costuma ja' ter sumido de /tmp -- que o sistema limpa no reboot.
+    Entao procure em mais de um lugar, e, se nao achar, diga exatamente o que
+    faltou: um ImportError de tres linhas nao ensina nada a ninguem.
+    """
+    candidatos = [
+        AQUI.parent / 'aula11-mundo' / 'aula11_mundo',   # rodando de dentro do material
+        AQUI / 'src' / 'aula11_mundo',                   # copiado para a raiz do workspace
+    ]
+    if os.environ.get('PB_WS'):
+        candidatos.append(pathlib.Path(os.environ['PB_WS']) / 'src' / 'aula11_mundo')
+    for c in candidatos:
+        if (c / 'aula11_mundo' / 'mapa.py').is_file():
+            sys.path.insert(0, str(c))
+            return str(c)
+    try:                                                 # workspace sourceado: pacote instalado
+        import aula11_mundo.mapa                         # noqa: F401
+        return 'pacote aula11_mundo instalado (workspace sourceado)'
+    except ImportError:
+        sys.exit(
+            'nao achei o cenario de verdade (o pacote aula11_mundo).\n'
+            'Ele e a regua: sem ele nao da para medir mapa nenhum. Tres saidas:\n'
+            '  1) rode este script de dentro do material, onde aula11-mundo fica ao lado;\n'
+            '  2) copie-o para a raiz do seu workspace, ao lado de src/aula11_mundo;\n'
+            '  3) ou sourceie o workspace:  source "$PB_WS/install/setup.bash"')
+
 
 VERDE, VERMELHO, AMARELO, FIM = '\033[32m', '\033[31m', '\033[33m', '\033[0m'
 
@@ -52,18 +86,55 @@ def ler_pgm(caminho: pathlib.Path) -> np.ndarray:
     return np.frombuffer(dados[i:i + largura * altura], dtype=np.uint8).reshape(altura, largura)
 
 
+def desenhar_diferenca(verdade, ocup_slam, conhece, caminho, escala=3):
+    """Pinta cada celula pela categoria. Um numero diz QUANTO; a figura diz ONDE.
+
+    E' a mesma ideia do OSD da Aula 9: o agregado esconde o lugar da falha, e
+    olhar para o lugar costuma explicar o numero.
+    """
+    import cv2
+
+    img = np.full((*verdade.shape, 3), 245, np.uint8)      # livre e concordando
+    img[~conhece] = (205, 205, 205)                        # nao explorado
+    img[verdade & ocup_slam & conhece] = (61, 33, 20)      # parede encontrada  (NAVY)
+    img[verdade & ~ocup_slam & conhece] = (17, 163, 252)   # parede PERDIDA     (AMBER)
+    img[~verdade & ocup_slam & conhece] = (60, 60, 220)    # parede FANTASMA    (vermelho)
+
+    img = np.flipud(img).copy()                            # y cresce para cima
+    img = cv2.resize(img, (img.shape[1] * escala, img.shape[0] * escala),
+                     interpolation=cv2.INTER_NEAREST)
+
+    # Legenda embutida: a figura vai para o relatorio sozinha.
+    faixa = np.full((26 * 4, img.shape[1], 3), 255, np.uint8)
+    for i, (cor, texto) in enumerate((
+            ((61, 33, 20), 'parede encontrada'),
+            ((17, 163, 252), 'parede perdida (o SLAM nao viu)'),
+            ((60, 60, 220), 'parede fantasma (o SLAM inventou)'),
+            ((205, 205, 205), 'nao explorado'))):
+        y = 10 + i * 26
+        cv2.rectangle(faixa, (10, y), (30, y + 16), cor, -1)
+        cv2.putText(faixa, texto, (40, y + 13), cv2.FONT_HERSHEY_SIMPLEX, 0.42,
+                    (40, 40, 40), 1, cv2.LINE_AA)
+
+    cv2.imwrite(caminho, np.vstack([img, faixa]))
+    return caminho
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('mapa_yaml', help='o .yaml que o map_saver_cli gerou')
     ap.add_argument('--origem-robo', nargs=2, type=float, default=[2.0, 4.0],
                     metavar=('X', 'Y'), help='onde o robo comecou, no mundo (padrao 2 4)')
+    ap.add_argument('--imagem', metavar='ARQ.png',
+                    help='desenha a diferenca: o que bateu, o que faltou e o que foi inventado')
     a = ap.parse_args()
 
     try:
         import yaml
     except ImportError:
         sys.exit('falta o pyyaml:  sudo apt install python3-yaml')
+    onde_cenario = achar_cenario()
     from aula11_mundo.mapa import Mundo
 
     cam_yaml = pathlib.Path(a.mapa_yaml).resolve()
@@ -115,6 +186,7 @@ def main() -> int:
     print(f'mapa        : {cam_yaml.name}  ({larg} x {alt} celulas, {res} m)')
     print(f'mundo       : {mundo.nx} x {mundo.ny} celulas, {mundo.res} m')
     print(f'origem robo : ({rx}, {ry})')
+    print(f'verdade de  : {onde_cenario}')
     print()
     print(f'cobertura   : {100 * n_conhece / verdade.size:5.1f}% do mundo foi explorado')
     print(f'concordancia: {100 * concorda / n_conhece:5.1f}% das celulas conhecidas batem')
@@ -125,6 +197,10 @@ def main() -> int:
         print(f'  perdidas  : {perdeu:6d} celulas de parede que o mapa acha livres')
     print(f'  fantasmas : {fantasma:6d} celulas livres que o mapa acha parede')
     print()
+
+    if a.imagem:
+        print(f'figura      : {desenhar_diferenca(verdade, ocup_slam, conhece, a.imagem)}')
+        print()
 
     acerto = concorda / n_conhece
     if acerto >= 0.95:
