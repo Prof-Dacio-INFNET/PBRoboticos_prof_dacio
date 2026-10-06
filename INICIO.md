@@ -54,20 +54,22 @@ Aulas às **terças, 07h00–09h30, sala SJ205** · Prof. Dácio Moreira de Souz
 
 ## Aula mais recente
 
-**Aula 9 — terça, 15/09/2026 — Detecção treinada e métrica declarada** <span class="pb-tag next">atual</span>
+**Aula 12 — terça, 06/10/2026 — O SLAM paga a conta da deriva** <span class="pb-tag next">atual</span>
 
-**"Ficou bom" deixa de ser resposta aceitável.** Afirmar que um detector melhorou passa a exigir um número, produzido sobre dado fixo, por uma régua declarada **antes** de rodar. A segunda metade da aula é clínica de URDF e TF.
+**A aresta `map → odom` é o erro acumulado da odometria, com o sinal trocado.** Ela deixa de ser um placeholder fixo e passa a ser calculada pelo SLAM, a partir do laser. E o mapa que sai disso não é avaliado por impressão: é medido contra o cenário.
 
-[Conteúdo e slides da aula](aulas/etapa05-aula09/index.md){ .md-button .md-button--primary }
-[Banco de provas de detectores](exemplos/aula09-metrica/index.md){ .md-button }
-[Tutorial de URDF e TF](tutoriais/urdf-tf-rviz2.md){ .md-button }
+[Conteúdo e slides da aula](aulas/etapa06-aula12/index.md){ .md-button .md-button--primary }
+[SLAM e medida do mapa](exemplos/aula12-slam/index.md){ .md-button }
+[Mundo mínimo: `/scan`, `/odom` e TF](exemplos/aula11-mundo/index.md){ .md-button }
 
-!!! warning "TP2 vence em 25/09 — dois gates fecham nesta semana"
-    **G2.4** (métrica declarada) vence 19/09 e **G2.5** (URDF com TF coerente) vence 22/09.
+!!! warning "TP3 — a árvore de transformadas vence em 10/10, e o mapa em 15/10"
+    O **SLAM é construído em cima da sua árvore de TF**: com ela quebrada, ele sobe sem reclamar e não produz mapa nenhum. Confira antes de qualquer outra coisa, com o launch rodando:
 
-    O G2.4 não pede um modelo específico: pede uma **métrica escolhida a partir do seu domínio**, medida sobre **dado fixo**, com o modo de falha descrito. Um HSV medido honestamente vale mais que um YOLO sem régua.
+    ```bash
+    ros2 run tf2_tools view_frames      # uma árvore só, com map no topo
+    ```
 
-    A parte de instalação do G2.5 já está publicada: **[URDF, TF e RViz2](tutoriais/urdf-tf-rviz2.md)**. Faça antes de 15/09 — a aula é clínica, não primeira exposição.
+    Se aparecerem duas árvores ou dois `odom`, pare e conserte — insistir no SLAM com TF errada é queimar uma semana.
 
 ## Calendário de entregas
 

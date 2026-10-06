@@ -15,6 +15,37 @@ import sys
 RAIZ = pathlib.Path(__file__).resolve().parent.parent
 
 
+def conferir_home() -> list[str]:
+    """A home destaca a mesma aula que a tabela marca como proxima?
+
+    Existe porque a secao "Aula mais recente" do INICIO.md e' escrita a mao e
+    ficou tres aulas para tras sem ninguem notar -- ela continuava anunciando a
+    Aula 9 quando a 12 ja estava publicada. Coisa que precisa ser lembrada a
+    cada semana nao se corrige lembrando melhor.
+    """
+    erros = []
+    inicio = (RAIZ / 'INICIO.md').read_text(encoding='utf-8')
+    tabela = (RAIZ / 'aulas' / 'README.md').read_text(encoding='utf-8')
+
+    # A aula marcada como proxima na tabela de aulas.
+    m = re.search(r'\[Aula (\d+)\]\((etapa\d+-aula\d+)/index\.md\)[^\n]*pb-tag next', tabela)
+    if not m:
+        return ['aulas/README.md: nenhuma aula marcada com pb-tag next']
+    numero, pasta = m.group(1), m.group(2)
+
+    secao = inicio.split('## Aula mais recente', 1)
+    if len(secao) < 2:
+        return ['INICIO.md: nao achei a secao "Aula mais recente"']
+    secao = secao[1].split('\n## ', 1)[0]
+
+    if f'aulas/{pasta}/index.md' not in secao:
+        erros.append(f'INICIO.md destaca uma aula diferente da marcada como proxima '
+                     f'(esperado aulas/{pasta}/index.md, da Aula {numero})')
+    if not re.search(rf'\*\*Aula {numero} ', secao):
+        erros.append(f'INICIO.md: o titulo da secao nao diz "Aula {numero}"')
+    return erros
+
+
 def main() -> int:
     cfg = (RAIZ / "mkdocs.yml").read_text(encoding="utf-8")
     if "\nnav:" not in cfg:
@@ -44,7 +75,14 @@ def main() -> int:
         for a in orfas:
             print("  -", a)
 
-    print(f"nav ok: {len(alvos)} páginas conferidas")
+    problemas = conferir_home()
+    if problemas:
+        print('Home desalinhada da tabela de aulas:')
+        for x in problemas:
+            print('  ', x)
+        return 1
+
+    print(f"nav ok: {len(alvos)} páginas conferidas; home alinhada com a tabela")
     return 0
 
 
