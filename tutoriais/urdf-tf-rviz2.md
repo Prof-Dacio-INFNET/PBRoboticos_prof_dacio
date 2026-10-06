@@ -82,6 +82,8 @@ source install/setup.bash
 Este passo economiza a tarde. O `check_urdf` lê o arquivo e imprime a árvore:
 
 ```bash
+# ── herda PB_USER, PB_DIR e PB_WS do bloco acima ──
+: "${PB_WS:?defina PB_USER, PB_DIR e PB_WS — o bloco está no topo desta página}"
 check_urdf "$PB_WS/src/meu_robo_description/urdf/meu_robo.urdf"
 ```
 

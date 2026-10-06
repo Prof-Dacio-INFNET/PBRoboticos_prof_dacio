@@ -259,6 +259,7 @@ Rode isto, com o seu launch no ar, e guarde a saída em `docs/evidencias/tp3/`:
 
 ```bash
 # ── herda PB_USER, PB_DIR e PB_WS do bloco de download, no começo da página ──
+: "${PB_WS:?defina PB_USER, PB_DIR e PB_WS — o bloco está no topo desta página}"
 cd "$PB_WS" && source install/setup.bash
 
 ros2 launch <seu_pacote> bringup.launch.py &     # aba 1, deixe rodando
@@ -283,6 +284,7 @@ Depois meça quanto o seu robô pode andar até estourar esse orçamento:
 
 ```bash
 # ── herda as variáveis do bloco de download ──
+: "${PB_WS:?defina PB_USER, PB_DIR e PB_WS — o bloco está no topo desta página}"
 cd "$PB_DIR/aula11-mundo" 2>/dev/null || cd /tmp/PBRoboticos_prof_dacio/exemplos/aula11-mundo
 
 for d in 0.5 1 2 3 5; do

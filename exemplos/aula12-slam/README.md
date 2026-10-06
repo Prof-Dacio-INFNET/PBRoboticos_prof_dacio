@@ -29,6 +29,7 @@ cd /tmp && rm -rf pb-a12 && \
 
 ```bash
 # ── herda PB_USER, PB_DIR e PB_WS do bloco acima ──
+: "${PB_WS:?defina PB_USER, PB_DIR e PB_WS — o bloco está no topo desta página}"
 ros2 launch aula12_slam slam.launch.py
 ros2 launch aula12_slam slam.launch.py deriva:=6.0    # erro maior, correção maior
 ros2 launch aula12_slam slam.launch.py rviz:=false
@@ -70,6 +71,7 @@ conta:
 
 ```bash
 # ── herda as variáveis do bloco de download ──
+: "${PB_WS:?defina PB_USER, PB_DIR e PB_WS — o bloco está no topo desta página}"
 ros2 run tf2_ros tf2_echo map odom        # a correção, crescendo
 ros2 topic echo /deriva                   # o erro que ela está corrigindo
 ```
@@ -82,9 +84,12 @@ onde já esteve —, o SLAM reconhece o lugar e a correção dá um salto. É o
 
 ```bash
 # ── herda as variáveis do bloco de download ──
-mkdir -p "$PB_DIR/maps" && cd "$PB_DIR/maps"
-ros2 run nav2_map_server map_saver_cli -f mapa
+: "${PB_WS:?defina PB_USER, PB_DIR e PB_WS — o bloco está no topo desta página}"
+mkdir -p "$PB_DIR/maps" && cd "$PB_DIR/maps" && \
+  ros2 run nav2_map_server map_saver_cli -f mapa
 ```
+
+Encadeado de propósito: se o `mkdir` falhar, o `map_saver` não roda — senão ele salvaria no diretório em que você estava. E **não resolva um `mkdir` que falhou com `sudo`**: a pasta fica de root, o `map_saver` roda como você, e o erro que aparece é `Magick: Unable to open file`, que não diz nada sobre permissão.
 
 Gera o par `mapa.pgm` + `mapa.yaml`. **Com o launch ainda rodando** — o mapa vive
 na memória do nó, e `map_saver_cli` pede uma cópia dele; sem ninguém publicando,
@@ -97,6 +102,7 @@ dá para dizer. Como o nosso mundo é sintético, a verdade existe:
 
 ```bash
 # ── herda as variáveis do bloco de download ──
+: "${PB_WS:?defina PB_USER, PB_DIR e PB_WS — o bloco está no topo desta página}"
 cd /tmp/pb-a12/exemplos/aula12-slam
 python3 comparar_mapas.py "$PB_DIR/maps/mapa.yaml"
 ```
@@ -121,6 +127,9 @@ foi explorado bate), paredes encontradas, perdidas e fantasmas.
 | `view_frames` mostra duas árvores | esqueceu o `map_odom:=false` — dois publicadores da mesma aresta |
 | o laser treme na tela | a mesma coisa: duas fontes disputando `map → odom` |
 | `map_saver_cli` não salva nada | o launch tem de estar rodando; o mapa vive na memória do nó |
+| `Magick: Unable to open file (mapa.pgm)` | a pasta é de **root**: alguém criou com `sudo`. `sudo chown -R "$(id -u):$(id -g)" <pasta>` |
+| `cannot create directory '/maps'` | `$PB_DIR` está vazio neste terminal — redefina as variáveis do bloco de download |
+| `bash: /install/setup.bash: No such file...` | a mesma coisa: `$PB_WS` vazio virou caminho absoluto |
 | o mapa fica torto e não corrige | o robô não fechou laço ainda — deixe explorar mais |
 | concordância baixíssima | confira `--origem-robo` antes de culpar o SLAM |
 | `No module named 'numpy'` | `sudo apt install python3-numpy` |

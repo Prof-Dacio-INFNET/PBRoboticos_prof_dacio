@@ -30,6 +30,8 @@ Adapte: troque o conteúdo publicado pela lógica do seu projeto; renomeie o pac
 Toda alteração é em `src/` — `build/`, `install/` e `log/` são gerados pelo `colcon build` e sobrescritos a cada compilação. Depois de editar:
 
 ```bash
+# ── herda PB_USER, PB_DIR e PB_WS do bloco acima ──
+: "${PB_WS:?defina PB_USER, PB_DIR e PB_WS — o bloco está no topo desta página}"
 cd "$PB_WS"
 
 # opcional, quando houver muita sujeira de build anterior

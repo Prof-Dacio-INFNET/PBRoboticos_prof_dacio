@@ -67,10 +67,16 @@ colcon build --packages-select aula11_mundo aula12_slam
 source install/setup.bash
 ```
 
+!!! tip "A linha `: \"${PB_WS:?...}\"` que aparece nos blocos seguintes"
+    Ela confere que as variáveis existem **neste** terminal. Abriu um terminal novo? Elas se perderam, e sem essa linha `"$PB_WS/install/setup.bash"` viraria `/install/setup.bash` — um erro que não diz o que faltou.
+
+    Com ela, o shell para e nomeia a variável ausente. É a mesma ideia de verificar a afirmação em vez de deixar o silêncio passar por aprovação.
+
 O comparador de mapas roda solto, sem compilar e sem ROS 2:
 
 ```bash
 # ── herda PB_USER, PB_DIR e PB_WS do bloco acima ──
+: "${PB_WS:?defina PB_USER, PB_DIR e PB_WS — o bloco está no topo desta página}"
 cd /tmp/PBRoboticos_prof_dacio/exemplos/aula12-slam
 python3 testar.py
 ```
@@ -81,6 +87,7 @@ Antes de qualquer SLAM, a pergunta que decide o resto do dia. Suba o seu sistema
 
 ```bash
 # ── herda as variáveis do bloco de download ──
+: "${PB_WS:?defina PB_USER, PB_DIR e PB_WS — o bloco está no topo desta página}"
 cd "$PB_WS" && source install/setup.bash
 
 ros2 run tf2_tools view_frames
@@ -103,6 +110,7 @@ O `frames.pdf` tem de mostrar **uma árvore só**, de `map` até os seus sensore
 
 ```bash
 # ── herda as variáveis do bloco de download ──
+: "${PB_WS:?defina PB_USER, PB_DIR e PB_WS — o bloco está no topo desta página}"
 ros2 launch aula12_slam slam.launch.py
 ```
 
@@ -140,6 +148,7 @@ Errar `base_frame` é o modo mais comum de o SLAM subir calado e não entregar n
 
 ```bash
 # ── herda as variáveis do bloco de download ──
+: "${PB_WS:?defina PB_USER, PB_DIR e PB_WS — o bloco está no topo desta página}"
 ros2 run tf2_ros tf2_echo map odom        # a correção, crescendo
 ros2 topic echo /deriva                   # o erro que ela está corrigindo
 ```
@@ -152,9 +161,17 @@ Quando o robô passa de novo por onde já esteve, o SLAM reconhece o lugar e a c
 
 ```bash
 # ── herda as variáveis do bloco de download ──
-mkdir -p "$PB_DIR/maps" && cd "$PB_DIR/maps"
-ros2 run nav2_map_server map_saver_cli -f mapa
+: "${PB_WS:?defina PB_USER, PB_DIR e PB_WS — o bloco está no topo desta página}"
+mkdir -p "$PB_DIR/maps" && cd "$PB_DIR/maps" && \
+  ros2 run nav2_map_server map_saver_cli -f mapa
 ```
+
+Os três comandos estão encadeados de propósito: se o `mkdir` falhar, o `map_saver` **não roda**. Sem o encadeamento ele rodaria no diretório em que você estava, e o mapa apareceria num lugar que você não escolheu.
+
+!!! danger "Nunca `sudo mkdir` numa pasta sua"
+    Se o `mkdir` reclamar, o problema é a variável vazia — não a permissão. Resolver com `sudo` cria a pasta **pertencente ao root**, e aí o `map_saver`, que roda como você, não consegue escrever. O erro que aparece é `Magick: Unable to open file`, que não diz nada sobre permissão.
+
+    Para desfazer: `sudo chown -R "$(id -u):$(id -g)" "$PB_DIR/maps"`.
 
 Gera `mapa.pgm` + `mapa.yaml`, **com o launch ainda rodando**: o mapa vive na memória do nó, e o `map_saver_cli` pede uma cópia. Sem ninguém publicando, não há o que salvar.
 
@@ -164,6 +181,7 @@ Num robô real você não tem a verdade: só tem o mapa. Como o nosso mundo é s
 
 ```bash
 # ── herda as variáveis do bloco de download ──
+: "${PB_WS:?defina PB_USER, PB_DIR e PB_WS — o bloco está no topo desta página}"
 cd /tmp/PBRoboticos_prof_dacio/exemplos/aula12-slam
 python3 comparar_mapas.py "$PB_DIR/maps/mapa.yaml"
 ```
@@ -220,6 +238,7 @@ Ao terminar, quatro coisas são verdade: o `view_frames` mostra uma árvore só 
 
 ```bash
 # ── herda as variáveis do bloco de download ──
+: "${PB_WS:?defina PB_USER, PB_DIR e PB_WS — o bloco está no topo desta página}"
 ros2 launch aula12_slam slam.launch.py &      # deixe explorar uns 2 minutos
 sleep 120
 
@@ -239,6 +258,7 @@ O fechamento de laço é o mecanismo que distingue SLAM de odometria com desenho
 
 ```bash
 # ── herda as variáveis do bloco de download ──
+: "${PB_WS:?defina PB_USER, PB_DIR e PB_WS — o bloco está no topo desta página}"
 # Rode duas vezes, 3 minutos cada, salvando com nomes diferentes:
 #   (a) deriva baixa  — a odometria quase não erra, o laço tem pouco a corrigir
 #   (b) deriva alta   — a odometria erra muito, e o laço faz o trabalho pesado
@@ -260,6 +280,9 @@ A última pergunta é a interessante, e tem mais de uma resposta defensável.
 | o laser treme na tela | a mesma coisa: duas fontes disputando `map → odom` |
 | `view_frames` gera PDF vazio | o launch não está rodando |
 | `map_saver_cli` não salva nada | o launch precisa estar no ar; o mapa vive na memória do nó |
+| `Magick: Unable to open file (mapa.pgm)` | a pasta é de **root**: alguém criou com `sudo`. `sudo chown -R "$(id -u):$(id -g)" <pasta>` |
+| `cannot create directory '/maps'` | `$PB_DIR` está vazio neste terminal — redefina as variáveis do bloco de download |
+| `bash: /install/setup.bash: No such file...` | a mesma coisa: `$PB_WS` vazio virou caminho absoluto |
 | o mapa fica torto e não corrige | o robô ainda não fechou laço — deixe explorar mais |
 | concordância baixíssima | confira `--origem-robo` antes de culpar o SLAM |
 | RViz2 abre vazio | abriu sem `-d`; o launch já passa a configuração |

@@ -59,6 +59,8 @@ São **dois** pacotes, e a ordem de compilação não é opcional: o pacote de i
 O calendário de gates diz que **G1.4 venceu ontem** e **G1.5 vence amanhã**. Isso não é motivo para pânico e é motivo para ordem. Comece medindo onde você está, com um comando só:
 
 ```bash
+# ── herda PB_USER, PB_DIR e PB_WS do bloco acima ──
+: "${PB_WS:?defina PB_USER, PB_DIR e PB_WS — o bloco está no topo desta página}"
 cd "$PB_DIR"
 bash recursos/check-ambiente.sh                       # G1.0
 grep -c "PB:PROJETO\|PB:TRILHA" PROJETO.md            # G1.1 -- espera-se 2
@@ -199,6 +201,8 @@ Compare com o `std_srvs/srv/Trigger` que o TP1 usa. O `Trigger` responde `succes
 A ordem importa: o pacote de interfaces precisa estar compilado **antes** de qualquer nó que o importe.
 
 ```bash
+# ── herda PB_USER, PB_DIR e PB_WS do bloco acima ──
+: "${PB_WS:?defina PB_USER, PB_DIR e PB_WS — o bloco está no topo desta página}"
 cd "$PB_WS"
 colcon build --packages-select pb_interfaces
 source install/setup.bash                       # sem isto, o import falha

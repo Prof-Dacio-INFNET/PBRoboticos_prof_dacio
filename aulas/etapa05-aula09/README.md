@@ -89,6 +89,8 @@ Isso não substitui dado real. Substitui a falta dele no dia em que você precis
 ## Parte 3 — Mão na massa: o banco de provas
 
 ```bash
+# ── herda PB_USER, PB_DIR e PB_WS do bloco acima ──
+: "${PB_WS:?defina PB_USER, PB_DIR e PB_WS — o bloco está no topo desta página}"
 cd "$PB_DIR/aula09-metrica"
 python3 gerar_video.py      # cena.avi + rotulos.csv
 python3 avaliar.py

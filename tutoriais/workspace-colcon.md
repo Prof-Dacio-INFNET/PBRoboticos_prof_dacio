@@ -50,6 +50,8 @@ source install/setup.bash
 ## 3. Criar o seu primeiro pacote
 
 ```bash
+# ── herda PB_USER, PB_DIR e PB_WS do bloco acima ──
+: "${PB_WS:?defina PB_USER, PB_DIR e PB_WS — o bloco está no topo desta página}"
 cd "$PB_WS/src"
 ros2 pkg create --build-type ament_python --node-name meu_no meu_pacote
 cd .. && colcon build && source install/setup.bash

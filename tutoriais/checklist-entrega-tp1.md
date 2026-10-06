@@ -59,6 +59,8 @@ A tag **congela** o código avaliado. Commit depois da tag não é considerado, 
 O ZIP é do **código**, não do repositório inteiro: sem `build/`, sem `install/`, sem `log/`, sem `.git/`.
 
 ```bash
+# ── herda PB_USER, PB_DIR e PB_WS do bloco acima ──
+: "${PB_WS:?defina PB_USER, PB_DIR e PB_WS — o bloco está no topo desta página}"
 cd "$PB_DIR"
 zip -r tp1-SEUNOME.zip . -x "*/build/*" "*/install/*" "*/log/*" ".git/*" "*.pyc" "*__pycache__*"
 unzip -l tp1-SEUNOME.zip | tail -5      # confira o tamanho e o que entrou

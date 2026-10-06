@@ -104,6 +104,8 @@ Depois de copiar o pacote para `~/projeto-pb-SEU-USUARIO/ros2_ws/src/`, **toda**
 ## Sequência de comandos recomendada
 
 ```bash
+# ── herda PB_USER, PB_DIR e PB_WS do bloco acima ──
+: "${PB_WS:?defina PB_USER, PB_DIR e PB_WS — o bloco está no topo desta página}"
 cd "$PB_WS"
 
 # opcional, quando houver muita sujeira de build anterior

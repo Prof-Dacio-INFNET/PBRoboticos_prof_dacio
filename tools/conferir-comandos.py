@@ -14,6 +14,9 @@ verificações sobre cada bloco ```bash do material publicado.
                     que manda usar "$PB_WS" tem de ter mandado defini-lo antes.
                     Depois de um `source`, nomes desconhecidos passam: eles
                     podem ter vindo do arquivo lido.
+                    E um bloco que herda $PB_* de outro precisa da guarda
+                    `: "${PB_WS:?...}"`: sem ela, variavel vazia vira caminho
+                    absoluto e o erro nao diz o que faltou.
   3. CAMINHOS     — todo caminho do repositório citado num comando (exemplos/,
                     recursos/, tutoriais/) tem de existir de verdade.
 
@@ -33,6 +36,9 @@ BLOCO = re.compile(r'^```(bash|sh|shell)\s*$(.*?)^```\s*$', re.M | re.S)
 USO_VAR = re.compile(r'\$\{?([A-Z_][A-Z0-9_]*)\}?')
 DEF_VAR = re.compile(r'^\s*(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)=', re.M)
 SOURCE = re.compile(r'^\s*(?:source|\.)\s+\S', re.M)
+USO_PB = re.compile(r'\$\{?PB_[A-Z_]+')
+DEF_PB = re.compile(r'^\s*(?:export\s+)?PB_[A-Z_]+=', re.M)
+GUARDA_PB = re.compile(r':\s*"\$\{PB_[A-Z_]+:\?')
 CAMINHO_REPO = re.compile(r'(?<![\w/.-])((?:' + '|'.join(SECOES) + r')/[A-Za-z0-9._/-]+)')
 PLACEHOLDER = re.compile(r'<[^<>\s]{1,40}>')
 
@@ -85,6 +91,14 @@ def conferir_variaveis(arq, n, corpo, definidas):
         definidas.update(DEF_VAR.findall(linha))
         if SOURCE.match(linha):
             houve_source = True
+
+    # Um bloco que USA as variaveis do projeto sem defini-las precisa da guarda
+    # `: "${PB_WS:?...}"`. Sem ela, uma variavel vazia vira caminho absoluto --
+    # "$PB_WS/install/setup.bash" virou "/install/setup.bash" --, e o erro nao
+    # diz o que faltou. A guarda troca isso por uma mensagem que nomeia a causa.
+    if USO_PB.search(corpo) and not DEF_PB.search(corpo) and not GUARDA_PB.search(corpo):
+        registrar(arq, n, 'usa $PB_* herdado sem a guarda `: "${PB_WS:?...}"`',
+                  next((l for l in corpo.splitlines() if USO_PB.search(l)), ''))
 
 
 def conferir_caminhos(arq, n, corpo):

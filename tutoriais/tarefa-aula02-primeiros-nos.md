@@ -22,6 +22,8 @@ git checkout dev
 ## 2. Copie o pacote de exemplo para o seu workspace
 Baixe o exemplo do repositório de material e copie o pacote para `ros2_ws/src/`:
 ```bash
+# ── herda PB_USER, PB_DIR e PB_WS do bloco acima ──
+: "${PB_WS:?defina PB_USER, PB_DIR e PB_WS — o bloco está no topo desta página}"
 cd /tmp && git clone --depth 1 https://github.com/Prof-Dacio-INFNET/PBRoboticos_prof_dacio.git
 cp -r /tmp/PBRoboticos_prof_dacio/exemplos/aula02-comunicacao/aula02_comunicacao "$PB_WS/src/"
 cd "$PB_DIR"
