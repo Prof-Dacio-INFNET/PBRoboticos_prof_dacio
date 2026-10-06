@@ -14,6 +14,8 @@ A arvore de TF que isto produz e' exatamente a que o G3.2 pede:
 Quem publica o que, e e' isto que precisa estar claro antes do SLAM:
 
     map -> odom          ESTE LAUNCH, por enquanto, como identidade fixa.
+                         Sai com map_odom:=false, que e' o que a Aula 12 faz
+                         quando o slam_toolbox assume a aresta.
                          E' um PLACEHOLDER. No TP3 quem publica e' o SLAM, e a
                          identidade vira correcao -- e' esse o trabalho dele.
     odom -> base_footprint   o no `mundo`, integrando a odometria (com deriva).
@@ -54,6 +56,9 @@ def generate_launch_description():
                               description='erro sistematico da odometria, em %'),
         DeclareLaunchArgument('modelo', default_value='true',
                               description='subir o URDF (precisa de meu_robo_description)'),
+        DeclareLaunchArgument('map_odom', default_value='true',
+                              description='publicar o placeholder map->odom; '
+                                          'ponha false quando o SLAM assumir'),
         DeclareLaunchArgument('rviz', default_value='false',
                               description='abrir o RViz2 ja configurado (o G3.2 nao depende dele)'),
 
@@ -64,11 +69,15 @@ def generate_launch_description():
         Node(package='aula11_mundo', executable='piloto', name='piloto',
              output='screen', parameters=[params]),
 
-        # PLACEHOLDER: no TP3 quem publica map -> odom e' o slam_toolbox.
+        # PLACEHOLDER: quem publica map -> odom de verdade e' o slam_toolbox.
         # Enquanto e' identidade, o robo "acredita" na propria odometria --
         # e e' por isso que o laser desliza para fora das paredes.
+        #
+        # Dois publicadores da MESMA aresta quebram a arvore, entao quando o
+        # SLAM entrar este no tem de sair: suba com map_odom:=false.
         Node(package='tf2_ros', executable='static_transform_publisher',
              name='map_para_odom',
+             condition=IfCondition(LaunchConfiguration('map_odom')),
              arguments=['0', '0', '0', '0', '0', '0', 'map', 'odom']),
 
         Node(package='tf2_ros', executable='static_transform_publisher',

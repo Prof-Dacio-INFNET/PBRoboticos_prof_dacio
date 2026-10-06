@@ -1,0 +1,68 @@
+# Parametros do slam_toolbox para o mundo minimo da Aula 11.
+#
+# A chave de cima e o NOME DO NO, como sempre -- o slam_toolbox sobe como
+# `slam_toolbox`, entao a chave e' essa. Se voce empurrar o no para um
+# namespace, troque por /** (a licao da Aula 10 vale aqui tambem).
+slam_toolbox:
+  ros__parameters:
+    # ---- as quatro linhas que ligam o SLAM ao SEU robo ----
+    odom_frame: odom              # de onde vem a odometria
+    map_frame: map                # a aresta que ele vai PUBLICAR
+    base_frame: base_footprint    # a raiz do seu URDF
+    scan_topic: /scan             # o sensor
+
+    mode: mapping                 # mapping constroi; localization so' se localiza
+
+    # ---- ajustado ao nosso mundo ----
+    resolution: 0.05              # igual a do mundo: 5 cm por celula
+    max_laser_range: 6.0          # o nosso laser alcanca 6 m, nao 20
+    min_laser_range: 0.0
+    minimum_travel_distance: 0.3  # o robo anda a 0,35 m/s: atualiza ~1x por segundo
+    minimum_travel_heading: 0.3
+    map_update_interval: 2.0      # mapa novo a cada 2 s, para a aula ver crescer
+    transform_publish_period: 0.02
+
+    # ---- fechamento de laco: e' o que corrige a deriva de verdade ----
+    do_loop_closing: true
+    loop_search_maximum_distance: 3.0
+    loop_match_minimum_chain_size: 10
+    loop_match_minimum_response_fine: 0.45
+
+    # ---- resto: o padrao do slam_toolbox, que serve ----
+    solver_plugin: solver_plugins::CeresSolver
+    ceres_linear_solver: SPARSE_NORMAL_CHOLESKY
+    ceres_preconditioner: SCHUR_JACOBI
+    ceres_trust_strategy: LEVENBERG_MARQUARDT
+    ceres_dogleg_type: TRADITIONAL_DOGLEG
+    ceres_loss_function: None
+    use_scan_matching: true
+    use_scan_barycenter: true
+    throttle_scans: 1
+    transform_timeout: 0.2
+    tf_buffer_duration: 30.0
+    minimum_time_interval: 0.2
+    scan_buffer_size: 10
+    scan_buffer_maximum_scan_distance: 10.0
+    link_match_minimum_response_fine: 0.1
+    link_scan_maximum_distance: 1.5
+    loop_match_maximum_variance_coarse: 3.0
+    loop_match_minimum_response_coarse: 0.35
+    correlation_search_space_dimension: 0.5
+    correlation_search_space_resolution: 0.01
+    correlation_search_space_smear_deviation: 0.1
+    loop_search_space_dimension: 8.0
+    loop_search_space_resolution: 0.05
+    loop_search_space_smear_deviation: 0.03
+    distance_variance_penalty: 0.5
+    angle_variance_penalty: 1.0
+    fine_search_angle_offset: 0.00349
+    coarse_search_angle_offset: 0.349
+    coarse_angle_resolution: 0.0349
+    minimum_angle_penalty: 0.9
+    minimum_distance_penalty: 0.5
+    use_response_expansion: true
+    min_pass_through: 2
+    occupancy_threshold: 0.1
+    stack_size_to_use: 40000000
+    enable_interactive_mode: true
+    debug_logging: false

@@ -18,6 +18,7 @@ Pacotes ROS 2 prontos para rodar, usados em aula e pensados para serem **copiado
 | [`aula09-metrica`](aula09-metrica/index.md) | Aula 9 | banco de provas de detectores: vídeo rotulado, três detectores, uma régua | gate G2.4 do TP2 |
 | [`aula10-bringup`](aula10-bringup/index.md) | Aula 10 | um comando sobe o sistema inteiro: launch composto, YAML que chega (e que não chega) | gate G3.0 do TP3 |
 | [`aula11-mundo`](aula11-mundo/index.md) | Aula 11 | mundo mínimo sem Gazebo: `/scan`, `/odom`, a árvore de TF e a deriva medida | gates G3.1 e G3.2 do TP3 |
+| [`aula12-slam`](aula12-slam/index.md) | Aula 12 | o SLAM assume `map → odom`, e o mapa construído é medido contra a verdade | gate G3.3 do TP3 |
 
 ## Exemplos por TP
 

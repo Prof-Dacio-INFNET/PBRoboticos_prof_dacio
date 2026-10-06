@@ -209,6 +209,9 @@ ros2 launch aula11_mundo mundo.launch.py rviz:=true
 
 ## Parte 4 — O que o Nav2 acrescenta
 
+!!! warning "Não trabalhada em 29/09 — recuperada na Aula 12"
+    Este era o bloco de folga declarado na abertura, e foi ele que cedeu quando o tempo apertou — como combinado. Ele fecha a [Aula 12, de 06/10](../etapa06-aula12/index.md), e cai melhor ali: com o mapa construído em aula, duas das quatro linhas da tabela abaixo deixam de ser abstratas.
+
 O `piloto.py` é o navegador mais burro que funciona: anda reto e gira quando fecha na frente. Trinta linhas, e ele explora o mundo inteiro.
 
 Repare no que ele **não** tem — e é essa lista, e não outra coisa, que o Nav2 é:
@@ -309,4 +312,4 @@ A última pergunta é a interessante, e tem mais de uma resposta defensável. Um
 
 ## Para a próxima aula (06/10)
 
-**SLAM Toolbox: a correção publicada.** A aresta `map → odom` deixa de ser identidade e passa a ser calculada, e o mapa do G3.3 sai disso. Chegue com o G3.0 entregue e a árvore de TF do G3.2 fechada — o SLAM é construído sobre ela, e não conserta TF errada.
+**[O SLAM paga a conta da deriva](../etapa06-aula12/index.md).** A aresta `map → odom` deixa de ser identidade e passa a ser calculada a partir do `/scan` — e a correção que ela publica é exatamente a deriva que vocês mediram hoje, com o sinal trocado. Chegue com a árvore de transformadas fechada: o SLAM é construído sobre ela, e não conserta TF errada.

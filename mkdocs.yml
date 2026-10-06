@@ -122,6 +122,7 @@ nav:
       - "Aula 9 — Detecção treinada e métrica declarada": aulas/etapa05-aula09/index.md
       - "Aula 10 — Aterrissagem do TP2: o sistema sobe com um comando": aulas/etapa05-aula10/index.md
       - "Aula 11 — O mundo, a deriva e o mapa que corrige": aulas/etapa06-aula11/index.md
+      - "Aula 12 — O SLAM paga a conta da deriva": aulas/etapa06-aula12/index.md
 
   - Tutoriais:
       - tutoriais/index.md
@@ -162,6 +163,7 @@ nav:
       - "Aula 9 — métrica de detector": exemplos/aula09-metrica/index.md
       - "Aula 10 — bringup e parâmetros": exemplos/aula10-bringup/index.md
       - "Aula 11 — mundo mínimo e deriva": exemplos/aula11-mundo/index.md
+      - "Aula 12 — SLAM e medida do mapa": exemplos/aula12-slam/index.md
       - TP1: exemplos/tp1/index.md
       - TP2: exemplos/tp2/index.md
       - TP3: exemplos/tp3/index.md

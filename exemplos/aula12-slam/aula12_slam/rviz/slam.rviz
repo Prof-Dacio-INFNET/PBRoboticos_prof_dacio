@@ -1,0 +1,141 @@
+# RViz2 da Aula 12: o mapa que o SLAM constroi, com o mundo real por baixo.
+#
+# A comparacao e' o ponto. O "Mundo real" esta em cinza atras; o "Mapa do SLAM"
+# por cima. Onde os dois coincidem, o SLAM acertou; onde o de cima escorrega,
+# e' deriva que o fechamento de laco ainda nao corrigiu.
+Panels:
+  - Class: rviz_common/Displays
+    Name: Displays
+    Property Tree Widget:
+      Expanded:
+        - /Global Options1
+      Splitter Ratio: 0.5
+    Tree Height: 700
+Visualization Manager:
+  Class: ""
+  Name: root
+  Displays:
+    - Class: rviz_default_plugins/Grid
+      Name: Grid
+      Enabled: false
+      Cell Size: 1
+      Plane Cell Count: 14
+
+    - Class: rviz_default_plugins/Map
+      Name: Mundo real (verdade)
+      Enabled: true
+      Topic:
+        Value: /mundo_real
+        Depth: 1
+        Durability Policy: Transient Local
+        Reliability Policy: Reliable
+        History Policy: Keep Last
+      Alpha: 0.35
+      Color Scheme: costmap
+      Draw Behind: true
+      Update Topic:
+        Value: /mundo_real_updates
+
+    - Class: rviz_default_plugins/Map
+      Name: Mapa do SLAM
+      Enabled: true
+      Topic:
+        Value: /map
+        Depth: 1
+        Durability Policy: Transient Local
+        Reliability Policy: Reliable
+        History Policy: Keep Last
+      Alpha: 0.85
+      Color Scheme: map
+      Draw Behind: false
+      Update Topic:
+        Value: /map_updates
+
+    - Class: rviz_default_plugins/LaserScan
+      Name: LaserScan
+      Enabled: true
+      Topic:
+        Value: /scan
+        Depth: 5
+        Durability Policy: Volatile
+        Reliability Policy: Reliable
+        History Policy: Keep Last
+      Style: Points
+      Size (Pixels): 3
+      Alpha: 1
+      Decay Time: 0
+      Position Transformer: XYZ
+      Color Transformer: FlatColor
+      Color: 252; 163; 17
+
+    - Class: rviz_default_plugins/Odometry
+      Name: Odometry
+      Enabled: false
+      Topic:
+        Value: /odom
+        Depth: 10
+        Durability Policy: Volatile
+        Reliability Policy: Reliable
+        History Policy: Keep Last
+      Keep: 120
+      Position Tolerance: 0.25
+      Angle Tolerance: 0.25
+      Shape:
+        Value: Arrow
+        Color: 220; 60; 60
+        Shaft Length: 0.2
+        Shaft Radius: 0.03
+        Head Length: 0.1
+        Head Radius: 0.06
+      Covariance:
+        Value: false
+
+    - Class: rviz_default_plugins/RobotModel
+      Name: RobotModel
+      Enabled: true
+      Description Source: Topic
+      Description Topic:
+        Value: /robot_description
+        Depth: 5
+        Durability Policy: Transient Local
+        Reliability Policy: Reliable
+        History Policy: Keep Last
+      Visual Enabled: true
+      Collision Enabled: false
+      Alpha: 1
+
+    - Class: rviz_default_plugins/TF
+      Name: TF
+      Enabled: true
+      Show Names: true
+      Show Axes: true
+      Show Arrows: false
+      Marker Scale: 0.4
+      Frame Timeout: 15
+
+  Global Options:
+    Fixed Frame: map
+    Background Color: 20; 33; 61
+    Frame Rate: 30
+  Tools:
+    - Class: rviz_default_plugins/MoveCamera
+    - Class: rviz_default_plugins/FocusCamera
+    - Class: rviz_default_plugins/Measure
+  Value: true
+  Views:
+    Current:
+      Class: rviz_default_plugins/TopDownOrtho
+      Name: Current View
+      Target Frame: <Fixed Frame>
+      Scale: 78
+      X: 4
+      Y: 0
+      Angle: 0
+      Near Clip Distance: 0.01
+      Invert Z Axis: false
+    Saved: ~
+Window Geometry:
+  Height: 900
+  Width: 1400
+  Displays:
+    collapsed: false
