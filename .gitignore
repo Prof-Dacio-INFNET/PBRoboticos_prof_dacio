@@ -23,6 +23,9 @@ Thumbs.db
 docs/
 site/
 
+# ambiente do detector opcional (aula 13) -- os pesos .pt ja estao acima
+.venv-yolo/
+
 # gerados pelos exemplos da aula 13
 exemplos/aula13-instancia/cena/
 exemplos/aula13-veicular/estrada/

@@ -116,19 +116,20 @@ O `modelo` é um adaptador para o `ultralytics` YOLOv8-seg e obedece ao **mesmo 
 ```bash
 # ── herda PB_USER, PB_DIR e PB_WS do bloco de download ──
 : "${PB_WS:?defina PB_USER, PB_DIR e PB_WS — o bloco está no topo desta página}"
-sudo apt install -y python3.10-venv   # sem isto o venv não nasce
 cd "$PB_DIR/aula13-instancia"
-python3 -m venv --system-site-packages .venv-yolo
-. .venv-yolo/bin/activate
-pip install ultralytics
-python3 avaliar.py                    # agora com a linha do modelo
-deactivate
+
+command -v uv >/dev/null || { curl -LsSf https://astral.sh/uv/install.sh | sh; . ~/.bashrc; }
+uv venv --system-site-packages .venv-yolo
+uv pip install --python .venv-yolo/bin/python ultralytics
+.venv-yolo/bin/python avaliar.py            # agora com a linha do modelo
 ```
 
-!!! danger "O `pip install` sem venv ativo vai para o seu usuário — e quebra o ROS 2"
-    Sem um venv **ativo**, `pip install ultralytics` cai em `--user` e instala **numpy 2, opencv-python 5 e setuptools 84** em `~/.local`, por cima do que o ROS 2 usa. O estrago é imediato e não se parece com a causa: `colcon build` falha com `option --uninstall not recognized`, o `cv_bridge` morre com `_ARRAY_API not found`, e código que funcionava passa a dar `TypeError` porque o OpenCV 5 mudou o retorno de algumas funções.
+!!! danger "Nunca `pip install` fora do ambiente — é o que quebra o ROS 2"
+    Repare que a receita acima **não ativa nada**: o `uv pip install --python` diz onde instalar, então não existe "esqueci de ativar". Essa é a razão de ser da regra.
 
-    Se acontecer, o desfazer é uma linha — nada se perde, a pasta fica guardada ao lado:
+    Um `pip install` sem ambiente ativo cai em `--user` e instala **numpy 2, opencv-python 5 e setuptools 84** em `~/.local`, por cima do que o ROS 2 usa. O estrago não se parece com a causa: `colcon build` falha com `option --uninstall not recognized`, o `cv_bridge` morre com `_ARRAY_API not found` ou `KeyError: 16`, e código que funcionava passa a dar `TypeError` porque o OpenCV 5 mudou retornos. O [cheatsheet de OpenCV](../../cheatsheets/opencv.md) já descreve esse par.
+
+    Se acontecer, o desfazer é uma linha, e nada se perde:
 
     ```bash
     mv ~/.local/lib/python3.10/site-packages ~/.local/lib/python3.10/site-packages.guardado

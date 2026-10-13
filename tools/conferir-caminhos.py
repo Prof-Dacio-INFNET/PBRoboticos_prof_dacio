@@ -77,8 +77,9 @@ def linhas_com_contexto(p: pathlib.Path):
 
 FECHO = re.compile(r'^\s*```')
 ATIVA_VENV = re.compile(r'(^|\s)\.\s+\S*venv\S*/bin/activate|source\s+\S*venv\S*/bin/activate')
-CRIA_VENV = re.compile(r'python3?\s+-m\s+venv\b')
-APT_VENV = re.compile(r'python3(\.\d+)?-venv\b')
+UV_ALVO = re.compile(r'uv\s+pip\s+install\b[^\n]*--python\s+\S*venv\S*')
+VENV_STDLIB = re.compile(r'python3?(\.\d+)?\s+-m\s+venv\b')
+PIP_INSTALL = re.compile(r'(?<!uv )\bpip\s+install\b')
 
 
 def blocos_de_codigo(texto: str):
@@ -100,25 +101,31 @@ def blocos_de_codigo(texto: str):
 def conferir_venv(p: pathlib.Path, texto: str, achados: list):
     """Duas regras que so' fazem sentido vendo o BLOCO inteiro.
 
-    A primeira: `pip install` fora de venv ativo cai em --user e reescreve o
-    numpy, o OpenCV e o setuptools que o ROS 2 usa -- e os sintomas (colcon com
-    `--uninstall not recognized`, cv_bridge com `_ARRAY_API not found`) nao
-    apontam para a causa.
+    A primeira: `pip install` sem venv ativo cai em --user e reescreve o numpy,
+    o OpenCV e o setuptools que o ROS 2 usa. Os sintomas nao apontam para a
+    causa -- colcon com `--uninstall not recognized`, cv_bridge com
+    `_ARRAY_API not found` -- e o cheatsheet de OpenCV ja descreve o estrago.
+    A forma do uv que nao tem esse risco e' `uv pip install --python
+    <venv>/bin/python`: ela diz onde instalar, entao nao existe "esqueci de
+    ativar".
 
-    A segunda: `python3 -m venv` falha calado no Ubuntu sem o python3.10-venv,
-    e e' ai que o aluno "resolve" rodando o pip solto. Quem ensina o venv tem de
-    ensinar a instalar o venv na mesma respiracao.
+    A segunda: `python -m venv` nao e' a ferramenta da disciplina. Ele depende
+    do ensurepip (pacote python3.10-venv), falha calado quando ele falta, e ai
+    a saida facil e' rodar o pip solto -- que e' exatamente a primeira regra.
+    O `uv venv` cria o ambiente sem ensurepip e nao tem esse modo de falha.
     """
     for inicio, linhas in blocos_de_codigo(texto):
         corpo = '\n'.join(linhas)
-        tem_pip = any(re.search(r'(?<!uv )\bpip\s+install\b', l) and not COMENTARIO.match(l)
+        tem_pip = any(PIP_INSTALL.search(l) and not COMENTARIO.match(l)
                       and '--break-system-packages' not in l for l in linhas)
-        if tem_pip and not ATIVA_VENV.search(corpo):
-            achados.append((p, inicio, 'pip install em bloco sem venv ATIVO: cai em --user e '
-                            'reescreve numpy/OpenCV/setuptools do ROS 2', corpo.strip()[:88]))
-        if CRIA_VENV.search(corpo) and not APT_VENV.search(corpo):
-            achados.append((p, inicio, 'bloco cria venv sem instalar python3.10-venv antes: '
-                            'o venv falha e o pip solto vira a saida facil', corpo.strip()[:88]))
+        if tem_pip and not (ATIVA_VENV.search(corpo) or UV_ALVO.search(corpo)):
+            achados.append((p, inicio, 'pip install em bloco sem venv ativo: cai em --user e '
+                            'reescreve numpy/OpenCV/setuptools do ROS 2 (use uv pip install '
+                            '--python <venv>/bin/python)', corpo.strip()[:88]))
+        if VENV_STDLIB.search(corpo):
+            achados.append((p, inicio, 'a disciplina gerencia ambiente com uv: troque '
+                            '`python3 -m venv` por `uv venv --system-site-packages`',
+                            corpo.strip()[:88]))
 
 
 def main() -> int:
