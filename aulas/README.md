@@ -17,8 +17,9 @@ O bloco tem dez etapas de conteúdo distribuídas em dois trimestres (26T3, de 2
 | [Aula 9](etapa05-aula09/index.md) | 15/09/2026 | 5 | Detecção treinada e métrica declarada | <span class="pb-tag ok">dada</span> |
 | [Aula 10](etapa05-aula10/index.md) | 22/09/2026 | 5 | Aterrissagem do TP2: clínica de URDF e bringup | <span class="pb-tag ok">dada</span> |
 | [Aula 11](etapa06-aula11/index.md) | 29/09/2026 | 6 | O mundo, a deriva e o mapa que corrige | <span class="pb-tag ok">dada</span> |
-| [Aula 12](etapa06-aula12/index.md) | 06/10/2026 | 6 | O SLAM paga a conta da deriva | <span class="pb-tag next">próxima</span> |
-| Aula 13 | 13/10/2026 | 7 | Percepção: segmentação e módulo veicular | <span class="pb-tag soon">a seguir</span> |
+| [Aula 12](etapa06-aula12/index.md) | 06/10/2026 | 6 | O SLAM paga a conta da deriva | <span class="pb-tag ok">dada</span> |
+| [Aula 13](etapa07-aula13/index.md) | 13/10/2026 | 7 | Achar não é acertar: instância e percepção veicular | <span class="pb-tag next">próxima</span> |
+| Aula 14 | 20/10/2026 | 7 | Aterrissagem do TP3: clínica e fechamento das evidências | <span class="pb-tag soon">a seguir</span> |
 
 !!! note "Por que as Aulas 4 e 5 apontam para a página da Aula 3"
     O material da Aula 3 é denso e foi trabalhado ao longo de três encontros — 04, 11 e 18/08 —, com a leitura oficial do TP1 no último deles. As datas do calendário não mudaram; o que mudou foi o ritmo, e isso é normal num bloco prático. As três aulas compartilham a mesma página porque compartilham o mesmo conteúdo.
@@ -64,8 +65,8 @@ Esta tabela existe para uma pergunta específica: **a redistribuição das aulas
 | G3.1 | mundo de simulação com robô e câmera | [Aula 11](etapa06-aula11/index.md) · 29/09 | 06/10 | 7 dias |
 | G3.2 | árvore `map → odom → base_link → sensores` | [Aula 11](etapa06-aula11/index.md) · 29/09 | 10/10 | 11 dias |
 | G3.3 | SLAM Toolbox com mapa persistido | [Aula 12](etapa06-aula12/index.md) · 06/10 | 15/10 | 9 dias |
-| G3.4 | segmentação por instância | Aula 13 · 13/10 | 18/10 | 5 dias |
-| G3.5 | percepção veicular documentada | Aula 13 · 13/10 | 20/10 | 7 dias |
+| G3.4 | segmentação por instância | [Aula 13](etapa07-aula13/index.md) · 13/10 | 18/10 | 5 dias |
+| G3.5 | percepção veicular documentada | [Aula 13](etapa07-aula13/index.md) · 13/10 | 20/10 | 7 dias |
 
 ### O que a redistribuição custou, dito com todas as letras
 

@@ -23,6 +23,12 @@ Thumbs.db
 docs/
 site/
 
+# gerados pelos exemplos da aula 13
+exemplos/aula13-instancia/cena/
+exemplos/aula13-veicular/estrada/
+exemplos/aula13-*/dif-*.png
+exemplos/aula13-*/painel*.png
+
 # gerados pelo exemplo de metrica (aula 9)
 exemplos/aula09-metrica/cena.avi
 exemplos/aula09-metrica/rotulos.csv

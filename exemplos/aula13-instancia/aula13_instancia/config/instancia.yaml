@@ -1,0 +1,31 @@
+# Parâmetros do segmentador de instância. Edite AQUI, não no código.
+#
+# A troca que a aula inteira existe para mostrar é UMA LINHA deste arquivo:
+# `metodo`. O nó não sabe o que cada método faz — ele repassa o nome para o
+# `instancia.py`, que é o mesmo código medido offline pelo `avaliar.py`.
+segmentador_instancia:
+  ros__parameters:
+    metodo: cor_conectada     # cor_conectada | cor_watershed
+    area_min: 400.0           # px²; abaixo disso é sal-e-pimenta, não peça
+    nucleo: 5                 # lado do elemento estruturante da morfologia
+    fracao_semente: 0.60      # altura do corte na transformada de distância
+
+    classes: [vermelho, azul, verde]
+
+    # Uma faixa por classe, em seis inteiros:
+    #   [h1_min, h1_max, h2_min, h2_max, s_min, v_min]
+    # Matiz (H) no OpenCV vai de 0 a 179. O vermelho dá a volta no círculo,
+    # por isso DUAS faixas; nas outras cores as duas são iguais — a mesma
+    # convenção do config/segmentacao.yaml da Aula 3.
+    faixa:
+      vermelho: [0, 10, 170, 180, 120, 60]
+      azul: [95, 130, 95, 130, 110, 60]
+      verde: [40, 85, 40, 85, 90, 60]
+
+# Para o SEU domínio, troque a lista `classes` e acrescente a faixa. Nada mais:
+#   classes: [amarelo, laranja]
+#   faixa:
+#     amarelo: [20, 35, 20, 35, 110, 70]
+#     laranja: [8, 20, 8, 20, 140, 80]
+# Use o `amostrar_hsv` da Aula 3 para descobrir os números no SEU objeto, com a
+# SUA iluminação — chutar faixa HSV é a causa número um de máscara vazia.

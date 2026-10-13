@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>aula13_instancia</name>
+  <version>0.1.0</version>
+  <description>Aula 13: segmentacao por instancia do TP3 (mascara -> instancias + contagem)</description>
+  <maintainer email="dacioms@exemplo.com">Prof. Dacio</maintainer>
+  <license>MIT</license>
+  <depend>rclpy</depend>
+  <depend>std_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>cv_bridge</depend>
+  <exec_depend>launch</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
+  <exec_depend>python3-opencv</exec_depend>
+  <exec_depend>python3-numpy</exec_depend>
+  <export><build_type>ament_python</build_type></export>
+</package>

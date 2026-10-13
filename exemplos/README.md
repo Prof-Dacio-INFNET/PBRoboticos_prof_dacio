@@ -19,6 +19,8 @@ Pacotes ROS 2 prontos para rodar, usados em aula e pensados para serem **copiado
 | [`aula10-bringup`](aula10-bringup/index.md) | Aula 10 | um comando sobe o sistema inteiro: launch composto, YAML que chega (e que não chega) | gate G3.0 do TP3 |
 | [`aula11-mundo`](aula11-mundo/index.md) | Aula 11 | mundo mínimo sem Gazebo: `/scan`, `/odom`, a árvore de TF e a deriva medida | gates G3.1 e G3.2 do TP3 |
 | [`aula12-slam`](aula12-slam/index.md) | Aula 12 | o SLAM assume `map → odom`, e o mapa construído é medido contra a verdade | gate G3.3 do TP3 |
+| [`aula13-instancia`](aula13-instancia/index.md) | Aula 13 | da máscara à instância: o que se encosta vira um objeto só, e a régua que acusa | gate G3.4 do TP3 |
+| [`aula13-veicular`](aula13-veicular/index.md) | Aula 13 | cor → borda → reta sobre estrada sintética, e qual etapa quebra em cada condição | gates G3.5 e G4.5 |
 
 ## Exemplos por TP
 

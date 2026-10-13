@@ -123,6 +123,7 @@ nav:
       - "Aula 10 — Aterrissagem do TP2: o sistema sobe com um comando": aulas/etapa05-aula10/index.md
       - "Aula 11 — O mundo, a deriva e o mapa que corrige": aulas/etapa06-aula11/index.md
       - "Aula 12 — O SLAM paga a conta da deriva": aulas/etapa06-aula12/index.md
+      - "Aula 13 — Achar não é acertar": aulas/etapa07-aula13/index.md
 
   - Tutoriais:
       - tutoriais/index.md
@@ -164,6 +165,8 @@ nav:
       - "Aula 10 — bringup e parâmetros": exemplos/aula10-bringup/index.md
       - "Aula 11 — mundo mínimo e deriva": exemplos/aula11-mundo/index.md
       - "Aula 12 — SLAM e medida do mapa": exemplos/aula12-slam/index.md
+      - "Aula 13 — da máscara à instância": exemplos/aula13-instancia/index.md
+      - "Aula 13 — percepção veicular": exemplos/aula13-veicular/index.md
       - TP1: exemplos/tp1/index.md
       - TP2: exemplos/tp2/index.md
       - TP3: exemplos/tp3/index.md
