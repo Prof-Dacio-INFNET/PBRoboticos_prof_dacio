@@ -222,7 +222,13 @@ def detectar_faixas(bgr, cfg=None):
     achados = cv2.HoughLinesP(bordas, h['rho'], math.pi / 180.0, h['threshold'],
                               minLineLength=h['minLineLength'],
                               maxLineGap=h['maxLineGap'])
-    segmentos = [] if achados is None else [tuple(int(v) for v in s[0]) for s in achados]
+    # O OpenCV 4 devolve (N, 1, 4) e o 5 devolve (N, 4). Normalizar aqui e' uma
+    # linha; nao normalizar e' um TypeError no meio da aula, que foi o que
+    # aconteceu quando um pip install trocou o OpenCV do sistema por baixo.
+    segmentos = []
+    if achados is not None:
+        for linha in np.asarray(achados).reshape(-1, 4):
+            segmentos.append(tuple(int(v) for v in linha))
     esq, dir_, fora = agrupar(segmentos, cfg)
     faixa_esq = ajustar(esq, cfg, y_base, y_topo)
     faixa_dir = ajustar(dir_, cfg, y_base, y_topo)

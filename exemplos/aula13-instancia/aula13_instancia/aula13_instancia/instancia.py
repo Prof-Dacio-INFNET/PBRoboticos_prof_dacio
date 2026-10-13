@@ -209,12 +209,22 @@ def cor_watershed(bgr, cfg=None):
 INSTRUCAO_MODELO = (
     'o detector `modelo` precisa do ultralytics, que NAO entra na doutrina da\n'
     '  disciplina (so apt: python3-opencv, python3-numpy, python3-yaml).\n'
-    '  Se quiser medi-lo, instale num venv -- nunca com sudo pip, que reescreve\n'
-    '  a biblioteca que os nos ROS 2 usam:\n'
+    '  Se quiser medi-lo, instale DENTRO de um venv, nesta ordem:\n'
+    '      sudo apt install -y python3.10-venv      # sem isto o venv nao nasce\n'
     '      python3 -m venv --system-site-packages .venv-yolo\n'
-    '      . .venv-yolo/bin/activate && pip install ultralytics\n'
+    '      . .venv-yolo/bin/activate\n'
+    '      pip install ultralytics\n'
     '      python3 avaliar.py              # agora com a linha do modelo\n'
-    '  O yolov8n-seg.pt (~7 MB) e baixado na primeira execucao.')
+    '      deactivate\n'
+    '  O yolov8n-seg.pt (~7 MB) e baixado na primeira execucao.\n'
+    '\n'
+    '  ATENCAO -- se o venv falhar, NAO rode `pip install` solto. Sem venv ativo\n'
+    '  ele cai em --user e instala numpy 2, opencv-python 5 e setuptools 84 por\n'
+    '  cima do que o ROS 2 usa: o colcon passa a falhar com `--uninstall not\n'
+    '  recognized`, o cv_bridge com `_ARRAY_API not found`, e codigo que\n'
+    '  funcionava quebra porque o OpenCV 5 mudou retornos. Para desfazer:\n'
+    '      mv ~/.local/lib/python3.10/site-packages \\\n'
+    '         ~/.local/lib/python3.10/site-packages.guardado')
 
 _MODELO = None
 _MOTIVO = ''

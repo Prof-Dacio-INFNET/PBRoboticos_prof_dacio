@@ -14,6 +14,7 @@ Se a pasta nao for encontrada, o no publica um quadro de RESERVA, desenhado
 aqui mesmo: duas pecas encostadas e uma solta. Nao e a cena medida -- e o
 minimo para o launch nao subir vazio e para dar o que olhar no rqt_image_view.
 """
+import os
 import pathlib
 
 import cv2
@@ -77,8 +78,18 @@ class PublicadorCena(Node):
         comparar_mapas.py da Aula 12.
         """
         candidatos = [pathlib.Path(pasta)] if pasta else []
-        candidatos += [pathlib.Path.cwd() / 'cena',
-                       pathlib.Path.home() / 'aula13-instancia' / 'cena']
+        candidatos += [pathlib.Path.cwd() / 'cena']
+        # Onde a pagina da aula manda o aluno copiar o exemplo: $PB_DIR. O no
+        # roda com o cwd do launch, entao sem isto ele cai no quadro de reserva
+        # justamente na maquina de quem seguiu a instrucao.
+        for var in ('PB_DIR', 'PB_WS'):
+            raiz = os.environ.get(var)
+            if raiz:
+                base = pathlib.Path(raiz)
+                candidatos.append(base / 'aula13-instancia' / 'cena')
+                candidatos.append(base.parent / 'aula13-instancia' / 'cena')
+        candidatos += sorted(pathlib.Path.home().glob('projeto-pb-*/aula13-instancia/cena'))
+        candidatos.append(pathlib.Path.home() / 'aula13-instancia' / 'cena')
         for c in candidatos:
             arquivos = sorted(c.glob('quadro*.png')) if c.is_dir() else []
             if arquivos:

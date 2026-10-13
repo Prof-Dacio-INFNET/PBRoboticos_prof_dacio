@@ -41,8 +41,6 @@ REGRAS_COMANDO = [
      'uv --system é proibido pela regra da disciplina; use um venv'),
     (re.compile(r'\bsudo\s+pip\b'),
      'pip como root; use apt'),
-    (re.compile(r'(?<!uv )\bpip\s+install\b'),
-     'pip no python do sistema; use apt, ou um venv com --system-site-packages'),
 ]
 
 EXCECAO_COMANDO = re.compile(r'--break-system-packages|venv|virtualenv|requirements', re.I)
@@ -77,6 +75,52 @@ def linhas_com_contexto(p: pathlib.Path):
         yield n, linha, not (em_docstring or era_docstring)
 
 
+FECHO = re.compile(r'^\s*```')
+ATIVA_VENV = re.compile(r'(^|\s)\.\s+\S*venv\S*/bin/activate|source\s+\S*venv\S*/bin/activate')
+CRIA_VENV = re.compile(r'python3?\s+-m\s+venv\b')
+APT_VENV = re.compile(r'python3(\.\d+)?-venv\b')
+
+
+def blocos_de_codigo(texto: str):
+    """Devolve [(primeira_linha, [linhas])] de cada bloco cercado por ```."""
+    saida, atual, inicio = [], None, 0
+    for n, linha in enumerate(texto.split('\n'), 1):
+        if FECHO.match(linha):
+            if atual is None:
+                atual, inicio = [], n + 1
+            else:
+                saida.append((inicio, atual))
+                atual = None
+            continue
+        if atual is not None:
+            atual.append(linha)
+    return saida
+
+
+def conferir_venv(p: pathlib.Path, texto: str, achados: list):
+    """Duas regras que so' fazem sentido vendo o BLOCO inteiro.
+
+    A primeira: `pip install` fora de venv ativo cai em --user e reescreve o
+    numpy, o OpenCV e o setuptools que o ROS 2 usa -- e os sintomas (colcon com
+    `--uninstall not recognized`, cv_bridge com `_ARRAY_API not found`) nao
+    apontam para a causa.
+
+    A segunda: `python3 -m venv` falha calado no Ubuntu sem o python3.10-venv,
+    e e' ai que o aluno "resolve" rodando o pip solto. Quem ensina o venv tem de
+    ensinar a instalar o venv na mesma respiracao.
+    """
+    for inicio, linhas in blocos_de_codigo(texto):
+        corpo = '\n'.join(linhas)
+        tem_pip = any(re.search(r'(?<!uv )\bpip\s+install\b', l) and not COMENTARIO.match(l)
+                      and '--break-system-packages' not in l for l in linhas)
+        if tem_pip and not ATIVA_VENV.search(corpo):
+            achados.append((p, inicio, 'pip install em bloco sem venv ATIVO: cai em --user e '
+                            'reescreve numpy/OpenCV/setuptools do ROS 2', corpo.strip()[:88]))
+        if CRIA_VENV.search(corpo) and not APT_VENV.search(corpo):
+            achados.append((p, inicio, 'bloco cria venv sem instalar python3.10-venv antes: '
+                            'o venv falha e o pip solto vira a saida facil', corpo.strip()[:88]))
+
+
 def main() -> int:
     eu = pathlib.Path(__file__).resolve()
     achados = []
@@ -86,6 +130,9 @@ def main() -> int:
             continue
         if any(parte in IGNORAR for parte in p.parts) or p.resolve() == eu:
             continue
+
+        if p.suffix == '.md':
+            conferir_venv(p.relative_to(RAIZ), p.read_text(encoding='utf-8'), achados)
 
         for n, linha, em_codigo in linhas_com_contexto(p):
             for padrao, porque in REGRAS_SEMPRE:

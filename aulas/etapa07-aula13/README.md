@@ -297,6 +297,29 @@ O `avaliar.py` tem um terceiro detector, `modelo`, que é um adaptador para o YO
 
 Não há resposta única, e há respostas erradas: qualquer uma sem número é uma delas.
 
+```bash
+# ── herda as variáveis do bloco de download ──
+: "${PB_WS:?defina PB_USER, PB_DIR e PB_WS — o bloco está no topo desta página}"
+sudo apt install -y python3.10-venv            # sem isto o venv não nasce
+cd "$PB_DIR/aula13-instancia"
+python3 -m venv --system-site-packages .venv-yolo
+. .venv-yolo/bin/activate
+pip install ultralytics
+python3 avaliar.py                             # agora com a linha do modelo
+deactivate
+```
+
+!!! danger "O `pip install` sem venv ativo vai para o seu usuário — e quebra o ROS 2"
+    Sem um venv **ativo**, `pip install ultralytics` cai em `--user` e instala **numpy 2, opencv-python 5 e setuptools 84** em `~/.local`, por cima do que o ROS 2 usa. O estrago é imediato e não se parece com a causa: `colcon build` falha com `option --uninstall not recognized`, o `cv_bridge` morre com `_ARRAY_API not found`, e código que funcionava passa a dar `TypeError` porque o OpenCV 5 mudou o retorno de algumas funções.
+
+    Se acontecer, o desfazer é uma linha — nada se perde, a pasta fica guardada ao lado:
+
+    ```bash
+    mv ~/.local/lib/python3.10/site-packages ~/.local/lib/python3.10/site-packages.guardado
+    ```
+
+    E o venv só nasce se o `python3.10-venv` estiver instalado; sem ele, o comando falha e é fácil "resolver" rodando o `pip` solto — que é exatamente a armadilha.
+
 ## Para a próxima aula — 20/10
 
 **Aterrissagem do TP3.** É o último encontro antes da entrega de **sexta, 23/10**: clínica dos gates que ainda estiverem abertos, leitura do que o relatório precisa conter, e fechamento das evidências. Chegue com o mapa salvo, a instância publicando e as figuras do veicular — a clínica é para o que não fechou, não para começar.
