@@ -1,20 +1,35 @@
-# Conferir a entrega do TP3 — o que já está provado e o que falta
+# Revisar a entrega do TP3 — um roteiro, não um veredito
 
-Um script que lê o **seu** repositório e responde, item por item do enunciado,
-o que a entrega do TP3 já tem e o que ainda falta. Não é corretor automático:
-é a mesma ideia dos conferidores do repositório — **uma verificação que falha
-sozinha vale mais do que reler com cuidado**, porque na quinta-feira ninguém
-relê com cuidado.
+Um script que lê o **seu** repositório e aponta, item por item do enunciado,
+**onde vale a pena olhar** antes de entregar. Ele faz a varredura mecânica que
+ninguém faz na quinta-feira: cruzar o enunciado com o que está de fato no
+repositório, linha por linha.
 
-A entrega é **sexta, 23/10**. Rode isto hoje, não na sexta: quase tudo o que ele
-acusa leva minutos para resolver, e nada disso leva minutos se você descobrir
-depois do prazo.
+!!! danger "Isto não é correção, nem validação prévia"
+    Ele **não corrige, não antecipa nota e não atesta que a sua entrega está
+    pronta.** A referência é o **enunciado do TP3**, e a responsabilidade pela
+    entrega é **sua** — antes e depois de rodar isto.
 
-!!! warning "O que ele **não** faz"
-    Ele não dá nota. Qualidade do texto, a explicação de cada frame no
-    relatório e a adequação das escolhas ao seu projeto são lidas pelo
-    professor. No relatório do script isso aparece como `?` — e `?` **não é
-    erro**: é o que nenhum comando consegue provar.
+    `achei` não quer dizer entregue certo. `não achei` não quer dizer entregue
+    errado. Nos dois casos quer dizer a mesma coisa: **vá olhar isso.**
+
+### O que ele não consegue ver — e é o que mais pesa
+
+Um comando consegue dizer que um arquivo existe, que um YAML parseia, que uma
+tag está criada. Nenhum comando consegue dizer:
+
+- se o seu launch **realmente sobe** o seu sistema, e não só menciona as coisas certas;
+- se o mapa salvo é **do seu cenário**, e não o do exemplo;
+- se a sua explicação dos frames **está correta**;
+- se a análise do item 4 fala do **seu** projeto ou é texto genérico;
+- se o que você escreveu **responde ao que foi pedido**.
+
+Isso é leitura, e quem lê é o professor. No relatório do script esses pontos
+aparecem como `olhe` — não porque falharam, mas porque estão fora do alcance
+de qualquer verificação automática.
+
+A entrega é **sexta, 23/10**. Rode isto hoje, não na sexta: o que ele aponta
+costuma levar minutos para resolver, e nada leva minutos depois do prazo.
 
 ## Rodar
 
@@ -24,9 +39,9 @@ export PB_USER=seu-usuario-github          # ← troque pelo seu usuário do Git
 export PB_DIR="$HOME/projeto-pb-$PB_USER"
 export PB_WS="$PB_DIR/ros2_ws"
 
-cd /tmp && rm -rf pb-conf && \
-  git clone --depth 1 https://github.com/Prof-Dacio-INFNET/PBRoboticos_prof_dacio.git pb-conf && \
-  cp pb-conf/exemplos/tp3/conferir-entrega/conferir_tp3.py "$PB_DIR/"
+cd /tmp && rm -rf pb-rev && \
+  git clone --depth 1 https://github.com/Prof-Dacio-INFNET/PBRoboticos_prof_dacio.git pb-rev && \
+  cp pb-rev/exemplos/tp3/revisar-entrega/revisar_tp3.py "$PB_DIR/"
 ```
 
 Só biblioteca padrão do Python: nada de `pip`, nada para compilar.
@@ -35,7 +50,7 @@ Só biblioteca padrão do Python: nada de `pip`, nada para compilar.
 # ── herda PB_USER, PB_DIR e PB_WS do bloco acima ──
 : "${PB_WS:?defina PB_USER, PB_DIR e PB_WS — o bloco está no topo desta página}"
 cd "$PB_DIR"
-python3 conferir_tp3.py
+python3 revisar_tp3.py
 ```
 
 Com o sistema no ar, em **outro** terminal (depois de `ros2 launch ... bringup.launch.py`),
@@ -46,7 +61,7 @@ ele confere também tópicos e TF:
 : "${PB_WS:?defina PB_USER, PB_DIR e PB_WS — o bloco está no topo desta página}"
 source "$PB_WS/install/setup.bash"
 cd "$PB_DIR"
-python3 conferir_tp3.py --ao-vivo
+python3 revisar_tp3.py --ao-vivo
 ```
 
 E, para conferir um repositório que não é o diretório atual:
@@ -54,11 +69,11 @@ E, para conferir um repositório que não é o diretório atual:
 ```bash
 # ── herda PB_USER, PB_DIR e PB_WS do bloco de download ──
 : "${PB_WS:?defina PB_USER, PB_DIR e PB_WS — o bloco está no topo desta página}"
-python3 "$PB_DIR/conferir_tp3.py" --raiz "$PB_DIR"
+python3 "$PB_DIR/revisar_tp3.py" --raiz "$PB_DIR"
 ```
 
 **Código de saída:** `0` quando nada falta, `1` quando falta alguma coisa, `2`
-quando a raiz passada não existe. Dá para encadear (`python3 conferir_tp3.py && git push`).
+quando a raiz passada não existe. Dá para encadear (`python3 revisar_tp3.py && git push`).
 
 ## Como ler a saída
 
@@ -67,9 +82,9 @@ importante desta página:
 
 | Marca | Significado | O que fazer |
 |---|---|---|
-| `ok` | o script **provou** o fato por comando | nada |
-| `falta` | o script provou que **não** está lá | resolver — entra na lista final |
-| `?` | o script **não consegue** decidir | ler você mesmo; não conta para o código de saída |
+| `achei` | o script **provou** o fato por comando | nada |
+| `não achei` | o script provou que **não** está lá | resolver — entra na lista final |
+| `olhe` | o script **não consegue** decidir | ler você mesmo; não conta para o código de saída |
 
 No fim ele imprime **o que falta, na ordem em que compensa resolver** — launch
 primeiro, git por último, porque o launch destrava todo o resto e o `git tag`
@@ -110,7 +125,7 @@ não vale nada.
 |---|---|
 | `/vision/segmented` aparece no código | é o nome que o enunciado **fixa**; publicar em `/segmentado` é publicar em lugar nenhum |
 | imagem da segmentação em `docs/evidencias/tp3/` | sem o print, o trabalho existiu e não pôde ser avaliado |
-| mistura com transparência | sempre `?` — o script acha indício de `addWeighted`/`alpha`, mas **cor por classe** e **0,5** você confere a olho |
+| mistura com transparência | sempre `olhe` — o script acha indício de `addWeighted`/`alpha`, mas **cor por classe** e **0,5** você confere a olho |
 
 ### Item 4 — Arquitetura de percepção veicular
 
@@ -118,7 +133,7 @@ não vale nada.
 |---|---|
 | `docs/evidencias/tp3/veicular.md` existe | é o artefato do G3.5 |
 | cita CAN, Ethernet e sensores | **lembrete, não nota**: ele só diz quais famílias de palavra-chave não apareceram, para você não descobrir na correção que esqueceu a Ethernet |
-| relacionado às escolhas do seu projeto | sempre `?` — texto genérico de internet não pontua, e isso só a leitura pega |
+| relacionado às escolhas do seu projeto | sempre `olhe` — texto genérico de internet não pontua, e isso só a leitura pega |
 
 ### Entrega
 
@@ -131,17 +146,17 @@ não vale nada.
 | `maps/` e evidências **rastreados** pelo git | o erro clássico de entregar sem commitar: o arquivo está no seu disco, quem corrige faz `clone`, e não vê nada |
 
 Se a pasta não for um repositório git, ele diz isso e segue — as quatro linhas
-acima viram `?`.
+acima viram `olhe`.
 
 ### Ao vivo (`--ao-vivo`)
 
 Quatro conferências, **todas tolerantes a falha**: `/vision/segmented` na lista
 de tópicos (e com publisher ≥ 1), `/scan` publicando, a TF `map → odom`
-existindo, e mais de um nó no ar. Toda uma delas que não dá para fazer vira `?`
+existindo, e mais de um nó no ar. Toda uma delas que não dá para fazer vira `olhe`
 com a causa provável, nunca um travamento: todo subprocesso tem timeout, e
 `ros2 topic hz`, que não termina por conta própria, é lido pela saída parcial.
 
-Sem ROS 2 instalado ou sem `source` do `setup.bash`, a seção inteira vira um `?`
+Sem ROS 2 instalado ou sem `source` do `setup.bash`, a seção inteira vira um `olhe`
 que diz exatamente isso — rodar o script no Windows, fora do WSL2, não quebra
 nada.
 

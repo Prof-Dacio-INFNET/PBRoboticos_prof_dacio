@@ -59,13 +59,13 @@ Aulas às **terças, 07h00–09h30, sala SJ205** · Prof. Dácio Moreira de Souz
 **O enunciado é a rubrica.** Cada verbo dele — execute, capture, explique, publique, relacione — é um item que alguém vai procurar no seu repositório na sexta à noite. Sem conteúdo novo: os quatro itens demonstrados, e a lista do que falta no seu.
 
 [Conteúdo e slides da aula](aulas/etapa07-aula14/index.md){ .md-button .md-button--primary }
-[Conferidor da entrega](exemplos/tp3/conferir-entrega/index.md){ .md-button }
+[Roteiro de revisão da entrega](exemplos/tp3/revisar-entrega/index.md){ .md-button }
 
 !!! danger "O TP3 vence sexta, 23/10 — e a entrega é no Moodle"
-    O repositório é critério de avaliação, não anexo: branch `entrega-tp3`, tag `tp3` **empurrada**, e as evidências **commitadas**. Antes de postar, rode a conferência:
+    O repositório é critério de avaliação, não anexo: branch `entrega-tp3`, tag `tp3` **empurrada**, e as evidências **commitadas**. Antes de postar, vale passar pelo roteiro de revisão — que aponta onde olhar, e **não** corrige nem valida a entrega:
 
     ```bash
-    python3 conferir_tp3.py            # e, com o sistema no ar: --ao-vivo
+    python3 revisar_tp3.py             # e, com o sistema no ar: --ao-vivo
     ```
 
 ## Calendário de entregas

@@ -168,7 +168,7 @@ nav:
       - "Aula 12 — SLAM e medida do mapa": exemplos/aula12-slam/index.md
       - "Aula 13 — da máscara à instância": exemplos/aula13-instancia/index.md
       - "Aula 13 — percepção veicular": exemplos/aula13-veicular/index.md
-      - "TP3 — conferidor da entrega": exemplos/tp3/conferir-entrega/index.md
+      - "TP3 — roteiro de revisão da entrega": exemplos/tp3/revisar-entrega/index.md
       - TP1: exemplos/tp1/index.md
       - TP2: exemplos/tp2/index.md
       - TP3: exemplos/tp3/index.md

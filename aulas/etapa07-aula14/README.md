@@ -3,7 +3,7 @@
 **Terça, 20/10/2026 · sala SJ205 · Etapa 7 (12/10–24/10)**
 
 [:material-file-pdf-box: Slides da Aula 14 (PDF)](apresentacao-aula14.pdf){ .md-button .md-button--primary }
-[:material-check-decagram: Conferidor da entrega](../../exemplos/tp3/conferir-entrega/index.md){ .md-button }
+[:material-clipboard-text-search: Roteiro de revisão](../../exemplos/tp3/revisar-entrega/index.md){ .md-button }
 [:material-code-tags: Exemplo `aula13-instancia`](../../exemplos/aula13-instancia/index.md){ .md-button }
 
 ## Cenas dos últimos episódios
@@ -37,7 +37,7 @@ export PB_WS="$PB_DIR/ros2_ws"
 
 cd /tmp && rm -rf pb-a14 && \
   git clone --depth 1 https://github.com/Prof-Dacio-INFNET/PBRoboticos_prof_dacio.git pb-a14 && \
-  cp pb-a14/exemplos/tp3/conferir-entrega/conferir_tp3.py "$PB_DIR/" && \
+  cp pb-a14/exemplos/tp3/revisar-entrega/revisar_tp3.py "$PB_DIR/" && \
   cp -r pb-a14/exemplos/aula13-instancia "$PB_DIR/"
 ```
 
@@ -66,12 +66,27 @@ ros2 param get /seu_no seu_parametro      # tem de devolver o valor do YAML, nã
 
 **Dois `bringup.launch.py` no repositório.** Um na raiz, outro numa pasta antiga. Nem você nem o avaliador sabem qual o `ros2 launch` vai pegar. Deixe um.
 
-!!! danger "Gazebo Harmonic × Gazebo Fortress — leia antes de instalar qualquer coisa hoje"
-    O enunciado cita **Harmonic**. O par **oficialmente suportado** do ROS 2 Humble é o **Fortress**: é ele que vem de `ros-humble-ros-gz`, testado e mantido junto com a distribuição. O Harmonic com Humble existe, mas por pacotes **não oficiais** (`gz-harmonic` + `ros-humble-ros-gzharmonic`, do repositório da OSRF) que a própria documentação do Gazebo marca como *"possible, but use with caution"* e **"não recomendamos para iniciantes"** — e que **conflitam** com os pacotes `ros-humble-ros-gz*` já instalados.
+!!! danger "Use o Gazebo Fortress — e entenda por quê, porque a razão se repete"
+    O enunciado cita **Harmonic**. **Para esta disciplina, a versão é o Fortress**, e isso vale como decisão de turma: ninguém perde ponto por entregar com ele.
 
-    **A três dias da entrega, instalar Harmonic por cima do seu Humble é a pior aposta possível:** o conflito derruba o que já funciona, e você passa a quinta-feira consertando ambiente em vez de escrevendo relatório.
+    O motivo é **alinhamento de versões**. Cada distribuição do ROS 2 é construída e testada contra **uma** versão do Gazebo: o par do Humble é o **Fortress**, e é ele que vem de `ros-humble-ros-gz`, mantido e testado junto com a distribuição. O Harmonic com Humble existe, mas por pacotes **não oficiais** que **conflitam** com os `ros-humble-ros-gz*` já instalados — a própria documentação do Gazebo marca a combinação como *"possible, but use with caution"* e diz que **não a recomenda para iniciantes**.
 
-    **O que fazer:** entregue com o que roda — Fortress, ou o mundo mínimo da Aula 11 se você não subiu Gazebo — e **escreva um parágrafo no relatório** dizendo qual usou e por quê. Decisão técnica justificada é conteúdo de relatório, não falha. Quem já tem Harmonic rodando, siga com ele e diga isso também.
+    ```bash
+    sudo apt install -y ros-humble-ros-gz      # o par do Humble; o comando é `ign gazebo`
+    ```
+
+    **Se você já tem Harmonic rodando**, siga com ele e escreva isso no relatório. O que não vale é trocar de versão a três dias da entrega: o conflito derruba o que funciona, e você passa a quinta-feira consertando ambiente em vez de escrevendo.
+
+!!! warning "Alinhamento de versões — a mesma falha, em três lugares diferentes"
+    Esta é a terceira vez no semestre que versões desalinhadas quebram alguma coisa **sem dizer que foi versão**:
+
+    | O par que tem de bater | O que acontece quando não bate |
+    |---|---|
+    | ROS 2 Humble ↔ Gazebo **Fortress** | pacotes conflitantes, e o que já funcionava para de subir |
+    | `cv_bridge` do apt ↔ **NumPy 1.x** e **OpenCV 4.5.4** | `_ARRAY_API not found`, `KeyError: 16`, nós morrendo na importação |
+    | o código do exemplo ↔ a versão do OpenCV | `TypeError` em função que mudou de retorno entre a 4 e a 5 |
+
+    A regra que sai disso, e que vale para o resto do curso: **o Python do sistema é território do `apt`**, e tudo o que não vier do apt vai para um ambiente `uv` com `--system-site-packages`. Quando algo quebrar de um jeito que não faz sentido, a primeira pergunta é *"o que mudou de versão aqui?"*.
 
 **Como provar:** rode o comando único, tire o print com Gazebo (ou o seu simulador) e o RViz2 abertos, e salve em `docs/evidencias/tp3/bringup.png`.
 
@@ -200,16 +215,25 @@ O último parágrafo é o que o enunciado cobra com a palavra *relacione*, e é 
 
 ---
 
-## Antes de postar: rode o conferidor
+## Antes de postar: o roteiro de revisão
 
 ```bash
 # ── herda as variáveis do bloco de preparação ──
 : "${PB_WS:?defina PB_USER, PB_DIR e PB_WS — o bloco está no topo desta página}"
-cd "$PB_DIR" && python3 conferir_tp3.py            # e, com o sistema no ar:
-cd "$PB_DIR" && python3 conferir_tp3.py --ao-vivo
+cd "$PB_DIR" && python3 revisar_tp3.py            # e, com o sistema no ar:
+cd "$PB_DIR" && python3 revisar_tp3.py --ao-vivo
 ```
 
-Ele percorre os quatro itens e a entrega, e termina com **a lista do que falta, na ordem em que compensa resolver**. O que ele marca com `?` é o que só eu avalio — explicação dos frames, adequação ao seu projeto, a qualidade do texto do item 4. `ok` dele não é nota; `?` dele não é erro.
+Ele percorre os quatro itens e a entrega e devolve **uma lista de lugares para olhar**, na ordem em que costuma compensar.
+
+!!! danger "O roteiro não corrige, não valida e não garante nada"
+    Ele **não é correção prévia**: não antecipa nota, não atesta que a entrega está pronta e não substitui a leitura do enunciado. **A referência é o enunciado do TP3, e a responsabilidade pela entrega é sua.**
+
+    `achei` não quer dizer entregue certo. `não achei` não quer dizer entregue errado. Nos dois casos quer dizer: **vá olhar isso.**
+
+    E o que ele marca com `olhe` é justamente o que mais pesa, porque nenhum comando alcança: se o launch **realmente sobe** o seu sistema, se o mapa é **do seu cenário**, se a explicação dos frames está correta, se a análise do item 4 fala do **seu** projeto. Isso é leitura — e quem lê sou eu.
+
+    Sair daqui com a lista vazia não é ter terminado: é ter esgotado o que um script enxerga. O resto é reler o enunciado com o seu repositório aberto do lado.
 
 ## A entrega, na sexta 23/10
 

@@ -1,23 +1,32 @@
 #!/usr/bin/env python3
-"""Confere a entrega do TP3 item por item e diz o que ainda falta.
+"""Roteiro de revisao do SEU TP3 -- um apoio para voce olhar, nao um veredito.
 
-Por que isto existe: na quinta-feira ninguem tem tempo de reler o enunciado e
-cruzar com o repositorio. O que sobra para fazer e' rodar uma verificacao que
-falha sozinha. Cada linha abaixo e' um fato sobre o SEU repositorio -- existe
-ou nao existe, parseia ou nao parseia, esta' no git ou nao esta'.
+ISTO NAO E' CORRECAO. Nao e' validacao previa, nao antecipa nota e nao atesta
+que a entrega esta' pronta. E' um roteiro: ele olha o que um comando consegue
+olhar no seu repositorio e aponta ONDE voce deve ir conferir com os proprios
+olhos. A referencia e' o enunciado do TP3; a responsabilidade pela entrega e'
+sua, e continua sendo depois de rodar isto.
 
-O que ele NAO faz: nota. Qualidade do texto, explicacao de cada frame no
-relatorio, adequacao das escolhas ao seu projeto -- isso o professor avalia
-lendo. Um "ok" aqui nao e' nota, e um "?" nao e' erro: e' algo que este script
-nao consegue provar por comando.
+Por que existe: na quinta-feira ninguem tem tempo de reler o enunciado e
+cruzar, item por item, com o que esta' no repositorio. O script faz essa
+varredura mecanica e devolve uma lista de lugares para voce olhar.
+
+O que ele NAO consegue ver: se o launch realmente sobe o seu sistema, se o
+mapa e' do seu cenario, se o texto do relatorio responde ao que foi pedido, se
+a explicacao dos frames esta' correta, se a analise do item 4 fala do SEU
+projeto. Isso e' leitura, e quem le e' o professor.
+
+Entao: "achei" aqui nao quer dizer entregue certo, e "nao achei" nao quer
+dizer entregue errado. Quer dizer, nos dois casos: va' olhar isso.
 
     cd ~/projeto-pb-SEU-USUARIO
-    python3 conferir_tp3.py                   # o que da' para conferir sem ROS 2
-    python3 conferir_tp3.py --ao-vivo         # tambem topicos e TF, com tudo no ar
-    python3 conferir_tp3.py --raiz ~/projeto-pb-SEU-USUARIO
+    python3 revisar_tp3.py                   # o que da' para olhar sem ROS 2
+    python3 revisar_tp3.py --ao-vivo         # tambem topicos e TF, com tudo no ar
+    python3 revisar_tp3.py --raiz ~/projeto-pb-SEU-USUARIO
 
-Saida 0 quando nada falta; 1 quando falta alguma coisa.
-Gates cobertos: G3.0 a G3.6 (recursos/gates-tps.md).
+Saida 1 quando sobrou algo para olhar, 0 quando nao sobrou -- e nenhuma das
+duas e' um julgamento sobre a sua entrega.
+Itens do enunciado e gates correspondentes: G3.0 a G3.6 (recursos/gates-tps.md).
 """
 import argparse
 import ast
@@ -50,7 +59,12 @@ VERDE, VERMELHO, AMARELO, NEGRITO, FIM = (
 if not sys.stdout.isatty():
     VERDE = VERMELHO = AMARELO = NEGRITO = FIM = ''
 
-ESTADOS = {'ok': (VERDE, 'ok   '), 'falta': (VERMELHO, 'falta'), '?': (AMARELO, '?    ')}
+# Os rotulos dizem o que o script ENCONTROU, nao o que esta' certo: ele nao
+# tem como saber se esta' certo. Por isso 'achei' e 'nao achei', e nunca
+# 'ok' e 'falta' -- a diferenca de vocabulario e' a diferenca entre um apoio
+# a revisao e um veredito que este script nao tem autoridade para dar.
+ESTADOS = {'ok': (VERDE, 'achei    '), 'falta': (VERMELHO, 'nao achei'),
+           '?': (AMARELO, 'olhe     ')}
 
 pendencias = []          # (ordem, nome, cura) -- so' do que esta' faltando
 quantos = {'ok': 0, 'falta': 0, '?': 0}
@@ -215,7 +229,7 @@ def item1(raiz):
         return None
     if len(launches) > 1:
         conferir('existe UM bringup.launch.py', 'falta',
-                 f'achei {len(launches)}: ' + ', '.join(rel(raiz, p) for p in launches),
+                 f'encontrei {len(launches)}: ' + ', '.join(rel(raiz, p) for p in launches),
                  ordem=10,
                  cura='mantenha um so\' bringup.launch.py -- com dois, nem voce nem o '
                       'professor sabem qual `ros2 launch` vai pegar')
@@ -667,11 +681,13 @@ def main() -> int:
         print(f'nao existe: {raiz}', file=sys.stderr)
         return 2
 
-    print(f'{NEGRITO}conferir_tp3{FIM} -- PB Sistemas Roboticos, TP3 (entrega {PRAZO})')
+    print(f'{NEGRITO}revisar_tp3{FIM} -- roteiro de revisao do SEU TP3 '
+          f'(entrega {PRAZO})')
     print(f'raiz: {raiz}')
-    print('Confere o que um comando prova. Qualidade do texto, explicacao dos frames e')
-    print('adequacao ao seu projeto sao avaliadas pelo professor: "ok" aqui nao e\' nota,')
-    print('"?" nao e\' erro -- e\' o que este script nao consegue provar sozinho.')
+    print(f'{AMARELO}Isto nao e correcao, nao e validacao previa e nao antecipa nota.{FIM}')
+    print('E um roteiro: aponta onde voce deve ir olhar. A referencia e o enunciado,')
+    print('e a responsabilidade pela entrega e sua. "achei" nao quer dizer certo;')
+    print('"nao achei" nao quer dizer errado. Quer dizer: va olhar isso.')
 
     evid = raiz / 'docs' / 'evidencias' / TP
     launch = item1(raiz)
@@ -682,20 +698,22 @@ def main() -> int:
     if args.ao_vivo:
         ao_vivo()
     else:
-        secao('Ao vivo -- nao conferido')
+        secao('Ao vivo -- nao olhado')
         conferir('topicos, TF e nos', '?', 'rode com --ao-vivo e o sistema no ar')
 
     print()
-    print(f'{quantos["ok"]} ok, {quantos["falta"]} faltando, {quantos["?"]} '
-          f'nao conferivel por comando')
+    print(f'{quantos["ok"]} achei, {quantos["falta"]} nao achei, {quantos["?"]} '
+          f'fora do alcance de um comando')
 
     if not pendencias:
-        print(f'{VERDE}Nada falta do que da\' para conferir por comando.{FIM} '
-              f'Releia os "?" antes de postar no Moodle.')
+        print(f'{VERDE}Nao sobrou nada para olhar do que este script alcanca.{FIM}')
+        print('Isso NAO quer dizer entrega pronta: o que decide e o enunciado, e o que')
+        print('ele nao alcanca -- se o sistema sobe mesmo, se o texto responde ao que foi')
+        print('pedido -- e justamente o que mais pesa. Releia os "olhe" e o enunciado.')
         return 0
 
     print()
-    print(f'{NEGRITO}O que falta, na ordem em que compensa resolver:{FIM}')
+    print(f'{NEGRITO}Lugares para olhar, na ordem em que costuma compensar:{FIM}')
     for i, (_, nome, cura) in enumerate(sorted(pendencias, key=lambda x: x[0]), 1):
         print(f'  {i:>2}. {VERMELHO}{nome}{FIM}')
         for linha in quebrar(cura, 72):
