@@ -79,6 +79,8 @@ FECHO = re.compile(r'^\s*```')
 ATIVA_VENV = re.compile(r'(^|\s)\.\s+\S*venv\S*/bin/activate|source\s+\S*venv\S*/bin/activate')
 UV_ALVO = re.compile(r'uv\s+pip\s+install\b[^\n]*--python\s+\S*venv\S*')
 VENV_STDLIB = re.compile(r'python3?(\.\d+)?\s+-m\s+venv\b')
+COPIA_PASTA = re.compile(r'cp\s+-r\s+\S+?([\w.-]+)\s+"(\$PB_WS/src|\$PB_DIR)/"')
+LIMPA_ANTES = re.compile(r'rm\s+-rf\s+[^\n]*\$PB_')
 PIP_INSTALL = re.compile(r'(?<!uv )\bpip\s+install\b')
 
 
@@ -109,6 +111,12 @@ def conferir_venv(p: pathlib.Path, texto: str, achados: list):
     <venv>/bin/python`: ela diz onde instalar, entao nao existe "esqueci de
     ativar".
 
+    A terceira: `cp -r pasta destino/` quando `destino/pasta` ja' existe nao
+    substitui -- copia para DENTRO. O pacote vira `src/x/x`, o colcon continua
+    compilando a versao antiga, o launch sobe e os argumentos novos nao existem.
+    Nenhum erro em lugar nenhum. Por isso todo bloco que copia pasta tem de
+    limpar o destino antes.
+
     A segunda: `python -m venv` nao e' a ferramenta da disciplina. Ele depende
     do ensurepip (pacote python3.10-venv), falha calado quando ele falta, e ai
     a saida facil e' rodar o pip solto -- que e' exatamente a primeira regra.
@@ -122,6 +130,11 @@ def conferir_venv(p: pathlib.Path, texto: str, achados: list):
             achados.append((p, inicio, 'pip install em bloco sem venv ativo: cai em --user e '
                             'reescreve numpy/OpenCV/setuptools do ROS 2 (use uv pip install '
                             '--python <venv>/bin/python)', corpo.strip()[:88]))
+        if COPIA_PASTA.search(corpo) and not LIMPA_ANTES.search(corpo):
+            achados.append((p, inicio, 'cp -r de pasta para $PB_WS/src ou $PB_DIR sem rm -rf '
+                            'do destino no mesmo bloco: repetir o bloco ANINHA (src/x/x) e o '
+                            'colcon compila a versao velha sem dizer nada',
+                            corpo.strip()[:88]))
         if VENV_STDLIB.search(corpo):
             achados.append((p, inicio, 'a disciplina gerencia ambiente com uv: troque '
                             '`python3 -m venv` por `uv venv --system-site-packages`',

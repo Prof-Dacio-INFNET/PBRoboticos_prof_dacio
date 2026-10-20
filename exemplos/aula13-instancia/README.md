@@ -56,6 +56,9 @@ sudo apt install -y python3-opencv python3-numpy
 
 cd /tmp && rm -rf pb-a13 && \
   git clone --depth 1 https://github.com/Prof-Dacio-INFNET/PBRoboticos_prof_dacio.git pb-a13 && \
+  # a copia antiga sai antes: cp -r sobre pasta existente ANINHA (src/x/x),
+  # e o colcon passa a compilar a versao velha sem dizer nada
+  rm -rf "$PB_DIR/aula13-instancia" "$PB_WS/src/aula13_instancia" && \
   cp -r pb-a13/exemplos/aula13-instancia "$PB_DIR/" && \
   cp -r pb-a13/exemplos/aula13-instancia/aula13_instancia "$PB_WS/src/"
 ```

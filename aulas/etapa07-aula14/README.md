@@ -36,10 +36,26 @@ export PB_DIR="$HOME/projeto-pb-$PB_USER"
 export PB_WS="$PB_DIR/ros2_ws"
 
 cd /tmp && rm -rf pb-a14 && \
-  git clone --depth 1 https://github.com/Prof-Dacio-INFNET/PBRoboticos_prof_dacio.git pb-a14 && \
-  cp pb-a14/exemplos/tp3/revisar-entrega/revisar_tp3.py "$PB_DIR/" && \
-  cp -r pb-a14/exemplos/aula13-instancia "$PB_DIR/"
+  git clone --depth 1 https://github.com/Prof-Dacio-INFNET/PBRoboticos_prof_dacio.git pb-a14
+
+# a copia antiga sai antes: cp -r sobre pasta existente ANINHA (src/x/x),
+# e o colcon passa a compilar a versao velha sem dizer nada
+rm -rf "$PB_DIR/aula13-instancia" "$PB_WS/src/aula13_instancia"
+cp pb-a14/exemplos/tp3/revisar-entrega/revisar_tp3.py "$PB_DIR/"
+cp -r pb-a14/exemplos/aula13-instancia "$PB_DIR/"
+cp -r pb-a14/exemplos/aula13-instancia/aula13_instancia "$PB_WS/src/"
+cd "$PB_WS" && colcon build --symlink-install --packages-select aula13_instancia
+source install/setup.bash
 ```
+
+!!! warning "Você já tem a pasta da Aula 13 — e é por isso que o `rm -rf` está aí"
+    `cp -r origem destino/` quando `destino/origem` **já existe** não substitui: ele copia **para dentro**, e você fica com `src/aula13_instancia/aula13_instancia`. O `colcon` continua compilando a versão antiga, o launch sobe, e os argumentos novos (`saida:=`, `rviz:=`) simplesmente **não existem** — sem erro nenhum. Para conferir qual versão está instalada:
+
+    ```bash
+    ros2 launch aula13_instancia instancia.launch.py --show-args
+    ```
+
+    Tem de listar `metodo`, `saida`, `alpha`, `rviz`, `pasta` e `fps`. Se listar menos, é a versão antiga.
 
 !!! tip "A linha `: \"${PB_WS:?...}\"` que aparece nos blocos seguintes"
     Ela confere que as variáveis existem **neste** terminal. Abriu um terminal novo? Elas se perderam — e sem essa linha, `cd "$PB_DIR"` viraria `cd /`, que não falha dizendo o que faltou.

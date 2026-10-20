@@ -66,6 +66,9 @@ cd /tmp && git clone --depth 1 https://github.com/Prof-Dacio-INFNET/PBRoboticos_
 
 # 3) os dois exemplos vão para DENTRO do seu projeto, não para /tmp:
 #    a tarefa da semana é feita depois da aula, e /tmp some no reboot
+# a copia antiga sai antes: cp -r sobre pasta existente ANINHA (src/x/x),
+# e o colcon passa a compilar a versao velha sem dizer nada
+rm -rf "$PB_DIR/aula13-instancia" "$PB_DIR/aula13-veicular" "$PB_WS/src/aula13_instancia"
 cp -r /tmp/PBRoboticos_prof_dacio/exemplos/aula13-instancia "$PB_DIR/"
 cp -r /tmp/PBRoboticos_prof_dacio/exemplos/aula13-veicular  "$PB_DIR/"
 

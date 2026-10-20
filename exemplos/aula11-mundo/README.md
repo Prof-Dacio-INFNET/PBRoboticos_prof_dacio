@@ -19,6 +19,9 @@ export PB_WS="$PB_DIR/ros2_ws"
 
 cd /tmp && rm -rf pb-aula11 && \
   git clone --depth 1 https://github.com/Prof-Dacio-INFNET/PBRoboticos_prof_dacio.git pb-aula11 && \
+  # a copia antiga sai antes: cp -r sobre pasta existente ANINHA (src/x/x),
+  # e o colcon passa a compilar a versao velha sem dizer nada
+  rm -rf "$PB_WS/src/aula11_mundo" && \
   cp -r pb-aula11/exemplos/aula11-mundo/aula11_mundo "$PB_WS/src/" && \
   cd "$PB_WS" && colcon build --packages-select aula11_mundo && \
   source install/setup.bash
