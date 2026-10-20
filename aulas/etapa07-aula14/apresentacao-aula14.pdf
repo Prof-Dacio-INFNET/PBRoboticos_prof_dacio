@@ -512,7 +512,7 @@ endobj
 endobj
 38 0 obj
 <<
-/Author (anonymous) /CreationDate (D:20261020025655+00'00') /Creator (anonymous) /Keywords () /ModDate (D:20261020025655+00'00') /Producer (ReportLab PDF Library - \(opensource\)) 
+/Author (anonymous) /CreationDate (D:20261020032222+00'00') /Creator (anonymous) /Keywords () /ModDate (D:20261020032222+00'00') /Producer (ReportLab PDF Library - \(opensource\)) 
   /Subject (unspecified) /Title (PB Sistemas Roboticos - Aula 14) /Trapped /False
 >>
 endobj
@@ -673,10 +673,10 @@ Gas1]?#Q2t&:F5U(e&^`U\`o/&*$W78=ESYAAqT,<(4*'S`/ST!_58T8q28U%m-SE$PGL<RG".e3B1id
 endobj
 61 0 obj
 <<
-/Filter [ /ASCII85Decode /FlateDecode ] /Length 551
+/Filter [ /ASCII85Decode /FlateDecode ] /Length 625
 >>
 stream
-Garo>;/=o?'SYH9/'d0UMX2kHEq7jJ$\cI/eEeV;MPE-LQBbVH+T:uF[Z`:ZSHTdlcFNdn\:g(O:&i?<lOq;QJL&A?-kdK@(HdukOVZ,6&Hp3U`hu/'PpD?l?F5p,O=@Il7qZhO>DUgM.9-kOB:2:JJ&Ns?)H:7!TTEro]NFr,*\<Zi,\T%Z8BHH$JbSCqRqIg^#_r!HoDn&KD*?UTb#EmOREehKD8>;'H^FK2f:sQd"P\&"X_j,O(S=QR7sR&Ersb(>S!TM:Nf.Zkl'-r#&;4*K"_=Zin27ibI)4[Y;e+*t*mqcB)r!?YCFlL4p79%XE>j"[X3<bL=PMKgnSeb>Iq=UUCM0mo?f9XafW(H(k>aCZ)hG:&56cH`m2FTKnJ\pu)'"4<H.lWDKt\,U?FuK.^k?oNb\,Yd`Xu\*ljrDF9:-kjM*@G7L#Y7XT.[_%-ILE$Z>opE>j3Te>YK"S1tfXkNa8A,b1AN->jSRO&Y$#Z.]n"uKa;;QT#/Cl)",r?;PjbsM+jcF3!$-QOOhTjH,l3#m$7.]K#KD+A'n*~>endstream
+Gas2GbAQ&g&4Q?mMMnRi+J;/$VPF2tfKd"Tno08b[%V&7?n7'D8[WNP^*D;@gbu8?#U&;QjpoLqd,NNhmXS;oq.C0i;!u+tQD2%4>rcCdQD]muED`NBAO7/a/,3`-:ViGiO<t?[KAH3Z'mVFm!_aWj=JG$&Np]erX,M$hA-pFT+]O[A3D9\[]GM66+GV0CSb!N^+sfV!#dV@'-#BIudil6HTQaLfYs62:$lnn`)]VP-Pt_!eF$oR0dJ2#\\n)s\IRSNFVLPX2Dq=Y+5ndjC0p5*:nLb&"Z4f_S3QJIQ\]*-SIB*l$VR:-?hR!Kpl_E(a&"D/$HL![oKS@%ocM>QNGbi?>N9H"uS+&epE<r5n3TZXJp4LBF2cN+Sk]@rfLIqn6FfTF6HMR_$QRC95DdEYuDu0aIY?eWhd>jHEcg]l>R1Mp<J024:YqZN]O,+9(?84PQe<r7<X#l;5/i[1XPFb1.DF=o1)%7q3Rn!:EZfTVn_Tg(S/5ZrWJ'b2T5p)r1Xc3QJ3E#Bt:VVb]cXHC&@4p2S[1sA>ht*@Uk#C\]Kbk]&)<G/99dQ'`[WV\I3o+9sLK;n$3,_5@kK-sS6G;94;Oha'noK+MRH6/(Ll2hgIKA<0o=+~>endstream
 endobj
 62 0 obj
 <<
@@ -805,19 +805,19 @@ xref
 0000021559 00000 n 
 0000022286 00000 n 
 0000023118 00000 n 
-0000023760 00000 n 
-0000024550 00000 n 
-0000024976 00000 n 
-0000025742 00000 n 
-0000026394 00000 n 
-0000027287 00000 n 
-0000027702 00000 n 
-0000028522 00000 n 
-0000029257 00000 n 
+0000023834 00000 n 
+0000024624 00000 n 
+0000025050 00000 n 
+0000025816 00000 n 
+0000026468 00000 n 
+0000027361 00000 n 
+0000027776 00000 n 
+0000028596 00000 n 
+0000029331 00000 n 
 trailer
 <<
 /ID 
-[<2692235b2f6533908dfb61d1ae3cf2a7><2692235b2f6533908dfb61d1ae3cf2a7>]
+[<7b435a6ec6beb874054054e32ecfdc53><7b435a6ec6beb874054054e32ecfdc53>]
 % ReportLab generated PDF document -- digest (opensource)
 
 /Info 38 0 R
@@ -825,5 +825,5 @@ trailer
 /Size 71
 >>
 startxref
-29943
+30017
 %%EOF

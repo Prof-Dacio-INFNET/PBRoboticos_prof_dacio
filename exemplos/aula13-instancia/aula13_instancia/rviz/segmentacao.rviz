@@ -10,6 +10,9 @@
 # Nao ha display 3D nenhum aqui de proposito: este arquivo e para OLHAR A
 # IMAGEM. O Fixed Frame continua sendo `camera` porque e o frame_id que o no
 # escreve no header, e o RViz2 reclama se o Fixed Frame nao existir na arvore.
+# Por isso o launch sobe um static_transform_publisher world->camera junto com
+# o RViz2: a imagem apareceria sem ele, mas o painel ficaria amarelo -- e aviso
+# amarelo que nao significa nada e caro numa disciplina que ensina a olhar aviso.
 Panels:
   - Class: rviz_common/Displays
     Name: Displays

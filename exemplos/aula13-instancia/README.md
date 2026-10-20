@@ -244,8 +244,17 @@ rviz2 -d "$PB_WS/install/aula13_instancia/share/aula13_instancia/rviz/segmentaca
 
 Ou na mão, que é o que o enunciado cobra saber fazer: **Add** → **By display type** → **Image** → em `Topic`, `/vision/segmented`. (O display **Camera** também mostra imagem, mas exige `camera_info` e um frame na TF; este exemplo não publica nenhum dos dois, então use o **Image**.)
 
-!!! danger "QoS: a imagem não aparece e **não há erro**"
-    Este nó publica imagem como dado de sensor, com **`BEST_EFFORT`**. Um display que peça `RELIABLE` — que é o padrão do RViz2 — simplesmente **não recebe nada**: o painel fica cinza, o `ros2 topic hz` mostra o tópico publicando normalmente, e **não aparece mensagem de erro em lugar nenhum**. QoS incompatível não dá erro, dá silêncio.
+!!! danger "QoS: a imagem não aparece, e o aviso está do outro lado"
+    Este nó publica imagem como dado de sensor, com **`BEST_EFFORT`**. Um display que peça `RELIABLE` — que é o padrão do RViz2 — simplesmente **não recebe nada**: o painel fica cinza, o status do display continua `Ok`, e o `ros2 topic hz` mostra o tópico publicando normalmente.
+
+    O RViz2 não reclama. **Quem reclama é o publicador**, no terminal do launch:
+
+    ```
+    [WARN] New subscription discovered on topic '/vision/segmented', requesting
+    incompatible QoS. No messages will be sent to it. Last incompatible policy: RELIABILITY
+    ```
+
+    Quem avisa é quem não consegue entregar, não quem não recebe — e é por isso que o erro parece silencioso: você está olhando para a janela errada.
 
     No display `Image`, abra `Topic` e ponha **Reliability Policy: Best Effort**. O `rviz/segmentacao.rviz` deste pacote já vem assim — e é por isso que ele existe.
 

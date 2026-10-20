@@ -76,6 +76,16 @@ def generate_launch_description():
                          {'metodo': ParameterValue(metodo, value_type=str),
                           'saida': ParameterValue(saida, value_type=str),
                           'alpha': ParameterValue(alpha, value_type=float)}]),
+        # O frame `camera` existir e' o que tira o "Global Status: Warn" do
+        # RViz2. As imagens nao precisam de TF para aparecer -- o aviso vem do
+        # Fixed Frame, que e' do mundo 3D --, mas painel amarelo numa aula que
+        # ensina a desconfiar de aviso e' ruido caro: o aluno passa a ignorar
+        # amarelo, e o proximo amarelo vai ser de verdade. Pai `world` de
+        # proposito: `map` e' do SLAM, e colidir com ele seria pior que o aviso.
+        Node(package='tf2_ros', executable='static_transform_publisher',
+             name='tf_camera', output='log',
+             condition=IfCondition(rviz),
+             arguments=['0', '0', '0', '0', '0', '0', 'world', 'camera']),
         # rviz:=true abre o RViz2 com o display Image ja apontado e em
         # Best Effort. Fica desligado por padrao para o launch continuar
         # subindo em maquina sem tela (CI, servidor, WSL sem X).

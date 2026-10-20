@@ -181,8 +181,19 @@ O `--system-site-packages` é o que faz isso funcionar: o ambiente enxerga o `rc
 rviz2 -d "$PB_WS/src/aula13_instancia/rviz/segmentacao.rviz"
 ```
 
-!!! warning "A imagem não aparece no RViz2 e não há erro nenhum"
-    É QoS. Tópico de imagem costuma ser publicado como **Best Effort**; se o display do RViz2 estiver em **Reliable**, os dois não se encontram e **nada é dito**. No display `Image`, abra `Topic → Reliability Policy` e ponha `Best Effort`. Confirme antes que há publicador: `ros2 topic hz /vision/segmented`.
+!!! warning "A imagem não aparece no RViz2 — e o aviso está no terminal errado"
+    É QoS. Tópico de imagem costuma ser publicado como **Best Effort**; se o display do RViz2 estiver em **Reliable**, os dois não se encontram. O RViz2 **não diz nada**: o painel fica cinza e o status continua verde.
+
+    Mas a informação existe — no terminal de **quem publica**:
+
+    ```
+    [WARN] New subscription discovered on topic '/vision/segmented', requesting
+    incompatible QoS. No messages will be sent to it. Last incompatible policy: RELIABILITY
+    ```
+
+    Quem avisa é quem **não consegue entregar**, não quem não recebe. É o tipo de coisa que você só encontra se souber que ela existe — e por isso vale deixar o terminal do launch visível enquanto mexe no RViz2.
+
+    A cura: no display `Image`, `Topic → Reliability Policy` → **Best Effort**. O `rviz/segmentacao.rviz` do pacote já vem assim.
 
 **Como adequar ao seu projeto:** o YOLO pré-treinado conhece as 80 classes do COCO — não conhece "peça vermelha do meu projeto". Se o seu domínio não está no COCO, você tem três saídas defensáveis, e todas valem desde que **escritas**: usar as classes do COCO que existirem na sua cena; votar a classe pela cor dentro da máscara do modelo; ou usar o detector clássico e dizer, com a tabela da Aula 13, por que ele ganhou no seu caso.
 
