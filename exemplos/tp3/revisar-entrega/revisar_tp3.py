@@ -40,7 +40,23 @@ PRAZO = 'sexta, 23/10'
 
 # Pastas que sao resultado de build ou do git: achado la' dentro nao e' entrega.
 IGNORAR = {'.git', 'build', 'install', 'log', '__pycache__', 'node_modules',
-           '.venv', 'venv', '.mypy_cache', '.pytest_cache'}
+           '.venv', 'venv', 'site-packages', 'dist-packages',
+           '.mypy_cache', '.pytest_cache'}
+# Prefixos: o ambiente do YOLO costuma se chamar `.venv-yolo`, e dentro dele ha
+# milhares de arquivos de biblioteca. Procurar la dentro produz achado que nao e
+# do aluno -- chegou a acusar "mistura com transparencia" por causa de um plugin
+# do Pillow -- e conta como pendencia de commit o que e ambiente, nao trabalho.
+PREFIXOS_IGNORADOS = ('.venv', 'venv-', '.env')
+
+
+def ignorado(partes) -> bool:
+    """Diz se o caminho cai em pasta que nao e codigo do aluno."""
+    for parte in partes:
+        if parte in IGNORAR or parte.startswith(PREFIXOS_IGNORADOS):
+            return True
+        if parte.endswith(('.egg-info', '.dist-info')):
+            return True
+    return False
 
 IMAGENS = ('.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp')
 
@@ -90,7 +106,7 @@ def conferir(nome, estado, detalhe='', ordem=99, cura=''):
 
 def achar(raiz, padrao):
     """Arquivos que casam com o padrao, fora das pastas de build e do .git."""
-    return sorted(p for p in raiz.rglob(padrao) if not IGNORAR & set(p.parts))
+    return sorted(p for p in raiz.rglob(padrao) if not ignorado(p.parts))
 
 
 def rel(raiz, caminho):
@@ -571,10 +587,14 @@ def git_entrega(raiz, evid):
     if not ok:
         conferir('nada pendente de commit', '?', 'git status nao respondeu')
         return
-    linhas = [l for l in saida.splitlines() if l.strip()]
+    todas = [l for l in saida.splitlines() if l.strip()]
+    linhas = [l for l in todas
+              if not ignorado(pathlib.PurePosixPath(l[3:].strip('"')).parts)]
+    ambiente = len(todas) - len(linhas)
+    extra = f' (+{ambiente} de ambiente virtual, ignorados)' if ambiente else ''
     if linhas:
         conferir('nada pendente de commit', 'falta',
-                 f'{len(linhas)} arquivo(s) modificado(s) ou nao rastreado(s)', ordem=81,
+                 f'{len(linhas)} arquivo(s) modificado(s) ou nao rastreado(s){extra}', ordem=81,
                  cura='git add -A && git commit -m "G3.x: ..." && git push -- '
                       'trabalho nao commitado nao existe para a correcao')
     else:
