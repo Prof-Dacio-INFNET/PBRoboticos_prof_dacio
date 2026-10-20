@@ -21,6 +21,7 @@ Pacotes ROS 2 prontos para rodar, usados em aula e pensados para serem **copiado
 | [`aula12-slam`](aula12-slam/index.md) | Aula 12 | o SLAM assume `map → odom`, e o mapa construído é medido contra a verdade | gate G3.3 do TP3 |
 | [`aula13-instancia`](aula13-instancia/index.md) | Aula 13 | da máscara à instância: o que se encosta vira um objeto só, e a régua que acusa | gate G3.4 do TP3 |
 | [`aula13-veicular`](aula13-veicular/index.md) | Aula 13 | cor → borda → reta sobre estrada sintética, e qual etapa quebra em cada condição | gates G3.5 e G4.5 |
+| [`tp3/conferir-entrega`](tp3/conferir-entrega/index.md) | Aula 14 | confere a entrega do TP3 item por item e devolve o que falta, na ordem de resolver | gates G3.0 a G3.6 |
 
 ## Exemplos por TP
 

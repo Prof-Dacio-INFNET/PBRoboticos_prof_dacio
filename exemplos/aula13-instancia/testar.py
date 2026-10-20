@@ -18,10 +18,12 @@ import subprocess
 import sys
 import tempfile
 
+import cv2
 import numpy as np
 
 from cena import desenhar_pecas, gravar_cena
-from instancia import CONFIG_PADRAO, DETECTORES, modelo_disponivel
+from instancia import (CONFIG_PADRAO, DETECTORES, cor_da_classe,
+                       instancia_de_mascara, modelo_disponivel, sobrepor_classes)
 from avaliar import analisar
 
 AQUI = pathlib.Path(__file__).resolve().parent
@@ -178,6 +180,76 @@ else:
              'cor_conectada' in saida_m and 'cor_watershed' in saida_m)
 saida_so, rc_so = rodar('modelo', '--pasta', str(pasta_solta))
 conferir('pedir so o modelo tambem nao estoura', rc_so == 0)
+
+print('8. sobreposicao POR CLASSE (o item 3 do enunciado do TP3)')
+ALPHA = 0.5
+quadro8, _, _ = cena_de(SEPARADAS)
+inst8 = DETECTORES['cor_conectada'](quadro8, CONFIG_PADRAO)
+sobre8 = sobrepor_classes(quadro8, inst8, ALPHA)
+conferir('sai do tamanho e do tipo do frame',
+         sobre8.shape == quadro8.shape and sobre8.dtype == quadro8.dtype,
+         '%s %s' % (sobre8.shape, sobre8.dtype))
+
+uniao8 = np.zeros(quadro8.shape[:2], bool)
+for inst in inst8:
+    uniao8 |= inst['mascara'] > 0
+# Os rotulos pintam FORA da mascara de proposito -- sao anotacao, nao camada.
+# A caixa de texto nasce no canto da bbox e sobe, entao mora dentro da bbox
+# alargada; e esse o unico lugar fora da mascara onde a figura pode mexer.
+anota8 = np.zeros_like(uniao8)
+for inst in inst8:
+    x, y, w, h = inst['bbox']
+    anota8[max(0, y - 30):y + h, max(0, x - 4):x + max(w, 140)] = True
+fora8 = (~uniao8) & (~anota8)
+conferir('fora da mascara (e do rotulo) o pixel e o ORIGINAL, byte a byte',
+         np.array_equal(sobre8[fora8], quadro8[fora8]),
+         '%d px conferidos' % int(fora8.sum()))
+mudou8 = np.any(sobre8 != quadro8, axis=2)
+conferir('dentro da mascara, todo pixel mudou',
+         bool(mudou8[uniao8].all()),
+         '%d de %d px' % (int(mudou8[uniao8].sum()), int(uniao8.sum())))
+
+# A transparencia e literalmente a do enunciado: 0,5 do frame + 0,5 da cor da
+# classe. O contorno vai solido por cima da borda, entao a conta se confere no
+# INTERIOR da mascara (erodido), que e onde a mistura manda.
+inst_um = inst8[0]
+nucleo8 = cv2.erode((inst_um['mascara'] > 0).astype(np.uint8), np.ones((7, 7), np.uint8))
+dentro8 = nucleo8 > 0
+esperado8 = ((1.0 - ALPHA) * quadro8[dentro8].astype(float)
+             + ALPHA * np.array(cor_da_classe(inst_um['classe']), float))
+erro8 = float(np.abs(sobre8[dentro8].astype(float) - esperado8).max()) if dentro8.any() else 9.0
+conferir('a mistura e exatamente alpha=%.1f sobre o frame' % ALPHA, erro8 <= 1.0,
+         'maior desvio %.1f nivel(is) em %d px' % (erro8, int(dentro8.sum())))
+
+classes8 = {inst['classe'] for inst in inst8}
+cores8 = {tuple(cor_da_classe(c)) for c in classes8}
+conferir('uma cor por CLASSE, e classes diferentes com cores diferentes',
+         len(cores8) == len(classes8) == 3, ', '.join(sorted(classes8)))
+conferir('a cor da classe nao muda de execucao para execucao',
+         cor_da_classe('vermelho') == cor_da_classe('vermelho')
+         and cor_da_classe('vermelho') != cor_da_classe('azul'))
+
+# Duas instancias ADJACENTES e da MESMA classe, montadas a mao: dividem a
+# fronteira em x=120, sem 1 px de folga. E o caso que a cor por classe esconde
+# -- a mesma fusao da Aula 13, voltando pela porta da frente.
+fundo_par = np.full((120, 240, 3), 200, np.uint8)
+m_a, m_b = (np.zeros((120, 240), np.uint8) for _ in range(2))
+m_a[30:90, 40:120] = 255
+m_b[30:90, 120:200] = 255
+par = [instancia_de_mascara(m_a, 'azul'), instancia_de_mascara(m_b, 'azul')]
+uniao_par = (m_a > 0) | (m_b > 0)
+sem_borda = sobrepor_classes(fundo_par, par, ALPHA, contorno=False)
+com_borda = sobrepor_classes(fundo_par, par, ALPHA, contorno=True)
+cores_sem = np.unique(sem_borda[uniao_par].reshape(-1, 3), axis=0)
+juncao = np.zeros_like(uniao_par)
+juncao[30:90, 117:123] = True
+linha = int(np.any(com_borda != sem_borda, axis=2)[juncao].sum())
+conferir('sem contorno, duas pecas da mesma classe sao UMA mancha so',
+         len(cores_sem) == 1, '%d cor(es) na uniao das duas' % len(cores_sem))
+conferir('com contorno, a juncao das duas fica visivel', linha >= 60,
+         '%d px de linha na faixa de encontro' % linha)
+conferir('e o contorno nao vaza para fora da mascara',
+         np.array_equal(com_borda[~uniao_par], sem_borda[~uniao_par]))
 
 print()
 if falhas:

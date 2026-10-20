@@ -18,8 +18,9 @@ O bloco tem dez etapas de conteúdo distribuídas em dois trimestres (26T3, de 2
 | [Aula 10](etapa05-aula10/index.md) | 22/09/2026 | 5 | Aterrissagem do TP2: clínica de URDF e bringup | <span class="pb-tag ok">dada</span> |
 | [Aula 11](etapa06-aula11/index.md) | 29/09/2026 | 6 | O mundo, a deriva e o mapa que corrige | <span class="pb-tag ok">dada</span> |
 | [Aula 12](etapa06-aula12/index.md) | 06/10/2026 | 6 | O SLAM paga a conta da deriva | <span class="pb-tag ok">dada</span> |
-| [Aula 13](etapa07-aula13/index.md) | 13/10/2026 | 7 | Achar não é acertar: instância e percepção veicular | <span class="pb-tag next">próxima</span> |
-| Aula 14 | 20/10/2026 | 7 | Aterrissagem do TP3: clínica e fechamento das evidências | <span class="pb-tag soon">a seguir</span> |
+| [Aula 13](etapa07-aula13/index.md) | 13/10/2026 | 7 | Achar não é acertar: instância e percepção veicular | <span class="pb-tag ok">dada</span> |
+| [Aula 14](etapa07-aula14/index.md) | 20/10/2026 | 7 | Aterrissagem do TP3: o enunciado, item por item | <span class="pb-tag next">próxima</span> |
+| Aula 15 | 27/10/2026 | 8 | Navegação autônoma: o Nav2 em cima do seu mapa | <span class="pb-tag soon">a seguir</span> |
 
 !!! note "Por que as Aulas 4 e 5 apontam para a página da Aula 3"
     O material da Aula 3 é denso e foi trabalhado ao longo de três encontros — 04, 11 e 18/08 —, com a leitura oficial do TP1 no último deles. As datas do calendário não mudaram; o que mudou foi o ritmo, e isso é normal num bloco prático. As três aulas compartilham a mesma página porque compartilham o mesmo conteúdo.

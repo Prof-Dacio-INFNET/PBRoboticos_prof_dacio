@@ -51,13 +51,14 @@ def _achar_pacote():
 ONDE_PACOTE = _achar_pacote()
 
 from aula13_instancia.instancia import (                             # noqa: E402
-    CLASSES_PADRAO, CONFIG_PADRAO, DETECTORES, INSTRUCAO_MODELO, PALETA,
-    ModeloIndisponivel, cor_conectada, cor_watershed, detectar,
-    instancia_de_mascara, mascara_classe, modelo, modelo_disponivel, opcao,
-    pintar_instancias)
+    CLASSES_PADRAO, CONFIG_PADRAO, CORES_CLASSE, DETECTORES, INSTRUCAO_MODELO,
+    PALETA, PALETA_CLASSE, ModeloIndisponivel, cor_conectada, cor_da_classe,
+    cor_watershed, detectar, instancia_de_mascara, mascara_classe, modelo,
+    modelo_disponivel, opcao, pintar_instancias, sobrepor_classes)
 
-__all__ = ['CLASSES_PADRAO', 'CONFIG_PADRAO', 'DETECTORES', 'INSTRUCAO_MODELO',
-           'ONDE_PACOTE', 'PALETA', 'ModeloIndisponivel', 'cor_conectada',
+__all__ = ['CLASSES_PADRAO', 'CONFIG_PADRAO', 'CORES_CLASSE', 'DETECTORES',
+           'INSTRUCAO_MODELO', 'ONDE_PACOTE', 'PALETA', 'PALETA_CLASSE',
+           'ModeloIndisponivel', 'cor_conectada', 'cor_da_classe',
            'cor_watershed', 'detectar', 'instancia_de_mascara',
            'mascara_classe', 'modelo', 'modelo_disponivel', 'opcao',
-           'pintar_instancias']
+           'pintar_instancias', 'sobrepor_classes']

@@ -5,10 +5,22 @@
 # `instancia.py`, que é o mesmo código medido offline pelo `avaliar.py`.
 segmentador_instancia:
   ros__parameters:
-    metodo: cor_conectada     # cor_conectada | cor_watershed
+    metodo: cor_conectada     # cor_conectada | cor_watershed | modelo
     area_min: 400.0           # px²; abaixo disso é sal-e-pimenta, não peça
     nucleo: 5                 # lado do elemento estruturante da morfologia
     fracao_semente: 0.60      # altura do corte na transformada de distância
+
+    # O QUE vai em /vision/segmented. `metodo` escolhe o algoritmo; `saida`
+    # escolhe a figura. São perguntas diferentes e parâmetros diferentes.
+    #
+    #   classe_alpha  máscaras coloridas POR CLASSE, com transparência `alpha`
+    #                 sobre o frame e contorno por instância — é o que o item 3
+    #                 do enunciado do TP3 pede. PADRÃO desde esta versão.
+    #   instancia     uma cor por INSTÂNCIA: o comportamento anterior deste nó,
+    #                 e a figura que mostra a fusão da Aula 13 na tela.
+    #   mascara       só a camada por classe, sobre fundo preto, sem o frame.
+    saida: classe_alpha
+    alpha: 0.5                # transparência da camada (0 a 1); vale em classe_alpha
 
     classes: [vermelho, azul, verde]
 

@@ -7,6 +7,7 @@ setup(
         ('share/'+package_name, ['package.xml']),
         ('share/'+package_name+'/launch', ['launch/instancia.launch.py']),
         ('share/'+package_name+'/config', ['config/instancia.yaml']),
+        ('share/'+package_name+'/rviz', ['rviz/segmentacao.rviz']),
     ],
     install_requires=['setuptools'], zip_safe=True,
     maintainer='Prof. Dacio', maintainer_email='dacioms@exemplo.com',

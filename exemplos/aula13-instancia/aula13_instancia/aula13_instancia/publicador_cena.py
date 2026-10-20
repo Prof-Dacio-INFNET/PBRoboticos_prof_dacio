@@ -12,7 +12,8 @@ parametro, encoding), nao no algoritmo -- e isso ja e meio diagnostico pronto.
 
 Se a pasta nao for encontrada, o no publica um quadro de RESERVA, desenhado
 aqui mesmo: duas pecas encostadas e uma solta. Nao e a cena medida -- e o
-minimo para o launch nao subir vazio e para dar o que olhar no rqt_image_view.
+minimo para o launch nao subir vazio e para dar o que olhar no RViz2 (ou no
+rqt_image_view, se preferir).
 """
 import os
 import pathlib

@@ -27,6 +27,14 @@ O PONTO DA AULA, em uma frase: a segmentacao por cor diz ONDE ha objeto, nao
 QUANTOS. Duas pecas que se encostam viram uma componente conexa, e o detector
 devolve "1" com toda a convicao -- sem excecao, sem aviso, com uma contagem
 plausivel. Erro que nao da erro e o erro mais caro que existe.
+
+AS DUAS FIGURAS, no fim do arquivo (o no escolhe uma pelo parametro `saida`):
+
+  pintar_instancias   uma cor por INSTANCIA. E a figura da aula: duas pecas
+                      encostadas pintadas de uma cor so e a fusao na tela.
+  sobrepor_classes    uma cor por CLASSE, translucida (alpha) sobre o frame, com
+                      contorno por instancia. E o que o item 3 do enunciado do
+                      TP3 pede, e o padrao do /vision/segmented.
 """
 import cv2
 import numpy as np
@@ -362,4 +370,128 @@ def pintar_instancias(bgr, instancias, alfa=0.55, contorno=True):
             cnts, _ = cv2.findContours((inst['mascara'] > 0).astype(np.uint8),
                                        cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             cv2.drawContours(saida, cnts, -1, PALETA[i % len(PALETA)], 2)
+    return saida
+
+
+# --------------------------------------------------------------------------
+# Sobreposicao POR CLASSE -- o que o item 3 do enunciado do TP3 pede
+# --------------------------------------------------------------------------
+# Paleta da camada por CLASSE (BGR). Proposito diferente da PALETA acima, e por
+# isso as cores sao outras: la a cor diz QUAL instancia, aqui ela diz QUAL
+# classe, e a camada entra translucida sobre o frame.
+#
+# Por que ela NAO usa a cor do proprio objeto (o 'cor' de CLASSES_PADRAO):
+# misturar vermelho com vermelho a 50% devolve vermelho. A mascara ficaria
+# invisivel exatamente onde ela precisa aparecer -- sobre o objeto. Entao a
+# camada usa cores que o dominio nao usa, e quem diz o nome da classe e o
+# rotulo de texto. Para forcar a cor do dominio, veja CORES_CLASSE abaixo.
+#
+# A ORDEM importa, e foi escolhida olhando a tela: misturar duas cores
+# COMPLEMENTARES a 50% devolve cinza (vermelho sob ciano vira cinza, e parece
+# defeito). As posicoes em que as tres classes deste exemplo caem levam cores
+# vizinhas, nao opostas, e a peca sai tingida em vez de lavada.
+PALETA_CLASSE = ((130, 160, 40), (30, 140, 245), (220, 200, 30), (200, 40, 200),
+                 (60, 230, 140), (170, 60, 90), (150, 120, 255), (40, 210, 230))
+
+# Ponto de extensao de uma linha, para o SEU dominio:
+#     from aula13_instancia import instancia
+#     instancia.CORES_CLASSE['tomate_maduro'] = (40, 40, 210)
+CORES_CLASSE = {}
+
+
+def cor_da_classe(classe):
+    """Cor BGR estavel por NOME de classe: a mesma em toda execucao.
+
+    Nao usa hash(): o hash de str do Python e semeado por processo
+    (PYTHONHASHSEED), e a cor de uma classe mudaria de uma execucao para a
+    outra -- o que inutiliza comparar duas capturas de tela, que e metade do
+    trabalho do relatorio do TP3.
+
+    Com mais classes do que cores na paleta ha repeticao. E aceitavel porque o
+    rotulo de texto desempata; quando atrapalhar, fixe a cor em CORES_CLASSE.
+    """
+    nome = str(classe)
+    if nome in CORES_CLASSE:
+        return CORES_CLASSE[nome]
+    soma = 0
+    for i, letra in enumerate(nome):
+        soma += (i + 1) * ord(letra)
+    return PALETA_CLASSE[soma % len(PALETA_CLASSE)]
+
+
+def _tinta_do_rotulo(cor):
+    """Preto ou branco -- o que tiver contraste com o fundo do rotulo."""
+    b, g, r = (int(v) for v in cor)
+    luz = 0.114 * b + 0.587 * g + 0.299 * r
+    return (0, 0, 0) if luz > 140 else (255, 255, 255)
+
+
+def _rotular(img, texto, canto, cor):
+    """Nome da classe com retangulo SOLIDO atras, ancorado no canto da bbox.
+
+    O fundo solido nao e enfeite: texto fino sobre mascara translucida nao se
+    le no projetor da sala nem no print do relatorio. A caixa sobe a partir do
+    topo da bbox e e presa dentro do quadro, para nao sair pela borda.
+    """
+    fonte, escala, grossura = cv2.FONT_HERSHEY_SIMPLEX, 0.45, 1
+    (largura_txt, altura_txt), base = cv2.getTextSize(texto, fonte, escala, grossura)
+    caixa_l, caixa_a = largura_txt + 6, altura_txt + base + 6
+    altura, largura = img.shape[:2]
+    x = max(0, min(int(canto[0]), largura - caixa_l - 1))
+    y = max(caixa_a, min(int(canto[1]), altura - 1))
+    cv2.rectangle(img, (x, y - caixa_a), (x + caixa_l, y), cor, -1)
+    cv2.putText(img, texto, (x + 3, y - base - 3), fonte, escala,
+                _tinta_do_rotulo(cor), grossura, cv2.LINE_AA)
+
+
+def sobrepor_classes(bgr, instancias, alpha=0.5, contorno=True):
+    """Mascaras coloridas POR CLASSE, com transparencia, sobre o frame.
+
+    E o item 3 do enunciado do TP3 ao pe da letra: uma cor por CLASSE (nao por
+    instancia), misturada com `alpha` sobre o quadro original, pronta para ir
+    ao /vision/segmented e ser vista no RViz2.
+
+    Tres decisoes que parecem detalhe e nao sao:
+
+    1. A mistura acontece SO onde ha mascara. Um addWeighted no quadro inteiro
+       escurece o fundo tambem, e a imagem deixa de ser comparavel com o frame
+       cru -- que e o uso numero um dela no relatorio. Fora da uniao das
+       mascaras o pixel sai identico ao original, byte a byte; so o rotulo
+       escreve por cima, porque e anotacao, nao mascara.
+    2. O contorno de cada INSTANCIA vai em cor solida, recortado na mascara.
+       Sem ele, duas pecas da MESMA classe encostadas viram uma mancha unica --
+       a cor diz a classe, e a classe das duas e a mesma. E a fusao da Aula 13
+       voltando pela porta da frente: a camada por classe a esconde de novo, e
+       o contorno e o que impede.
+    3. Cada instancia leva o nome da classe com fundo solido atras do texto.
+
+    Compare com `pintar_instancias`, ao lado: la a cor diz QUAL objeto, aqui
+    ela diz DE QUE tipo. Sao as duas perguntas do TP3, e nao a mesma figura.
+    """
+    alpha = float(min(max(float(alpha), 0.0), 1.0))
+    camada = np.zeros_like(bgr)
+    uniao = np.zeros(bgr.shape[:2], np.uint8)
+    for inst in instancias:
+        dentro = inst['mascara'] > 0
+        camada[dentro] = cor_da_classe(inst.get('classe', 'desconhecida'))
+        uniao[dentro] = 255
+    misturado = cv2.addWeighted(bgr, 1.0 - alpha, camada, alpha, 0)
+    saida = np.ascontiguousarray(
+        np.where(uniao[:, :, None] > 0, misturado, bgr), dtype=np.uint8)
+
+    if contorno:
+        for inst in instancias:
+            cnts, _ = cv2.findContours((inst['mascara'] > 0).astype(np.uint8),
+                                       cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            cv2.drawContours(saida, cnts, -1,
+                             cor_da_classe(inst.get('classe', 'desconhecida')), 2)
+        # O traco de 2 px fica metade para fora da mascara; devolver o que
+        # esta fora da uniao mantem a promessa do item 1 acima.
+        fora = uniao == 0
+        saida[fora] = bgr[fora]
+
+    for inst in instancias:
+        x, y, _, _ = inst['bbox']
+        classe = str(inst.get('classe', 'desconhecida'))
+        _rotular(saida, classe, (x, y - 1), cor_da_classe(classe))
     return saida

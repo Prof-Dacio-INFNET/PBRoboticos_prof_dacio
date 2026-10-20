@@ -13,6 +13,7 @@ aula13-instancia/
     ├── aula13_instancia/segmentador_instancia.py
     ├── aula13_instancia/publicador_cena.py
     ├── config/instancia.yaml
+    ├── rviz/segmentacao.rviz          # display Image já em Best Effort
     └── launch/instancia.launch.py
 ```
 
@@ -26,6 +27,22 @@ cena.py ──> cena/ ──>  │ instancia.py                     │
                        │   modelo         (YOLOv8-seg)    │ ──> /vision/segmented
                        └──────────────────────────────────┘      /vision/instancias
 ```
+
+## O que o enunciado do TP3 pede, item 3
+
+| O que o enunciado pede | O que o exemplo faz | O comando |
+|---|---|---|
+| aplicar **YOLO** em imagem ou vídeo do seu ambiente, para **segmentação por instância** | o detector `modelo` é um adaptador para o `ultralytics` YOLOv8-seg e obedece ao mesmo contrato dos outros dois — entra como mais uma linha da tabela, não como ato de fé | `ros2 launch aula13_instancia instancia.launch.py metodo:=modelo` (com o venv — [duas formas](#rodar-o-modelo-dentro-do-ros-2)) |
+| máscaras coloridas **por classe**, com **transparência 0,5**, sobrepostas ao frame | `sobrepor_classes`: uma cor por classe, mistura 0,5 **só onde há máscara**, contorno sólido por instância e o nome da classe com fundo atrás. É o padrão `saida: classe_alpha` | `ros2 launch aula13_instancia instancia.launch.py` |
+| publicar em **`/vision/segmented`** para ver no **RViz2** | o tópico é o mesmo de sempre; o pacote traz um `rviz/segmentacao.rviz` com o display `Image` apontado e já em **Best Effort** | `ros2 launch aula13_instancia instancia.launch.py rviz:=true` |
+
+**O padrão mudou.** Até esta versão, `/vision/segmented` saía sempre com uma cor por **instância**; agora sai com a cor por **classe** e transparência, porque é isso que o enunciado pede. A figura antiga continua a uma palavra de distância — `saida:=instancia` — e continua sendo a que mostra a fusão da Aula 13 na tela. São duas perguntas diferentes, e o nó agora responde às duas:
+
+| `saida` | a cor diz | serve para |
+|---|---|---|
+| `classe_alpha` (padrão) | **de que tipo** é o objeto | a entrega do TP3: classe + transparência sobre o frame |
+| `instancia` | **qual** objeto é | ver a fusão: duas peças encostadas de uma cor só |
+| `mascara` | de que tipo, sem o frame | conferir a máscara quando o fundo polui a vista |
 
 ## Baixar
 
@@ -149,6 +166,39 @@ E aqui está a parte honesta, que vale documentar porque o aluno vai cair nela: 
 
 O híbrido costuma ser a resposta certa no TP3 — o modelo acha a instância, a cor vota a classe dentro da máscara. São três linhas, e já estão escritas: `cfg['classe_por_cor'] = True`.
 
+### Rodar o `modelo` dentro do ROS 2
+
+Aqui mora um atrito real, e ele não é do exemplo: o `ultralytics` vive no venv, e os nós ROS 2 rodam com o **python do sistema** — o do `/usr/bin/python3`. Instalar no venv não muda nada para o nó. Por isso o venv da disciplina nasce com `--system-site-packages`: ele **enxerga** o `rclpy`, o `cv_bridge` e o OpenCV do apt, e o caminho inverso (o nó enxergar o venv) é o que as duas receitas abaixo resolvem.
+
+```bash
+# ── herda PB_USER, PB_DIR e PB_WS do bloco de download ──
+: "${PB_WS:?defina PB_USER, PB_DIR e PB_WS — o bloco está no topo desta página}"
+cd "$PB_DIR/aula13-instancia"
+uv venv --system-site-packages .venv-yolo
+uv pip install --python .venv-yolo/bin/python ultralytics
+```
+
+**A) Emprestando o `site-packages` do venv ao `ros2 launch`.** Continua tudo igual — `ros2 launch`, `ros2 run`, `ros2 param` —, só que o python do sistema passa a achar o `ultralytics`:
+
+```bash
+PYTHONPATH="$PWD/.venv-yolo/lib/python3.10/site-packages:$PYTHONPATH" \
+  ros2 launch aula13_instancia instancia.launch.py metodo:=modelo
+```
+
+**B) Rodando o executável instalado com o python do venv.** Sem `ros2 run` no meio: o `colcon` instala o nó como um script, e qualquer python que enxergue o `rclpy` pode executá-lo. Como o venv foi criado com `--system-site-packages`, ele enxerga:
+
+```bash
+# ── herda PB_USER, PB_DIR e PB_WS do bloco de download ──
+: "${PB_WS:?defina PB_USER, PB_DIR e PB_WS — o bloco está no topo desta página}"
+.venv-yolo/bin/python "$PB_WS/install/aula13_instancia/lib/aula13_instancia/segmentador_instancia" \
+  --ros-args -p metodo:=modelo
+```
+
+A (A) é a que mantém o launch inteiro de pé e costuma ser a escolha no TP3; a (B) é a que dá o diagnóstico mais limpo quando a (A) não funciona, porque não há `PYTHONPATH` nenhum para desconfiar. Se a versão do python do seu venv não for `python3.10`, o caminho da (A) muda junto — confira com `ls .venv-yolo/lib/`.
+
+!!! warning "Estas duas linhas não foram executadas aqui"
+    O exemplo foi montado num ambiente **sem ROS 2**, então as duas receitas acima **não** foram testadas — nem elas, nem o `rviz:=true`, nem o `.rviz`. O que está testado, e roda em qualquer máquina com OpenCV e NumPy do apt, é a parte sem ROS 2: `cena.py`, `avaliar.py` e os oito grupos do `testar.py`, inclusive a sobreposição por classe. **Confira as duas na sua máquina** antes de depender delas na véspera da entrega.
+
 ## Rodar dentro do ROS 2 (o gate G3.4)
 
 ```bash
@@ -162,9 +212,9 @@ cd "$PB_WS" && colcon build --symlink-install --packages-select aula13_instancia
 # ── herda PB_USER, PB_DIR e PB_WS do bloco de download ──
 : "${PB_WS:?defina PB_USER, PB_DIR e PB_WS — o bloco está no topo desta página}"
 ros2 launch aula13_instancia instancia.launch.py \
-  pasta:="$PB_DIR/aula13-instancia/cena"
+  pasta:="$PB_DIR/aula13-instancia/cena" rviz:=true
 ros2 launch aula13_instancia instancia.launch.py \
-  pasta:="$PB_DIR/aula13-instancia/cena" metodo:=cor_watershed
+  pasta:="$PB_DIR/aula13-instancia/cena" metodo:=cor_watershed saida:=instancia
 ```
 
 Em outro terminal:
@@ -174,10 +224,36 @@ Em outro terminal:
 : "${PB_WS:?defina PB_USER, PB_DIR e PB_WS — o bloco está no topo desta página}"
 source "$PB_WS/install/setup.bash"
 ros2 topic echo /vision/instancias --once
-ros2 run rqt_image_view rqt_image_view /vision/segmented
+ros2 param set /segmentador_instancia saida instancia      # troca a figura em voo
+ros2 run rqt_image_view rqt_image_view /vision/segmented   # alternativa ao RViz2
 ```
 
-O `/vision/segmented` publica a máscara colorida **por instância**, não por classe — é essa a diferença visível em relação à Aula 3. Duas peças vermelhas encostadas pintadas de uma cor só é um erro que se vê na tela, antes de qualquer métrica.
+O `/vision/segmented` publica, por padrão, as máscaras coloridas **por classe** com transparência 0,5 sobre o frame — o que o item 3 do enunciado pede. Com `saida:=instancia` ele volta a publicar uma cor por **instância**, que é a figura da Aula 13: duas peças vermelhas encostadas pintadas de uma cor só é um erro que se vê na tela, antes de qualquer métrica. Repare que, na saída por classe, essa fusão **volta a ficar escondida** — a cor diz a classe, e a classe das duas é a mesma. É por isso que a sobreposição desenha o **contorno de cada instância** por cima: sem ele, duas peças da mesma classe viram uma mancha única.
+
+### Ver no RViz2
+
+```bash
+# ── herda PB_USER, PB_DIR e PB_WS do bloco de download ──
+: "${PB_WS:?defina PB_USER, PB_DIR e PB_WS — o bloco está no topo desta página}"
+source "$PB_WS/install/setup.bash"
+rviz2 -d "$PB_WS/install/aula13_instancia/share/aula13_instancia/rviz/segmentacao.rviz"
+```
+
+Ou na mão, que é o que o enunciado cobra saber fazer: **Add** → **By display type** → **Image** → em `Topic`, `/vision/segmented`. (O display **Camera** também mostra imagem, mas exige `camera_info` e um frame na TF; este exemplo não publica nenhum dos dois, então use o **Image**.)
+
+!!! danger "QoS: a imagem não aparece e **não há erro**"
+    Este nó publica imagem como dado de sensor, com **`BEST_EFFORT`**. Um display que peça `RELIABLE` — que é o padrão do RViz2 — simplesmente **não recebe nada**: o painel fica cinza, o `ros2 topic hz` mostra o tópico publicando normalmente, e **não aparece mensagem de erro em lugar nenhum**. QoS incompatível não dá erro, dá silêncio.
+
+    No display `Image`, abra `Topic` e ponha **Reliability Policy: Best Effort**. O `rviz/segmentacao.rviz` deste pacote já vem assim — e é por isso que ele existe.
+
+    Para confirmar de qual lado está o problema, antes de mexer em qualquer coisa:
+
+    ```bash
+    ros2 topic hz /vision/segmented      # publica? então o problema é do assinante
+    ros2 topic info /vision/segmented --verbose    # mostra o QoS dos dois lados
+    ```
+
+Mais duas coisas que o RViz2 faz e assustam sem motivo: ele avisa **`Fixed Frame [camera] does not exist`**, porque este exemplo publica imagem mas não publica TF — o display `Image` não transforma nada, e a imagem aparece do mesmo jeito; e o painel só acorda quando chega o **primeiro** quadro, então com `fps:=1.0` a espera é de um segundo, não um defeito.
 
 Suba com `cor_conectada`, conte as cores; suba com `cor_watershed`, conte de novo. **A contagem que aparece no tópico tem de bater com a coluna `previstas` da tabela** — são os mesmos quadros e o mesmo código. Quando não bate, o problema está na fronteira ROS 2 (QoS, parâmetro, encoding), não no algoritmo, e isso já é meio diagnóstico pronto.
 
@@ -190,14 +266,15 @@ Suba com `cor_conectada`, conte as cores; suba com `cor_watershed`, conte de nov
 |---|---|
 | `cena.py` | desenha `cena/` com verdade por instância; `--quadros`, `--semente`, `--pasta` |
 | `instancia.py` (raiz) | carregador de 3 linhas: acha o pacote e reexporta os detectores |
-| `aula13_instancia/.../instancia.py` | **o algoritmo**: `cor_conectada`, `cor_watershed`, `modelo`, `detectar` |
+| `aula13_instancia/.../instancia.py` | **o algoritmo**: `cor_conectada`, `cor_watershed`, `modelo`, `detectar` — e as duas figuras, `sobrepor_classes` (por classe, com alpha) e `pintar_instancias` (por instância) |
 | `avaliar.py` | a régua: casamento por IoU, erro de contagem, fusões, divisões, `--imagem` |
 | `testar.py` | confere a régua com defeitos que você mesmo injetou |
-| `.../segmentador_instancia.py` | o nó do gate G3.4: `/vision/segmented` + `/vision/instancias` |
+| `.../segmentador_instancia.py` | o nó do gate G3.4: `/vision/segmented` + `/vision/instancias`; `saida` escolhe a figura |
 | `.../publicador_cena.py` | publica `cena/` em `/camera/image_raw` — launch sobe sem câmera |
 | `.../ponte.py` | `cv_bridge` quando funciona, conversão manual quando não (igual à Aula 3) |
-| `config/instancia.yaml` | método, faixas HSV por classe, área mínima |
-| `launch/instancia.launch.py` | sobe os dois nós; aceita `metodo:=cor_watershed` |
+| `config/instancia.yaml` | método, **`saida`**, **`alpha`**, faixas HSV por classe, área mínima |
+| `rviz/segmentacao.rviz` | display `Image` em `/vision/segmented`, já em **Best Effort** |
+| `launch/instancia.launch.py` | sobe os dois nós; aceita `metodo:=`, `saida:=`, `alpha:=`, `rviz:=true` |
 
 ## Conferir a régua antes de confiar nela
 
@@ -208,7 +285,9 @@ cd "$PB_DIR/aula13-instancia"
 python3 testar.py
 ```
 
-Sete grupos, todos com a resposta sabida de antemão: peças separadas, peças coladas, IoU comparado, um detector que **super-segmenta de propósito** (para provar que a régua acusa divisão, e não só fusão), a figura que muda quando o resultado muda, a cena ausente e o modelo ausente. Termina em `todos os testes passaram.` e sai com código 0 ou 1 — dá para pendurar no CI do seu repositório.
+Oito grupos, todos com a resposta sabida de antemão: peças separadas, peças coladas, IoU comparado, um detector que **super-segmenta de propósito** (para provar que a régua acusa divisão, e não só fusão), a figura que muda quando o resultado muda, a cena ausente, o modelo ausente — e a sobreposição por classe. Termina em `todos os testes passaram.` e sai com código 0 ou 1 — dá para pendurar no CI do seu repositório.
+
+O oitavo grupo mede o que o item 3 do enunciado afirma, e mede como afirmação verificável, não como impressão de tela: a imagem sai do **tamanho do frame**; **fora** da máscara o pixel é o original **byte a byte** (só o rótulo escreve por cima, porque é anotação); **dentro** da máscara todo pixel mudou, e mudou na proporção exata de `alpha` — `0,5 × frame + 0,5 × cor da classe`, conferido pixel a pixel; e duas instâncias **da mesma classe encostadas**, que sem contorno são uma mancha de uma cor só, ficam separadas pela linha do contorno.
 
 ## Socorro rápido
 
@@ -223,6 +302,12 @@ Sete grupos, todos com a resposta sabida de antemão: peças separadas, peças c
 | máscara vazia, zero instâncias | faixa HSV chutada; meça com o `amostrar_hsv` da Aula 3 |
 | `/vision/instancias` não publica | nada em `/camera/image_raw`: confira `pasta:=` no launch |
 | o nó vê menos instâncias que a tabela | QoS: o `rqt` pede RELIABLE e o nó publica BEST_EFFORT |
+| o RViz2 não mostra a imagem **e não dá erro** | o display `Image` está em RELIABLE; ponha **Best Effort** (ou use `rviz:=true`) |
+| `Fixed Frame [camera] does not exist` no RViz2 | o exemplo não publica TF; o display `Image` não transforma nada e a imagem aparece mesmo assim |
+| a saída ficou com uma cor por instância | `saida` está em `instancia`; o padrão do TP3 é `classe_alpha` |
+| o log avisa `saida='...' nao existe` | valor fora de `classe_alpha \| instancia \| mascara`; o nó cai no padrão e segue |
+| peça vermelha fica **cinza** na sobreposição | é a mistura a 50% com a cor complementar da camada; fixe a cor da classe em `CORES_CLASSE` |
+| `ultralytics` instalado e o nó não acha | o nó roda com o python do sistema; veja as duas receitas em *Rodar o `modelo` dentro do ROS 2* |
 | `Wrong parameter type` ao lançar | argumento de launch chega como texto; use `ParameterValue` (já está no launch) |
 | `KeyError: 16` na primeira imagem | `cv_bridge` quebrado; o `ponte.py` cai sozinho no plano B e diz o motivo no log |
 
@@ -238,6 +323,20 @@ faixa:
 ```
 
 Não chute esses números: meça com o `amostrar_hsv` da Aula 3, no **seu** objeto e com a **sua** iluminação. Classe nova é declarada em tempo de execução pelo nó, então não há código a mudar.
+
+**Mande a figura do jeito que o seu relatório precisa.** `saida` e `alpha` são parâmetros, então nada disso é recompilação:
+
+```bash
+ros2 param set /segmentador_instancia saida classe_alpha
+ros2 param set /segmentador_instancia alpha 0.35      # camada mais discreta
+```
+
+A cor de cada classe é estável (a mesma em toda execução, para duas capturas de tela serem comparáveis) e é escolhida a partir do **nome** da classe. Ela **não** copia a cor do objeto de propósito: misturar vermelho com vermelho a 50% devolve vermelho, e a máscara ficaria invisível exatamente onde precisa aparecer. Se quiser mandar na cor:
+
+```python
+from aula13_instancia import instancia
+instancia.CORES_CLASSE['tomate_maduro'] = (40, 40, 210)      # BGR
+```
 
 **Troque o `Int32` pela sua `.msg`.** A contagem sai como `std_msgs/Int32` porque é o mínimo que o gate pede. O seu projeto provavelmente quer mais: id, classe, centroide e área de cada instância. O pacote de interfaces é o da Aula 6, e a troca é local — o `detectar()` já devolve exatamente esses campos:
 

@@ -1,13 +1,25 @@
 """Assina /camera/image_raw, segmenta POR INSTANCIA e publica a contagem.
 
-E a evolucao direta do `segmentador_hsv` da Aula 3. A diferenca cabe numa
-frase: la a cor da saida dizia a CLASSE do pixel, aqui ela diz a INSTANCIA.
-Duas pecas vermelhas encostadas pintadas de uma cor so e um erro que se ve na
-tela, antes de qualquer metrica.
+E a evolucao direta do `segmentador_hsv` da Aula 3: la a cor da saida dizia
+apenas a CLASSE do pixel, aqui o no sabe separar INSTANCIA de CLASSE -- e
+publica a figura que voce pedir.
 
   entrada   /camera/image_raw     (sensor_msgs/Image)
-  saidas    /vision/segmented     (sensor_msgs/Image -- uma cor por instancia)
+  saidas    /vision/segmented     (sensor_msgs/Image -- ver o parametro `saida`)
             /vision/instancias    (std_msgs/Int32 -- quantas no ultimo quadro)
+
+O parametro `saida` escolhe O QUE vai no /vision/segmented:
+
+  classe_alpha  (PADRAO)  mascaras coloridas POR CLASSE, com transparencia
+                          `alpha` sobre o frame e contorno por instancia. E o
+                          que o item 3 do enunciado do TP3 pede, literalmente.
+  instancia               uma cor por INSTANCIA, a figura da aula -- duas pecas
+                          encostadas de uma cor so e a fusao na tela.
+  mascara                 so a camada por classe, sobre fundo preto, sem o
+                          frame. Util quando o fundo polui a conferencia.
+
+O padrao mudou de `instancia` para `classe_alpha` por causa do enunciado; o
+comportamento antigo continua a uma linha de distancia (`saida:=instancia`).
 
 E o que o gate G3.4 do TP3 pede. O miolo nao esta aqui: esta em
 `instancia.py`, ao lado, e e o MESMO codigo que o `avaliar.py` mede offline.
@@ -17,28 +29,44 @@ mensagem sai.
     ros2 run aula13_instancia segmentador_instancia --ros-args \\
         --params-file config/instancia.yaml
     ros2 param set /segmentador_instancia metodo cor_watershed
+    ros2 param set /segmentador_instancia saida instancia
 """
 import cv2
+import numpy as np
 import rclpy
 from rclpy.node import Node
 from rclpy.qos import HistoryPolicy, QoSProfile, ReliabilityPolicy
 from sensor_msgs.msg import Image
 from std_msgs.msg import Int32
 
-from .instancia import CLASSES_PADRAO, CONFIG_PADRAO, detectar, pintar_instancias
+from .instancia import (CLASSES_PADRAO, CONFIG_PADRAO, detectar,
+                        pintar_instancias, sobrepor_classes)
 from .ponte import descrever_ponte, para_cv, para_msg
 
+# BEST_EFFORT porque imagem e dado de sensor: quadro atrasado nao vale a espera.
+# Isso tem consequencia na hora de VER: um display que pede RELIABLE nao recebe
+# nada deste publicador, e nao aparece erro nenhum -- a tela fica cinza. No
+# RViz2 ponha o display Image em "Best Effort" (o rviz/segmentacao.rviz do
+# pacote ja vem assim); no rqt_image_view a opcao esta no proprio widget.
 QOS_SENSOR = QoSProfile(
     reliability=ReliabilityPolicy.BEST_EFFORT,
     history=HistoryPolicy.KEEP_LAST,
     depth=1,
 )
 
+SAIDAS = ('classe_alpha', 'instancia', 'mascara')
+
 
 class SegmentadorInstancia(Node):
     def __init__(self):
         super().__init__('segmentador_instancia')
         self.declare_parameter('metodo', 'cor_conectada')
+        # `saida` escolhe a FIGURA que vai no /vision/segmented, nao o
+        # algoritmo. O padrao e o do enunciado do TP3 (item 3): cor por classe,
+        # translucida sobre o frame. `instancia` traz de volta o comportamento
+        # anterior deste no, cor por instancia.
+        self.declare_parameter('saida', 'classe_alpha')
+        self.declare_parameter('alpha', 0.5)
         self.declare_parameter('area_min', 400.0)
         self.declare_parameter('nucleo', 5)
         self.declare_parameter('fracao_semente', 0.60)
@@ -57,11 +85,14 @@ class SegmentadorInstancia(Node):
 
         self.quadros = 0
         self.ultima = 0
+        self.avisados = set()
         self.get_logger().info(
             'Segmentador de instancia no ar: /camera/image_raw -> '
             '/vision/segmented + /vision/instancias')
-        self.get_logger().info('metodo=%s | %s'
-                               % (self.get_parameter('metodo').value, descrever_ponte()))
+        self.get_logger().info(
+            'metodo=%s | saida=%s alpha=%.2f | %s'
+            % (self.get_parameter('metodo').value, self.get_parameter('saida').value,
+               float(self.get_parameter('alpha').value), descrever_ponte()))
 
     def montar_cfg(self):
         """Le os parametros e monta o cfg que `instancia.detectar` entende.
@@ -91,12 +122,42 @@ class SegmentadorInstancia(Node):
                 'nucleo': int(self.get_parameter('nucleo').value),
                 'fracao_semente': float(self.get_parameter('fracao_semente').value)}
 
+    def avisar_uma_vez(self, chave, texto):
+        """Aviso de parametro errado, uma vez por valor -- nao a 30 Hz."""
+        if chave not in self.avisados:
+            self.avisados.add(chave)
+            self.get_logger().warn(texto)
+
+    def desenhar(self, quadro, instancias):
+        """A FIGURA de /vision/segmented, escolhida pelo parametro `saida`.
+
+        Nenhuma das tres linhas faz conta de visao: o desenho mora no
+        `instancia.py`, junto do algoritmo, para a figura do topico e a do
+        avaliador offline sairem da mesma funcao.
+        """
+        saida = str(self.get_parameter('saida').value)
+        alpha = float(self.get_parameter('alpha').value)
+        if saida not in SAIDAS:
+            self.avisar_uma_vez(
+                'saida:' + saida,
+                "saida='%s' nao existe (tenho: %s) -- usando classe_alpha"
+                % (saida, ', '.join(SAIDAS)))
+            saida = 'classe_alpha'
+        if saida == 'instancia':
+            # Cor por INSTANCIA, como este no fazia antes do parametro existir.
+            return pintar_instancias(quadro, instancias)
+        if saida == 'mascara':
+            # So a camada: a MESMA funcao, com alpha 1,0 sobre um quadro preto.
+            return sobrepor_classes(np.zeros_like(quadro), instancias, 1.0, False)
+        return sobrepor_classes(quadro, instancias, alpha)
+
     def ao_receber(self, msg):
         quadro = para_cv(msg)
         instancias = detectar(quadro, self.montar_cfg())
-        saida = pintar_instancias(quadro, instancias)
-        cv2.putText(saida, 'instancias: %d  (%s)'
-                    % (len(instancias), self.get_parameter('metodo').value),
+        saida = self.desenhar(quadro, instancias)
+        cv2.putText(saida, 'instancias: %d  (%s, %s)'
+                    % (len(instancias), self.get_parameter('metodo').value,
+                       self.get_parameter('saida').value),
                     (12, saida.shape[0] - 14), cv2.FONT_HERSHEY_SIMPLEX, 0.6,
                     (30, 30, 30), 2, cv2.LINE_AA)
 

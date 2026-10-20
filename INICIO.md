@@ -54,19 +54,18 @@ Aulas às **terças, 07h00–09h30, sala SJ205** · Prof. Dácio Moreira de Souz
 
 ## Aula mais recente
 
-**Aula 13 — terça, 13/10/2026 — Achar não é acertar** <span class="pb-tag next">atual</span>
+**Aula 14 — terça, 20/10/2026 — Aterrissagem do TP3: o enunciado, item por item** <span class="pb-tag next">atual</span>
 
-**Uma máscara correta pode produzir uma contagem errada sem gerar erro nenhum** — e a média que deveria denunciar isso é justamente onde ele se esconde. Duas metades: separar instâncias que se encostam, e atribuir a falha de uma cadeia de visão à etapa certa.
+**O enunciado é a rubrica.** Cada verbo dele — execute, capture, explique, publique, relacione — é um item que alguém vai procurar no seu repositório na sexta à noite. Sem conteúdo novo: os quatro itens demonstrados, e a lista do que falta no seu.
 
-[Conteúdo e slides da aula](aulas/etapa07-aula13/index.md){ .md-button .md-button--primary }
-[Da máscara à instância](exemplos/aula13-instancia/index.md){ .md-button }
-[Percepção veicular](exemplos/aula13-veicular/index.md){ .md-button }
+[Conteúdo e slides da aula](aulas/etapa07-aula14/index.md){ .md-button .md-button--primary }
+[Conferidor da entrega](exemplos/tp3/conferir-entrega/index.md){ .md-button }
 
-!!! warning "O TP3 fecha nesta semana, e três gates vencem antes da entrega"
-    O **mapa persistido** vence **quinta, 15/10**; a **segmentação por instância** em 18/10; o **módulo veicular** em 20/10; e a entrega é **sexta, 23/10**. O último encontro antes dela é a Aula 14, em 20/10 — e ela é clínica do que não fechou, não começo de nada.
+!!! danger "O TP3 vence sexta, 23/10 — e a entrega é no Moodle"
+    O repositório é critério de avaliação, não anexo: branch `entrega-tp3`, tag `tp3` **empurrada**, e as evidências **commitadas**. Antes de postar, rode a conferência:
 
     ```bash
-    ros2 topic echo /vision/instancias --once   # a contagem publicando, com o launch no ar
+    python3 conferir_tp3.py            # e, com o sistema no ar: --ao-vivo
     ```
 
 ## Calendário de entregas
