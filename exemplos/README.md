@@ -22,6 +22,7 @@ Pacotes ROS 2 prontos para rodar, usados em aula e pensados para serem **copiado
 | [`aula13-instancia`](aula13-instancia/index.md) | Aula 13 | da máscara à instância: o que se encosta vira um objeto só, e a régua que acusa | gate G3.4 do TP3 |
 | [`aula13-veicular`](aula13-veicular/index.md) | Aula 13 | cor → borda → reta sobre estrada sintética, e qual etapa quebra em cada condição | gates G3.5 e G4.5 |
 | [`tp3/revisar-entrega`](tp3/revisar-entrega/index.md) | Aula 14 | roteiro de revisão do TP3: aponta onde olhar antes de entregar — não corrige nem valida | gates G3.0 a G3.6 |
+| [`aula15-nav2`](aula15-nav2/index.md) | Aula 15 | a convergência do AMCL medida contra a verdade — e o Nav2 sobre o mundo mínimo | gates G4.0 a G4.2 |
 
 ## Exemplos por TP
 

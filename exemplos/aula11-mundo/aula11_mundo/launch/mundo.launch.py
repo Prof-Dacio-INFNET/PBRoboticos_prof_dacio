@@ -61,12 +61,28 @@ def generate_launch_description():
                                           'ponha false quando o SLAM assumir'),
         DeclareLaunchArgument('rviz', default_value='false',
                               description='abrir o RViz2 ja configurado (o G3.2 nao depende dele)'),
+        # O piloto reativo publica /cmd_vel. Quem for mandar velocidade por
+        # outro caminho -- Nav2, teleop, um no proprio -- sobe com piloto:=false,
+        # senao dois publicadores disputam o mesmo topico e o robo anda aos
+        # trancos sem ninguem reclamar.
+        DeclareLaunchArgument('piloto', default_value='true',
+                              description='subir o piloto reativo (false quando o Nav2 '
+                                          'ou outro no for comandar /cmd_vel)'),
+        # O MESMO numero vai para o no (que mede o scan a partir dai) e para a
+        # TF (que diz ao ROS 2 onde o laser esta). Separados, viram um vies
+        # sistematico de 10 cm que nenhum erro aponta.
+        DeclareLaunchArgument('laser_x', default_value='0.10',
+                              description='deslocamento do laser a frente do base_footprint, em m'),
 
         Node(package='aula11_mundo', executable='mundo', name='mundo',
              output='screen',
-             parameters=[params, {'deriva_pct': ParameterValue(deriva, value_type=float)}]),
+             parameters=[params,
+                         {'deriva_pct': ParameterValue(deriva, value_type=float),
+                          'laser_x': ParameterValue(LaunchConfiguration('laser_x'),
+                                                    value_type=float)}]),
 
         Node(package='aula11_mundo', executable='piloto', name='piloto',
+             condition=IfCondition(LaunchConfiguration('piloto')),
              output='screen', parameters=[params]),
 
         # PLACEHOLDER: quem publica map -> odom de verdade e' o slam_toolbox.
@@ -82,7 +98,7 @@ def generate_launch_description():
 
         Node(package='tf2_ros', executable='static_transform_publisher',
              name='base_para_laser',
-             arguments=['0.10', '0', '0.18', '0', '0', '0',
+             arguments=[LaunchConfiguration('laser_x'), '0', '0.18', '0', '0', '0',
                         'base_footprint', 'laser_frame']),
     ]
 

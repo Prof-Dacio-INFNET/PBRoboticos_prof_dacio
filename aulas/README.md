@@ -19,8 +19,9 @@ O bloco tem dez etapas de conteúdo distribuídas em dois trimestres (26T3, de 2
 | [Aula 11](etapa06-aula11/index.md) | 29/09/2026 | 6 | O mundo, a deriva e o mapa que corrige | <span class="pb-tag ok">dada</span> |
 | [Aula 12](etapa06-aula12/index.md) | 06/10/2026 | 6 | O SLAM paga a conta da deriva | <span class="pb-tag ok">dada</span> |
 | [Aula 13](etapa07-aula13/index.md) | 13/10/2026 | 7 | Achar não é acertar: instância e percepção veicular | <span class="pb-tag ok">dada</span> |
-| [Aula 14](etapa07-aula14/index.md) | 20/10/2026 | 7 | Aterrissagem do TP3: o enunciado, item por item | <span class="pb-tag next">próxima</span> |
-| Aula 15 | 27/10/2026 | 8 | Navegação autônoma: o Nav2 em cima do seu mapa | <span class="pb-tag soon">a seguir</span> |
+| [Aula 14](etapa07-aula14/index.md) | 20/10/2026 | 7 | Aterrissagem do TP3: o enunciado, item por item | <span class="pb-tag ok">dada</span> |
+| [Aula 15](etapa08-aula15/index.md) | 27/10/2026 | 8 | Navegação autônoma: o Nav2 em cima do seu mapa | <span class="pb-tag next">próxima</span> |
+| Aula 16 | 03/11/2026 | 8 | Árvore de comportamento e a sessão gravada | <span class="pb-tag soon">a seguir</span> |
 
 !!! note "Por que as Aulas 4 e 5 apontam para a página da Aula 3"
     O material da Aula 3 é denso e foi trabalhado ao longo de três encontros — 04, 11 e 18/08 —, com a leitura oficial do TP1 no último deles. As datas do calendário não mudaram; o que mudou foi o ritmo, e isso é normal num bloco prático. As três aulas compartilham a mesma página porque compartilham o mesmo conteúdo.
@@ -68,6 +69,10 @@ Esta tabela existe para uma pergunta específica: **a redistribuição das aulas
 | G3.3 | SLAM Toolbox com mapa persistido | [Aula 12](etapa06-aula12/index.md) · 06/10 | 15/10 | 9 dias |
 | G3.4 | segmentação por instância | [Aula 13](etapa07-aula13/index.md) · 13/10 | 18/10 | 5 dias |
 | G3.5 | percepção veicular documentada | [Aula 13](etapa07-aula13/index.md) · 13/10 | 20/10 | 7 dias |
+| G3.6 | entrega: branch, tag, relatório, Moodle | [Aula 14](etapa07-aula14/index.md) · 20/10 | 23/10 | 3 dias |
+| G4.0 | Nav2 sobe com o mapa do TP3 e o AMCL converge | [Aula 15](etapa08-aula15/index.md) · 27/10 | 30/10 | 3 dias |
+| G4.1 | robô navega até um goal sem intervenção | [Aula 15](etapa08-aula15/index.md) · 27/10 | 04/11 | 8 dias |
+| G4.2 | rota com ≥3 waypoints, costmaps explicados | [Aula 15](etapa08-aula15/index.md) · 27/10 (o nó `rota`) | 09/11 | 13 dias |
 
 ### O que a redistribuição custou, dito com todas as letras
 

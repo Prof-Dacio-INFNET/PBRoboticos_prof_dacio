@@ -46,6 +46,7 @@ class NoMundo(Node):
         self.declare_parameter('raio_robo', 0.20)
         self.declare_parameter('pose_inicial', [2.0, 4.0, 0.0])
         self.declare_parameter('quadro_base', 'base_footprint')
+        self.declare_parameter('laser_x', 0.10)
         self.declare_parameter('quadro_laser', 'laser_frame')
 
         p = self.get_parameter
@@ -54,6 +55,7 @@ class NoMundo(Node):
         self.raio = p('raio_robo').value
         self.base = p('quadro_base').value
         self.laser = p('quadro_laser').value
+        self.laser_x = float(p('laser_x').value)
 
         x0, y0, t0 = p('pose_inicial').value
         self.verdadeira = [float(x0), float(y0), float(t0)]   # onde o robo esta
@@ -161,8 +163,22 @@ class NoMundo(Node):
         g.data = [100 if v else 0 for v in self.mundo.grade.ravel()]
         self.pub_verdade.publish(g)
 
+    def pose_do_laser(self):
+        """Onde o laser esta, no mundo: o centro do robo mais o deslocamento.
+
+        Parece detalhe e nao e. A TF diz ao ROS 2 que o laser fica `laser_x` a
+        frente do base_footprint; se a medida sair do centro, existe um vies
+        sistematico desse tamanho entre onde o feixe foi medido e onde todo o
+        resto do sistema acha que ele foi. Nada acusa: o scan chega bonito, o
+        SLAM fecha um mapa deslocado, e o AMCL converge com erro constante.
+        """
+        x, y, th = self.verdadeira
+        return (x + self.laser_x * math.cos(th),
+                y + self.laser_x * math.sin(th),
+                th)
+
     def varrer(self):
-        leituras = self.mundo.medir(*self.verdadeira, self.angulos,
+        leituras = self.mundo.medir(*self.pose_do_laser(), self.angulos,
                                     alcance_max=self.alcance)
         s = LaserScan()
         s.header.stamp = self.get_clock().now().to_msg()

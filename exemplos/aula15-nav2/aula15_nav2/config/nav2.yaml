@@ -1,0 +1,602 @@
+# Parametros do Nav2 (ROS 2 Humble) para o robo e o mundo da Aula 11.
+#
+# ----------------------------------------------------------------------------
+# DE ONDE ISTO SAIU, E COMO LER
+# ----------------------------------------------------------------------------
+# A base e o nav2_params.yaml do nav2_bringup do HUMBLE, copiado da fonte:
+#   https://github.com/ros-navigation/navigation2/blob/humble/nav2_bringup/params/nav2_params.yaml
+#
+# Toda linha em que este arquivo DIVERGE do oficial esta marcada com
+# `(oficial: X)`. Isso existe para voce poder desfazer qualquer escolha nossa
+# em um minuto, e para deixar claro o que e padrao do Nav2 e o que e ajuste
+# nosso ao mundo da Aula 11.
+#
+# As CINCO linhas que voce troca no SEU projeto estao marcadas com
+# `# TROQUE 1:` ate `# TROQUE 5:`. A mesma lista esta no README-pacote.md.
+#
+# ----------------------------------------------------------------------------
+# O MUNDO QUE ESTES NUMEROS SUPOEM (conferido em aula11_mundo/mapa.py e mundo.py)
+# ----------------------------------------------------------------------------
+#   mundo       12,0 x 8,0 m, grade de 0,05 m -> 240 x 160 celulas
+#   paredes     0,20 m de espessura; porta de 1,2 m em x = 6,0 (y de 3,4 a 4,6)
+#   robo        diferencial, raio 0,20 m, parte de (2,0 ; 4,0 ; 0,0)
+#   /scan       sensor_msgs/LaserScan, 360 feixes, -pi a +pi, 5 Hz, 6 m
+#   /odom       nav_msgs/Odometry, 20 Hz, COM deriva sistematica (3% por padrao)
+#   TF          odom -> base_footprint (no `mundo`)
+#               base_footprint -> laser_frame (static_transform_publisher)
+#   /cmd_vel    geometry_msgs/Twist
+#   piloto      velocidade 0,35 m/s, giro 0,9 rad/s -- o teto que usamos aqui
+#
+# ----------------------------------------------------------------------------
+# NADA DISTO FOI EXECUTADO
+# ----------------------------------------------------------------------------
+# Este arquivo foi escrito sem ROS 2 na maquina: nao houve `colcon build`, nao
+# houve `ros2 launch`, o Nav2 nunca subiu com ele. Os nomes de parametro e de
+# plugin foram conferidos contra a FONTE do Humble (links acima e no README);
+# os VALORES sao escolhas justificadas, nao medidas. Trate como ponto de
+# partida que precisa da primeira execucao para virar numero.
+
+# ============================================================================
+# AMCL -- localizacao no mapa conhecido. E o no do G4.0.
+# ============================================================================
+amcl:
+  ros__parameters:
+    # SEM Gazebo nao existe /clock. O no `mundo` da Aula 11 estampa com o
+    # relogio do sistema. Com use_sim_time: true (o valor do arquivo oficial,
+    # que supoe Gazebo) o AMCL espera um /clock que ninguem publica: ele sobe,
+    # fica ACTIVE, e nunca processa um scan. Nenhum erro na tela.
+    # No TP4, se voce entrar com Gazebo, este valor volta a ser true -- e ai
+    # tem de ser true em TODOS os nos, inclusive nos dois costmaps.
+    use_sim_time: false                      # TROQUE 5 (oficial: True)
+
+    # ---- os quatro nomes que ligam o AMCL ao SEU robo ----
+    # Errar qualquer um destes faz o AMCL subir limpo e nao localizar nada.
+    base_frame_id: "base_footprint"          # TROQUE 1 (oficial: base_footprint)
+    odom_frame_id: "odom"                    # de onde vem a odometria
+    global_frame_id: "map"                   # a aresta que ele vai PUBLICAR
+    # Relativo de proposito (sem a barra): assim, se voce empurrar o no para um
+    # namespace, o topico vai junto. A licao de namespace da Aula 10 vale aqui.
+    # Repare que nos costmaps, mais abaixo, a barra e OBRIGATORIA -- e explicado la.
+    scan_topic: scan                         # TROQUE 2
+
+    # ---- modelo de movimento ----
+    # O robo e diferencial (duas rodas, sem deslocamento lateral). O nome da
+    # classe mudou no Humble: no Foxy era a string "differential".
+    robot_model_type: "nav2_amcl::DifferentialMotionModel"
+
+    # Ruido que o AMCL SUPOE na odometria, e e por isso que as particulas se
+    # espalham. alpha1/2 sao ruido de rotacao, alpha3/4 de translacao, alpha5
+    # so vale para base omnidirecional (aqui e peso morto).
+    # Ficam no padrao 0.2, que e generoso, e de proposito: a odometria da Aula
+    # 11 tem erro SISTEMATICO de 3% na rotacao, e erro sistematico nao e ruido
+    # gaussiano -- o jeito de o filtro aguentar e manter a nuvem larga.
+    # Baixar estes valores faz o AMCL confiar demais na odometria: a nuvem
+    # colapsa num ponto, fica com cara de convergencia perfeita, e segue a
+    # deriva para fora da parede. E o modo caro de errar.
+    alpha1: 0.2
+    alpha2: 0.2
+    alpha3: 0.2
+    alpha4: 0.2
+    alpha5: 0.2
+
+    # ---- modelo do sensor ----
+    laser_model_type: "likelihood_field"
+    # O nosso laser alcanca 6 m, nao 100. Deixar 100 nao quebra (o AMCL usa o
+    # min entre este valor e o range_max do scan), mas mentir aqui para menos
+    # joga leitura boa no lixo.
+    laser_max_range: 6.0                     # (oficial: 100.0)
+    laser_min_range: 0.05                    # = range_min do scan (oficial: -1.0,
+                                             # que significa "siga o scan")
+    # Distancia maxima, em metros, que o campo de verossimilhanca procura a
+    # parede mais proxima. 2,0 m cobre bem um mundo de 12 x 8 m.
+    laser_likelihood_max_dist: 2.0
+    # 60 de 360 feixes. O AMCL subamostra de proposito: feixes vizinhos de um
+    # laser 2D sao correlacionados, e usar todos custa CPU sem ganhar precisao.
+    max_beams: 60
+    # Desvio esperado entre a leitura e a parede do mapa, em metros. 0,2 m e
+    # quatro celulas do mapa -- folga confortavel, e precisamos dela: o
+    # simulador da Aula 11 mede o /scan a partir do CENTRO do robo mas publica
+    # no quadro `laser_frame`, 0,10 m a frente. Esse vies de 10 cm existe e e
+    # do simulador; o sigma_hit o absorve.
+    sigma_hit: 0.2
+    z_hit: 0.5
+    z_rand: 0.5
+    z_max: 0.05
+    z_short: 0.05
+    lambda_short: 0.1
+    # Pular feixes acelera, e e para laser com muito obstaculo dinamico. Aqui
+    # nao ha nenhum: fica desligado, como no oficial.
+    do_beamskip: false
+    beam_skip_distance: 0.5
+    beam_skip_error_threshold: 0.9
+    beam_skip_threshold: 0.3
+
+    # ---- filtro de particulas ----
+    # 500 a 2000 particulas. Num mundo de 12 x 8 m isto e muita particula, e e
+    # deliberado: a nuvem grande e o que o aluno VE no RViz2 convergindo. Se a
+    # CPU da WSL2 reclamar, 200/1000 ainda localiza.
+    min_particles: 500
+    max_particles: 2000
+    pf_err: 0.05
+    pf_z: 0.99
+    resample_interval: 1
+    # Localizacao global adaptativa (injetar particulas quando o filtro se
+    # perde). 0.0 desliga, que e o padrao. Ligar sem entender faz a nuvem
+    # "explodir" sozinha e parecer defeito.
+    recovery_alpha_slow: 0.0
+    recovery_alpha_fast: 0.0
+    # Quanto o robo tem de andar/girar antes de o filtro atualizar. Com 0,20 m
+    # num mundo de 12 m, o filtro atualiza umas 60 vezes ao atravessar o mundo.
+    # (oficial: 0.25 -- apertamos um pouco porque o mundo e pequeno e, com
+    # passo grande, ha trechos longos de odometria pura entre atualizacoes.)
+    update_min_d: 0.20
+    update_min_a: 0.20
+
+    # ---- TF e pose inicial ----
+    tf_broadcast: true                       # ele PUBLICA map -> odom
+    # Idade maxima tolerada para a TF, em segundos. 1,0 s e folgado e fica
+    # folgado de proposito: na WSL2 o /scan (5 Hz) e o /odom (20 Hz) chegam com
+    # jitter, e apertar isto faz aparecer "Transform from base_footprint to odom
+    # was unavailable" com o sistema inteiro saudavel.
+    transform_tolerance: 1.0
+    save_pose_rate: 0.5
+    # A ESCOLHA PEDAGOGICA DA AULA: por padrao o AMCL NAO recebe pose inicial.
+    # Ele sobe, fica esperando, e quem da a pose e voce, com o "2D Pose
+    # Estimate" do RViz2. Pose inicial errada e o erro classico do G4.0, e vale
+    # fazer o gesto com a mao pelo menos uma vez.
+    # O launch sobrepoe estas quatro linhas quando voce sobe com
+    # `pose_inicial_auto:=true` -- entao nao edite aqui, use o argumento.
+    set_initial_pose: false
+    # Mapa aninhado, que e a forma documentada do Nav2. O launch sobrepoe estes
+    # valores pelo nome completo (initial_pose.x e companhia).
+    initial_pose:
+      x: 2.0                                 # a pose inicial do robo na Aula 11
+      y: 4.0
+      z: 0.0
+      yaw: 0.0
+    # false: num reset, o AMCL reaproveita a ultima pose. true exige pose nova
+    # a cada reset. Padrao oficial, e serve.
+    always_reset_initial_pose: false
+    first_map_only: false
+
+# ============================================================================
+# BT NAVIGATOR -- a arvore de comportamento. E quem recebe o /goal_pose.
+# ============================================================================
+bt_navigator:
+  ros__parameters:
+    use_sim_time: false                      # TROQUE 5 (oficial: True)
+    global_frame: map
+    robot_base_frame: base_footprint         # TROQUE 1 (oficial: base_link)
+    odom_topic: /odom
+    bt_loop_duration: 10
+    default_server_timeout: 20
+    wait_for_service_timeout: 1000
+    # Sem `default_nav_to_pose_bt_xml` aqui, o Humble usa a arvore padrao
+    # navigate_to_pose_w_replanning_and_recovery.xml, que replaneja a 1 Hz e
+    # tem as recuperacoes (limpar costmap -> Spin -> Wait -> BackUp). E a que
+    # a aula explica, e nao ha motivo para trocar.
+    #
+    # A lista abaixo esta COPIADA VERBATIM do nav2_params.yaml do Humble. Nao
+    # invente nem remova nomes daqui: cada entrada e uma biblioteca de no da
+    # arvore, e um nome errado derruba o bt_navigator na ativacao com
+    # "Error loading XML file" -- que nao fala do nome errado.
+    plugin_lib_names:
+      - nav2_compute_path_to_pose_action_bt_node
+      - nav2_compute_path_through_poses_action_bt_node
+      - nav2_smooth_path_action_bt_node
+      - nav2_follow_path_action_bt_node
+      - nav2_spin_action_bt_node
+      - nav2_wait_action_bt_node
+      - nav2_assisted_teleop_action_bt_node
+      - nav2_back_up_action_bt_node
+      - nav2_drive_on_heading_bt_node
+      - nav2_clear_costmap_service_bt_node
+      - nav2_is_stuck_condition_bt_node
+      - nav2_goal_reached_condition_bt_node
+      - nav2_goal_updated_condition_bt_node
+      - nav2_globally_updated_goal_condition_bt_node
+      - nav2_is_path_valid_condition_bt_node
+      - nav2_initial_pose_received_condition_bt_node
+      - nav2_reinitialize_global_localization_service_bt_node
+      - nav2_rate_controller_bt_node
+      - nav2_distance_controller_bt_node
+      - nav2_speed_controller_bt_node
+      - nav2_truncate_path_action_bt_node
+      - nav2_truncate_path_local_action_bt_node
+      - nav2_goal_updater_node_bt_node
+      - nav2_recovery_node_bt_node
+      - nav2_pipeline_sequence_bt_node
+      - nav2_round_robin_node_bt_node
+      - nav2_transform_available_condition_bt_node
+      - nav2_time_expired_condition_bt_node
+      - nav2_path_expiring_timer_condition
+      - nav2_distance_traveled_condition_bt_node
+      - nav2_single_trigger_bt_node
+      - nav2_goal_updated_controller_bt_node
+      - nav2_is_battery_low_condition_bt_node
+      - nav2_navigate_through_poses_action_bt_node
+      - nav2_navigate_to_pose_action_bt_node
+      - nav2_remove_passed_goals_action_bt_node
+      - nav2_planner_selector_bt_node
+      - nav2_controller_selector_bt_node
+      - nav2_goal_checker_selector_bt_node
+      - nav2_controller_cancel_bt_node
+      - nav2_path_longer_on_approach_bt_node
+      - nav2_wait_cancel_bt_node
+      - nav2_spin_cancel_bt_node
+      - nav2_back_up_cancel_bt_node
+      - nav2_assisted_teleop_cancel_bt_node
+      - nav2_drive_on_heading_cancel_bt_node
+      - nav2_is_battery_charging_condition_bt_node
+
+# No Humble o bt_navigator cria DOIS nos auxiliares, um por acao. Eles tambem
+# leem use_sim_time, e esquecer destas duas secoes e um jeito silencioso de
+# metade do sistema ficar esperando /clock.
+bt_navigator_navigate_through_poses_rclcpp_node:
+  ros__parameters:
+    use_sim_time: false                      # TROQUE 5 (oficial: True)
+
+bt_navigator_navigate_to_pose_rclcpp_node:
+  ros__parameters:
+    use_sim_time: false                      # TROQUE 5 (oficial: True)
+
+# ============================================================================
+# CONTROLLER SERVER -- o DWB. Quem transforma o caminho em /cmd_vel.
+# ============================================================================
+controller_server:
+  ros__parameters:
+    use_sim_time: false                      # TROQUE 5 (oficial: True)
+    # 20 Hz de ciclo de controle sobre um costmap local de 5 Hz (que e a taxa
+    # do /scan). Nao e desperdicio: a cada ciclo o DWB reavalia a trajetoria
+    # contra a odometria nova, que chega a 20 Hz.
+    controller_frequency: 20.0
+    min_x_velocity_threshold: 0.001
+    min_y_velocity_threshold: 0.5
+    min_theta_velocity_threshold: 0.001
+    failure_tolerance: 0.3
+    progress_checker_plugin: "progress_checker"
+    goal_checker_plugins: ["general_goal_checker"]
+    controller_plugins: ["FollowPath"]
+
+    # Preso? O progress checker exige 0,5 m de avanco em 10 s. A 0,35 m/s isso
+    # e 1,4 s de caminhada: folga de sete vezes, para a porta de 1,2 m poder
+    # ser negociada devagar sem o BT declarar travamento e chamar o Spin.
+    progress_checker:
+      plugin: "nav2_controller::SimpleProgressChecker"
+      required_movement_radius: 0.5
+      movement_time_allowance: 10.0
+
+    # Chegou? 0,25 m e 0,25 rad. Num mundo de 12 x 8 m com celula de 0,05 m,
+    # 0,25 m e cinco celulas: exigir menos faz o robo ficar bailando no
+    # objetivo, porque o simulador nao tem controle fino de velocidade.
+    general_goal_checker:
+      stateful: True
+      plugin: "nav2_controller::SimpleGoalChecker"
+      xy_goal_tolerance: 0.25
+      yaw_goal_tolerance: 0.25
+
+    FollowPath:
+      plugin: "dwb_core::DWBLocalPlanner"
+      debug_trajectory_details: True
+      # ---- limites de velocidade: casados com o piloto da Aula 11 ----
+      # O piloto reativo da Aula 11 anda a 0,35 m/s e gira a 0,9 rad/s. Usamos
+      # o MESMO teto para o robo do Nav2 se comportar como o robo que o aluno
+      # ja viu andar -- e para a comparacao "reativo x Nav2" da aula ser justa.
+      # Alto demais, o DWB propoe trajetoria que o costmap local de 4 m nao
+      # cobre e o robo entra na parede antes de ver; baixo demais, a aula fica
+      # longa e o progress checker comeca a reclamar.
+      min_vel_x: 0.0                         # diferencial: nao anda para tras aqui
+      min_vel_y: 0.0                         # nem de lado
+      max_vel_x: 0.35                        # TROQUE 3 (oficial: 0.26)
+      max_vel_y: 0.0                         # zero = base diferencial
+      max_vel_theta: 0.9                     # TROQUE 3 (oficial: 1.0)
+      min_speed_xy: 0.0
+      max_speed_xy: 0.35                     # TROQUE 3 (oficial: 0.26)
+      min_speed_theta: 0.0
+      # O simulador da Aula 11 NAO tem inercia: ele aplica (v, w) no mesmo
+      # instante. Estes limites nao modelam o robo, eles so' recortam o leque
+      # de trajetorias que o DWB considera. Ficam no padrao oficial.
+      acc_lim_x: 2.5
+      acc_lim_y: 0.0
+      acc_lim_theta: 3.2
+      decel_lim_x: -2.5
+      decel_lim_y: 0.0
+      decel_lim_theta: -3.2
+      # Quantas velocidades testar. 20 x 20 = 400 trajetorias por ciclo.
+      vx_samples: 20
+      vy_samples: 5                          # peso morto numa base diferencial
+      vtheta_samples: 20
+      # 1,7 s de simulacao a 0,35 m/s = 0,6 m de trajetoria. Cabe com sobra na
+      # janela de 4 x 4 m do costmap local (2 m do centro para cada lado).
+      # Esticar o sim_time sem esticar a janela faz o DWB avaliar trajetoria em
+      # regiao que ele nao conhece -- e la fora tudo parece livre.
+      sim_time: 1.7
+      linear_granularity: 0.05               # = resolucao do mapa, de proposito
+      angular_granularity: 0.025
+      transform_tolerance: 0.2
+      xy_goal_tolerance: 0.25
+      trans_stopped_velocity: 0.25
+      short_circuit_trajectory_evaluation: True
+      stateful: True
+      # Os criticos e os pesos sao o padrao oficial do Humble, sem um numero
+      # trocado. Mexer em peso de critico sem antes ter o sistema andando e o
+      # caminho mais rapido para um robo que gira no lugar sem explicacao.
+      critics: ["RotateToGoal", "Oscillation", "BaseObstacle", "GoalAlign",
+                "PathAlign", "PathDist", "GoalDist"]
+      BaseObstacle.scale: 0.02
+      PathAlign.scale: 32.0
+      PathAlign.forward_point_distance: 0.1
+      GoalAlign.scale: 24.0
+      GoalAlign.forward_point_distance: 0.1
+      PathDist.scale: 32.0
+      GoalDist.scale: 24.0
+      RotateToGoal.scale: 32.0
+      RotateToGoal.slowing_factor: 5.0
+      RotateToGoal.lookahead_time: -1.0
+
+# ============================================================================
+# PLANNER SERVER -- o NavFn. Quem desenha o caminho no mapa inteiro.
+# ============================================================================
+planner_server:
+  ros__parameters:
+    use_sim_time: false                      # TROQUE 5 (oficial: True)
+    # Isto nao e a taxa de planejamento (a arvore padrao replaneja a 1 Hz): e o
+    # limite acima do qual o servidor AVISA que o planejamento demorou.
+    # 10 Hz = avise se passar de 100 ms. Numa grade de 240 x 160 o NavFn gasta
+    # poucos milissegundos, mas na WSL2 o pico acontece -- e aviso amarelo
+    # falso treina o aluno a ignorar amarelo, que custa mais caro depois.
+    expected_planner_frequency: 10.0         # (oficial: 20.0)
+    planner_plugins: ["GridBased"]
+    GridBased:
+      # O nome do plugin usa BARRA, nao "::". Trocar por
+      # nav2_navfn_planner::NavfnPlanner derruba o planner_server na ativacao.
+      plugin: "nav2_navfn_planner/NavfnPlanner"
+      # Se o objetivo cair em celula ocupada, aceita um caminho que termine ate
+      # 0,5 m dele. Sem tolerancia, clicar o objetivo 10 cm dentro da parede
+      # devolve "No valid path could be found" e parece defeito do planejador.
+      tolerance: 0.5
+      # false = Dijkstra (varre tudo, caminho otimo); true = A*. Numa grade de
+      # 240 x 160 Dijkstra e barato, e caminho otimo e mais facil de explicar.
+      use_astar: false
+      # Planejar atravessando celula desconhecida. No nosso mapa pronto nao ha
+      # desconhecido nenhum -- mas no mapa que o ALUNO salva do SLAM ha, e com
+      # false o robo se recusa a sair da regiao explorada.
+      allow_unknown: true
+
+# ============================================================================
+# SMOOTHER SERVER -- suaviza o caminho quando a arvore pede.
+# ============================================================================
+# A arvore padrao do Humble NAO chama o SmoothPath. Mantemos o no de pe porque
+# ele esta na lista do lifecycle_manager oficial, e porque arvore customizada
+# (TP4) costuma chamar. Custa quase nada parado.
+smoother_server:
+  ros__parameters:
+    use_sim_time: false                      # TROQUE 5 (oficial: True)
+    smoother_plugins: ["simple_smoother"]
+    simple_smoother:
+      plugin: "nav2_smoother::SimpleSmoother"
+      tolerance: 1.0e-10
+      max_its: 1000
+      do_refinement: True
+
+# ============================================================================
+# BEHAVIOR SERVER -- as recuperacoes. Spin, BackUp, Wait, DriveOnHeading.
+# ============================================================================
+# Estes sao os comportamentos que o piloto reativo da Aula 11 NAO tinha. Vale
+# reler o docstring do piloto.py: as quatro faltas dele viram, aqui, quatro
+# pedacos do Nav2 -- e esta secao e a quarta.
+behavior_server:
+  ros__parameters:
+    use_sim_time: false                      # TROQUE 5 (oficial: True)
+    # Nomes de topico do costmap LOCAL. Mudar o nome do costmap sem mudar aqui
+    # faz o Spin e o BackUp abortarem por nao ter mapa para checar colisao.
+    costmap_topic: local_costmap/costmap_raw
+    footprint_topic: local_costmap/published_footprint
+    cycle_frequency: 10.0
+    behavior_plugins: ["spin", "backup", "drive_on_heading", "assisted_teleop", "wait"]
+    spin:
+      plugin: "nav2_behaviors/Spin"
+    backup:
+      plugin: "nav2_behaviors/BackUp"
+    drive_on_heading:
+      plugin: "nav2_behaviors/DriveOnHeading"
+    wait:
+      plugin: "nav2_behaviors/Wait"
+    assisted_teleop:
+      plugin: "nav2_behaviors/AssistedTeleop"
+    # `odom` e nao `map`: recuperacao e manobra local e tem de funcionar mesmo
+    # com o AMCL perdido. E justamente quando ele esta perdido que ela roda.
+    global_frame: odom
+    robot_base_frame: base_footprint          # TROQUE 1 (oficial: base_link)
+    # 0,1 s e so duas amostras da odometria de 20 Hz. Na WSL2 isso aborta a
+    # recuperacao com "Failed to transform" sem nada estar errado.
+    transform_tolerance: 0.2                 # (oficial: 0.1)
+    simulate_ahead_time: 2.0
+    max_rotational_vel: 0.9                  # TROQUE 3 (oficial: 1.0)
+    min_rotational_vel: 0.4
+    rotational_acc_lim: 3.2
+
+# ============================================================================
+# WAYPOINT FOLLOWER -- fila de objetivos. Nao usamos na aula, fica de pe.
+# ============================================================================
+# Esta na lista do lifecycle_manager oficial do Humble. Tirar daqui exige tirar
+# da lista do launch tambem, senao o gerenciador fica preso esperando um no que
+# nunca sobe -- e o sintoma e o Nav2 inteiro parado em "Configuring".
+waypoint_follower:
+  ros__parameters:
+    use_sim_time: false                      # TROQUE 5 (oficial: True)
+    loop_rate: 20
+    stop_on_failure: false
+    waypoint_task_executor_plugin: "wait_at_waypoint"
+    wait_at_waypoint:
+      plugin: "nav2_waypoint_follower::WaitAtWaypoint"
+      enabled: True
+      waypoint_pause_duration: 200
+
+# ============================================================================
+# VELOCITY SMOOTHER -- o ultimo no antes do robo. Ele que publica /cmd_vel.
+# ============================================================================
+# A cadeia, montada pelos remapeamentos do launch (os mesmos do nav2_bringup):
+#   controller_server  cmd_vel -> /cmd_vel_nav
+#   velocity_smoother  cmd_vel <- /cmd_vel_nav ; cmd_vel_smoothed -> /cmd_vel
+# Entao /cmd_vel_nav e o comando cru e /cmd_vel e o suavizado, que vai ao no
+# `mundo`. Para depurar, compare os dois com `ros2 topic hz`.
+velocity_smoother:
+  ros__parameters:
+    use_sim_time: false                      # TROQUE 5 (oficial: True)
+    smoothing_frequency: 20.0
+    scale_velocities: False
+    # OPEN_LOOP: ele parte do ULTIMO comando que ele mesmo mandou.
+    # CLOSED_LOOP leria o /odom -- e a odometria da Aula 11 tem deriva de
+    # proposito. Realimentar com medida enviesada e caminho para oscilacao.
+    feedback: "OPEN_LOOP"
+    # [x, y, theta]. O y e zero porque a base e diferencial.
+    max_velocity: [0.35, 0.0, 0.9]           # TROQUE 3 (oficial: [0.26, 0.0, 1.0])
+    min_velocity: [-0.35, 0.0, -0.9]         # TROQUE 3 (oficial: [-0.26, 0.0, -1.0])
+    max_accel: [2.5, 0.0, 3.2]
+    max_decel: [-2.5, 0.0, -3.2]
+    odom_topic: "odom"
+    odom_duration: 0.1
+    deadband_velocity: [0.0, 0.0, 0.0]
+    # Sem comando novo por 1 s, ele manda zero. E o freio de mao: se o
+    # controller_server morrer, o robo para em vez de sair reto.
+    velocity_timeout: 1.0
+
+# ============================================================================
+# COSTMAP LOCAL -- a janela que anda com o robo. Quem o DWB consulta.
+# ============================================================================
+# A chave dupla (local_costmap: local_costmap:) nao e erro de digitacao: o
+# costmap e um no proprio, criado pelo controller_server, com o nome
+# `local_costmap` dentro do namespace `/local_costmap`. E por isso que os
+# topicos de sensor aqui embaixo precisam da BARRA inicial.
+local_costmap:
+  local_costmap:
+    ros__parameters:
+      use_sim_time: false                    # TROQUE 5 (oficial: True)
+      # 5 Hz = a taxa do /scan da Aula 11. Atualizar mais rapido que o sensor
+      # so gasta CPU reprocessando a mesma leitura.
+      update_frequency: 5.0
+      publish_frequency: 2.0
+      # `odom`, nao `map`: o costmap local existe para funcionar mesmo com a
+      # localizacao ruim. Trocar para `map` o faz escorregar junto com o AMCL.
+      global_frame: odom
+      robot_base_frame: base_footprint        # TROQUE 1 (oficial: base_link)
+      rolling_window: true
+      # Janela de 4 x 4 m (2 m do centro para cada lado). O oficial usa 3 x 3,
+      # dimensionado para o laser de 3,5 m do TurtleBot3. O nosso alcanca 6 m,
+      # e 2 m de raio e o minimo para a porta de 1,2 m entrar inteira na janela
+      # enquanto o robo ainda esta longe o bastante para manobrar.
+      # Janela grande demais custa CPU e perde o sentido de ser local.
+      width: 4                               # (oficial: 3)
+      height: 4                              # (oficial: 3)
+      resolution: 0.05                       # = a resolucao do mapa e do mundo
+      # O raio do robo da Aula 11 (parametro `raio_robo` do no `mundo`).
+      # Grande demais: ele nao passa pela porta de 1,2 m. Pequeno demais: ele
+      # raspa a parede e o simulador trava sem o Nav2 entender por que.
+      robot_radius: 0.20                     # TROQUE 4 (oficial: 0.22)
+      # O oficial usa voxel_layer (VoxelLayer, 3D). Trocamos por ObstacleLayer
+      # porque o nosso unico sensor e um laser 2D: a VoxelLayer funcionaria,
+      # mas acrescenta uma dimensao z que nao medimos e um /voxel_marked_cloud
+      # que so suja o RViz2.
+      plugins: ["obstacle_layer", "inflation_layer"]
+      obstacle_layer:
+        plugin: "nav2_costmap_2d::ObstacleLayer"
+        enabled: True
+        observation_sources: scan
+        scan:
+          # A BARRA E OBRIGATORIA. Este no vive em /local_costmap, e `scan`
+          # sem barra viraria /local_costmap/scan -- que ninguem publica. O
+          # costmap sobe, fica vazio, e o DWB dirige achando tudo livre.
+          topic: /scan                       # TROQUE 2
+          data_type: "LaserScan"
+          clearing: True
+          marking: True
+          # O nosso laser devolve `inf` quando nao acha nada em 6 m, e isso
+          # acontece olhando no comprimento do mundo (12 m). Com false (o
+          # padrao) essas leituras sao DESCARTADAS e o costmap deixa de limpar
+          # o espaco vazio: lixo antigo fica marcado para sempre.
+          inf_is_valid: true                 # (oficial: nao declarado = false)
+          # Marcar obstaculo ate 5,5 m e limpar o raio ate 6,0 m -- o alcance
+          # real do sensor. O oficial usa 2,5/3,0, dimensionado para outro
+          # laser. Limpar MENOS do que se marca deixa rastro de obstaculo.
+          obstacle_max_range: 5.5            # (oficial: 2.5)
+          obstacle_min_range: 0.0
+          raytrace_max_range: 6.0            # (oficial: 3.0)
+          raytrace_min_range: 0.0
+          # O laser e 2D e esta a 0,18 m do chao; a faixa de altura e so para
+          # nao filtrar nada. Valores do oficial.
+          max_obstacle_height: 2.0
+      inflation_layer:
+        plugin: "nav2_costmap_2d::InflationLayer"
+        cost_scaling_factor: 3.0
+        # A conta importa. A porta tem 1,2 m. Celulas a menos de robot_radius
+        # (0,20 m) de uma parede sao INTRANSPONIVEIS: sobram 1,2 - 2 x 0,20 =
+        # 0,8 m de passagem. O raio de inflacao so encarece o custo, e com
+        # 0,35 m sobram 1,2 - 2 x 0,35 = 0,5 m de corredor com custo zero no
+        # meio da porta -- espaco suficiente para o NavFn mirar.
+        # O oficial usa 0,55 m, dimensionado para corredor largo: aqui ele
+        # inflaria 1,1 m dos 1,2 m da porta, deixando 0,1 m de custo zero, e o
+        # planejador passaria raspando ou nao passaria.
+        inflation_radius: 0.35               # (oficial: 0.55)
+      always_send_full_costmap: True
+
+# ============================================================================
+# COSTMAP GLOBAL -- o mapa inteiro. Quem o NavFn consulta.
+# ============================================================================
+global_costmap:
+  global_costmap:
+    ros__parameters:
+      use_sim_time: false                    # TROQUE 5 (oficial: True)
+      # 1 Hz basta: a arvore padrao replaneja a 1 Hz.
+      update_frequency: 1.0
+      publish_frequency: 1.0
+      global_frame: map
+      robot_base_frame: base_footprint       # TROQUE 1 (oficial: base_link)
+      robot_radius: 0.20                     # TROQUE 4 (oficial: 0.22)
+      # IGUAL a resolucao do mapa.pgm e do mundo da Aula 11. Diferente, o
+      # costmap reamostra o mapa estatico e as paredes de 0,20 m engordam ou
+      # desaparecem. Sem rolling_window, o tamanho vem do mapa (240 x 160).
+      resolution: 0.05
+      # Celula nunca vista e DIFERENTE de celula livre. Com false, o Nav2
+      # planeja alegremente por dentro do que nao conhece.
+      track_unknown_space: true
+      plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
+      static_layer:
+        plugin: "nav2_costmap_2d::StaticLayer"
+        # O map_server publica /map em TRANSIENT_LOCAL (entrega o mapa a quem
+        # chega depois). Com false aqui, a camada perde o mapa se subir depois
+        # do map_server -- o que acontece metade das vezes.
+        map_subscribe_transient_local: True
+      obstacle_layer:
+        plugin: "nav2_costmap_2d::ObstacleLayer"
+        enabled: True
+        observation_sources: scan
+        scan:
+          topic: /scan                       # TROQUE 2 -- a barra, de novo, obrigatoria
+          data_type: "LaserScan"
+          clearing: True
+          marking: True
+          inf_is_valid: true                 # (oficial: nao declarado = false)
+          obstacle_max_range: 5.5            # (oficial: 2.5)
+          obstacle_min_range: 0.0
+          raytrace_max_range: 6.0            # (oficial: 3.0)
+          raytrace_min_range: 0.0
+          max_obstacle_height: 2.0
+      inflation_layer:
+        plugin: "nav2_costmap_2d::InflationLayer"
+        cost_scaling_factor: 3.0
+        inflation_radius: 0.35               # (oficial: 0.55) -- a conta esta no local
+      always_send_full_costmap: True
+
+# ============================================================================
+# MAP SERVER -- carrega o mapa.pgm/mapa.yaml e publica /map.
+# ============================================================================
+map_server:
+  ros__parameters:
+    use_sim_time: false                      # TROQUE 5 (oficial: True)
+    # Vazio de proposito: quem preenche e o launch, a partir do argumento
+    # `mapa:=`. Se voce colocar caminho aqui, ele e ignorado -- o launch
+    # sobrepoe. Troque pelo argumento, nao por esta linha.
+    yaml_filename: ""
+    topic_name: "map"
+    frame_id: "map"

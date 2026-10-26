@@ -1,0 +1,309 @@
+# RViz2 da Aula 15: o Nav2 navegando no mapa conhecido.
+#
+# O que esta janela existe para mostrar, em uma frase: a NUVEM DE PARTICULAS do
+# AMCL se fechando em cima do robo. E a evidencia que o G4.0 pede, e e tambem o
+# jeito de saber se a sua pose inicial estava certa.
+#
+# ATENCAO AO QoS -- e a armadilha que nao avisa. Cada display abaixo declara
+# explicitamente Reliability e Durability, casando com o publicador:
+#
+#   /scan            RELIABLE, Volatile       o no `mundo` publica com QoS
+#                                             padrao de rclpy (reliable)
+#   /particle_cloud  BEST EFFORT, Volatile    o AMCL publica com SensorDataQoS,
+#                                             que e BEST EFFORT -- um display em
+#                                             Reliable aqui fica em BRANCO, sem
+#                                             erro, sem aviso, e voce conclui
+#                                             que o AMCL nao esta publicando
+#   /map, costmaps   RELIABLE, TRANSIENT LOCAL   mapa e dado "de estado": o
+#                                             publicador guarda a ultima copia
+#                                             para quem chegar depois. Em
+#                                             Volatile voce so ve o mapa se o
+#                                             RViz2 subir ANTES do map_server
+#   /plan            RELIABLE, Volatile
+#
+# A regra: um display pode pedir MENOS garantia que o publicador (Best Effort
+# contra Reliable funciona), nunca MAIS. O publicador reclama da
+# incompatibilidade no log; o RViz2 nao reclama de nada.
+#
+# NAO FOI EXECUTADO: esta configuracao nunca foi aberta num RViz2. Ela carrega
+# como YAML (isso foi conferido), e os nomes de classe e de topico foram
+# conferidos contra o nav2_default_view.rviz do Humble. Se algum display subir
+# com cara de erro, a primeira suspeita e nome de classe de plugin.
+Panels:
+  - Class: rviz_common/Displays
+    Name: Displays
+    Property Tree Widget:
+      Expanded:
+        - /Global Options1
+        - /Nuvem de particulas (AMCL)1
+      Splitter Ratio: 0.5
+    Tree Height: 700
+Visualization Manager:
+  Class: ""
+  Name: root
+  Displays:
+    - Class: rviz_default_plugins/Grid
+      Name: Grid
+      Enabled: false
+      Cell Size: 1
+      Plane Cell Count: 14
+
+    # ---------------------------------------------------------------- mapas
+    # Desligado por padrao: com o mapa embutido deste pacote ele e IDENTICO ao
+    # /map (os dois saem da mesma grade), e duas camadas iguais so confundem.
+    # Ligue quando subir com o SEU mapa (mapa:=...): a diferenca entre as duas
+    # camadas e o erro do seu SLAM, e da para ver a olho.
+    - Class: rviz_default_plugins/Map
+      Name: Mundo real (verdade)
+      Enabled: false
+      Topic:
+        Value: /mundo_real
+        Depth: 1
+        Durability Policy: Transient Local
+        Reliability Policy: Reliable
+        History Policy: Keep Last
+      Alpha: 0.35
+      Color Scheme: costmap
+      Draw Behind: true
+      Update Topic:
+        Value: /mundo_real_updates
+
+    - Class: rviz_default_plugins/Map
+      Name: Mapa estatico (/map)
+      Enabled: true
+      Topic:
+        Value: /map
+        Depth: 1
+        Durability Policy: Transient Local
+        Reliability Policy: Reliable
+        History Policy: Keep Last
+      Alpha: 1
+      Color Scheme: map
+      Draw Behind: true
+      Update Topic:
+        Value: /map_updates
+
+    # Os dois costmaps. O global e o mapa estatico INFLADO (o que o NavFn ve);
+    # o local e a janela de 4 x 4 m que anda com o robo (o que o DWB ve).
+    # Comparar os dois com o mapa embaixo e o exercicio: onde o costmap pinta,
+    # o planejador nao entra.
+    - Class: rviz_default_plugins/Map
+      Name: Costmap global
+      Enabled: true
+      Topic:
+        Value: /global_costmap/costmap
+        Depth: 1
+        Durability Policy: Transient Local
+        Reliability Policy: Reliable
+        History Policy: Keep Last
+      Alpha: 0.3
+      Color Scheme: costmap
+      Draw Behind: true
+      Update Topic:
+        Value: /global_costmap/costmap_updates
+
+    - Class: rviz_default_plugins/Map
+      Name: Costmap local
+      Enabled: true
+      Topic:
+        Value: /local_costmap/costmap
+        Depth: 1
+        Durability Policy: Transient Local
+        Reliability Policy: Reliable
+        History Policy: Keep Last
+      Alpha: 0.6
+      Color Scheme: costmap
+      Draw Behind: false
+      Update Topic:
+        Value: /local_costmap/costmap_updates
+
+    # ---------------------------------------------------- a evidencia do G4.0
+    # nav2_rviz_plugins/ParticleCloud, e nao PoseArray: no Humble o AMCL publica
+    # nav2_msgs/ParticleCloud (com peso por particula) em /particle_cloud. O
+    # antigo /particlecloud (geometry_msgs/PoseArray) NAO existe mais, e e por
+    # isso que um display PoseArray apontado para la nunca mostra nada.
+    #
+    # BEST EFFORT aqui e obrigatorio: ver o bloco de QoS no topo deste arquivo.
+    - Class: nav2_rviz_plugins/ParticleCloud
+      Name: Nuvem de particulas (AMCL)
+      Enabled: true
+      Topic:
+        Value: /particle_cloud
+        Depth: 5
+        Durability Policy: Volatile
+        Reliability Policy: Best Effort
+        History Policy: Keep Last
+      Color: 0; 180; 0
+      Alpha: 1
+      Shape: Arrow (Flat)
+      Min Arrow Length: 0.02
+      Max Arrow Length: 0.3
+
+    # ---------------------------------------------------------------- sensor
+    - Class: rviz_default_plugins/LaserScan
+      Name: LaserScan
+      Enabled: true
+      Topic:
+        Value: /scan
+        Depth: 5
+        Durability Policy: Volatile
+        Reliability Policy: Reliable
+        History Policy: Keep Last
+      Style: Points
+      Size (Pixels): 3
+      Alpha: 1
+      Decay Time: 0
+      Position Transformer: XYZ
+      Color Transformer: FlatColor
+      Color: 252; 163; 17
+
+    # ---------------------------------------------------------------- planos
+    - Class: rviz_default_plugins/Path
+      Name: Caminho global (/plan)
+      Enabled: true
+      Topic:
+        Value: /plan
+        Depth: 5
+        Durability Policy: Volatile
+        Reliability Policy: Reliable
+        History Policy: Keep Last
+      Line Style: Lines
+      Color: 56; 182; 255
+      Alpha: 1
+      Buffer Length: 1
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0.01
+      Pose Style: None
+
+    - Class: rviz_default_plugins/Path
+      Name: Trajetoria local (/local_plan)
+      Enabled: true
+      Topic:
+        Value: /local_plan
+        Depth: 5
+        Durability Policy: Volatile
+        Reliability Policy: Reliable
+        History Policy: Keep Last
+      Line Style: Lines
+      Color: 255; 85; 85
+      Alpha: 1
+      Buffer Length: 1
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0.02
+      Pose Style: None
+
+    # ----------------------------------------------------------------- robo
+    - Class: rviz_default_plugins/RobotModel
+      Name: RobotModel
+      Enabled: true
+      Description Source: Topic
+      Description Topic:
+        Value: /robot_description
+        Depth: 5
+        Durability Policy: Transient Local
+        Reliability Policy: Reliable
+        History Policy: Keep Last
+      Visual Enabled: true
+      Collision Enabled: false
+      Alpha: 1
+
+    - Class: rviz_default_plugins/TF
+      Name: TF
+      Enabled: true
+      Show Names: true
+      Show Axes: true
+      Show Arrows: false
+      Marker Scale: 0.4
+      Frame Timeout: 15
+
+    # ---------------------------------------------------------------- imagem
+    # DESLIGADO de proposito, e fica aqui como lembrete da Aula 13: este mundo
+    # nao tem camera, entao nao ha o que mostrar. Se voce apontar este display
+    # para uma imagem de sensor, lembre que imagem costuma vir em BEST EFFORT
+    # -- deixar o display em Reliable (o padrao) devolve uma janela branca sem
+    # nenhuma mensagem de erro. Por isso ele ja vem em Best Effort.
+    - Class: rviz_default_plugins/Image
+      Name: Image (desligado)
+      Enabled: false
+      Topic:
+        Value: /image_raw
+        Depth: 5
+        Durability Policy: Volatile
+        Reliability Policy: Best Effort
+        History Policy: Keep Last
+      Max Value: 1
+      Min Value: 0
+      Median window: 5
+      Normalize Range: true
+
+  Global Options:
+    # `map` e nao `odom`: o assunto da aula e a pose do robo DENTRO do mapa, e
+    # com Fixed Frame em odom a deriva fica invisivel -- tudo parece perfeito.
+    Fixed Frame: map
+    Background Color: 20; 33; 61
+    Frame Rate: 30
+  Tools:
+    - Class: rviz_default_plugins/MoveCamera
+    - Class: rviz_default_plugins/Select
+    - Class: rviz_default_plugins/FocusCamera
+    - Class: rviz_default_plugins/Measure
+      Line color: 128; 128; 0
+    # O botao "2D Pose Estimate". E ELE o gesto da aula: publica em
+    # /initialpose, o AMCL recebe, e a nuvem de particulas renasce onde voce
+    # clicou. Sem esta ferramenta na barra, o exemplo nao tem como comecar
+    # (a nao ser com pose_inicial_auto:=true).
+    # Reliable porque o AMCL assina /initialpose com SystemDefaultsQoS.
+    - Class: rviz_default_plugins/SetInitialPose
+      Covariance x: 0.25
+      Covariance y: 0.25
+      Covariance yaw: 0.06853891909122467
+      Topic:
+        Value: /initialpose
+        Depth: 5
+        Durability Policy: Volatile
+        Reliability Policy: Reliable
+        History Policy: Keep Last
+    # O botao "2D Goal Pose", que publica em /goal_pose -- o topico que o
+    # bt_navigator assina. O nav2_default_view.rviz oficial usa, no lugar
+    # deste, o nav2_rviz_plugins/GoalTool, que chama a acao NavigateToPose
+    # direto; os dois chegam ao mesmo lugar, e este nao depende do
+    # nav2_rviz_plugins.
+    - Class: rviz_default_plugins/SetGoal
+      Topic:
+        Value: /goal_pose
+        Depth: 5
+        Durability Policy: Volatile
+        Reliability Policy: Reliable
+        History Policy: Keep Last
+    - Class: rviz_default_plugins/PublishPoint
+      Single click: true
+      Topic:
+        Value: /clicked_point
+        Depth: 5
+        Durability Policy: Volatile
+        Reliability Policy: Reliable
+        History Policy: Keep Last
+  Value: true
+  Views:
+    Current:
+      # Vista de cima: o mundo tem 12 x 8 m e a navegacao e plana. Centrada em
+      # (6, 4), que e o meio do mundo da Aula 11.
+      Class: rviz_default_plugins/TopDownOrtho
+      Name: Current View
+      Target Frame: <Fixed Frame>
+      Scale: 78
+      X: 6
+      Y: 4
+      Angle: 0
+      Near Clip Distance: 0.01
+      Invert Z Axis: false
+    Saved: ~
+Window Geometry:
+  Height: 900
+  Width: 1400
+  Displays:
+    collapsed: false

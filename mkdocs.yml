@@ -125,6 +125,7 @@ nav:
       - "Aula 12 — O SLAM paga a conta da deriva": aulas/etapa06-aula12/index.md
       - "Aula 13 — Achar não é acertar": aulas/etapa07-aula13/index.md
       - "Aula 14 — Aterrissagem do TP3": aulas/etapa07-aula14/index.md
+      - "Aula 15 — Navegação autônoma com o Nav2": aulas/etapa08-aula15/index.md
 
   - Tutoriais:
       - tutoriais/index.md
@@ -168,6 +169,8 @@ nav:
       - "Aula 12 — SLAM e medida do mapa": exemplos/aula12-slam/index.md
       - "Aula 13 — da máscara à instância": exemplos/aula13-instancia/index.md
       - "Aula 13 — percepção veicular": exemplos/aula13-veicular/index.md
+      - "Aula 15 — Nav2 e a convergência medida": exemplos/aula15-nav2/index.md
+      - "Aula 15 — o pacote do Nav2, por dentro": exemplos/aula15-nav2/aula15_nav2/README-pacote.md
       - "TP3 — roteiro de revisão da entrega": exemplos/tp3/revisar-entrega/index.md
       - TP1: exemplos/tp1/index.md
       - TP2: exemplos/tp2/index.md

@@ -54,18 +54,18 @@ Aulas às **terças, 07h00–09h30, sala SJ205** · Prof. Dácio Moreira de Souz
 
 ## Aula mais recente
 
-**Aula 14 — terça, 20/10/2026 — Aterrissagem do TP3: o enunciado, item por item** <span class="pb-tag next">atual</span>
+**Aula 15 — terça, 27/10/2026 — Navegação autônoma: o Nav2 em cima do seu mapa** <span class="pb-tag next">atual</span>
 
-**O enunciado é a rubrica.** Cada verbo dele — execute, capture, explique, publique, relacione — é um item que alguém vai procurar no seu repositório na sexta à noite. Sem conteúdo novo: os quatro itens demonstrados, e a lista do que falta no seu.
+**A nuvem concentrar prova confiança, não localização.** O mapa que vocês salvaram no TP3 deixa de ser evidência e passa a ser entrada: é nele que o robô se acha. E a aula mede, com número, a diferença entre um robô localizado e um robô 5,92 m fora do lugar com a nuvem de partículas igualmente concentrada.
 
-[Conteúdo e slides da aula](aulas/etapa07-aula14/index.md){ .md-button .md-button--primary }
-[Roteiro de revisão da entrega](exemplos/tp3/revisar-entrega/index.md){ .md-button }
+[Conteúdo e slides da aula](aulas/etapa08-aula15/index.md){ .md-button .md-button--primary }
+[Exemplo: a convergência medida](exemplos/aula15-nav2/index.md){ .md-button }
 
-!!! danger "O TP3 vence sexta, 23/10 — e a entrega é no Moodle"
-    O repositório é critério de avaliação, não anexo: branch `entrega-tp3`, tag `tp3` **empurrada**, e as evidências **commitadas**. Antes de postar, vale passar pelo roteiro de revisão — que aponta onde olhar, e **não** corrige nem valida a entrega:
+!!! danger "O TP4 já começou: o primeiro gate vence sexta, 30/10"
+    O Nav2 subindo com o **seu** mapa e o AMCL convergindo, provado com o print do RViz2 — e a evidência **commitada** em `docs/evidencias/tp4/`. A instalação é uma linha, e é a primeira coisa a fazer:
 
     ```bash
-    python3 revisar_tp3.py             # e, com o sistema no ar: --ao-vivo
+    sudo apt install -y ros-humble-navigation2 ros-humble-nav2-bringup
     ```
 
 ## Calendário de entregas

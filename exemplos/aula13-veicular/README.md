@@ -240,9 +240,10 @@ def fonte_pasta(pasta):
 É ela que o `faixas.py --pasta DIR` consome. Trocá-la por MetaDrive é escrever outra com a mesma assinatura — `detectar_faixas()` não muda uma linha:
 
 ```python
-# esboco -- NAO e necessario para nenhum gate; so instale se quiser
+# esboco NAO EXECUTADO -- a forma de pedir a imagem muda entre versoes do
+# MetaDrive; confira a sua com o verify_headless_installation antes de confiar
 def fonte_metadrive(passos=200):
-    from metadrive.envs import MetaDriveEnv          # pip, dentro de um venv
+    from metadrive.envs import MetaDriveEnv
     env = MetaDriveEnv({'use_render': False, 'image_observation': True})
     env.reset()
     for _ in range(passos):
@@ -251,7 +252,15 @@ def fonte_metadrive(passos=200):
     env.close()
 ```
 
-Instalar é `uv venv --system-site-packages` e `pip install metadrive-simulator` **dentro do venv**, nunca no python do sistema e nunca dentro de um nó ROS 2 — a regra da disciplina não muda aqui. São uns 2 GB e alguns minutos; por isso ele é opcional e por isso a aula não espera por ele.
+Instalar é com `uv`, como todo ambiente Python da disciplina — nunca no python do sistema, nunca dentro de um nó ROS 2:
+
+```bash
+uv venv --system-site-packages .venv-metadrive
+uv pip install --python .venv-metadrive/bin/python "metadrive-simulator==0.4.3"
+.venv-metadrive/bin/python -m metadrive.examples.verify_headless_installation --camera rgb
+```
+
+São uns 2 GB e alguns minutos; por isso ele é opcional e por isso a aula não espera por ele. **Eu não o executei**: a 0.4.3 é a última versão publicada (dezembro de 2024), a documentação afirma suportar renderização sem tela, e o comando acima é a conferência que o próprio pacote oferece. O `python -m metadrive...` falha se o diretório atual tiver uma subpasta chamada `metadrive`.
 
 Para sentir como é rodar sem verdade antes de instalar coisa nenhuma, aponte o `--pasta` para qualquer pasta de PNG:
 

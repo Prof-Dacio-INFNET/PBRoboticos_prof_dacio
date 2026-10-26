@@ -42,7 +42,22 @@ ros2 launch aula11_mundo mundo.launch.py
 ros2 launch aula11_mundo mundo.launch.py deriva:=0.0     # odometria perfeita
 ros2 launch aula11_mundo mundo.launch.py modelo:=false   # sem o URDF da Aula 9
 ros2 launch aula11_mundo mundo.launch.py rviz:=true
+ros2 launch aula11_mundo mundo.launch.py piloto:=false   # sem o piloto reativo
+ros2 launch aula11_mundo mundo.launch.py laser_x:=0.0    # laser no centro do robô
 ```
+
+!!! note "`piloto:=false` — quem vai mandar no `/cmd_vel`"
+    O `piloto` reativo publica `/cmd_vel` 20 vezes por segundo. Se outro nó for comandar
+    o robô — o Nav2 da Aula 15, um `teleop`, um nó seu — suba com `piloto:=false`.
+
+    **Dois publicadores no mesmo tópico não dão erro:** o robô obedece ao último que
+    falou, e o sintoma é andar truncado, nunca uma mensagem. Confira com
+    `ros2 topic info /cmd_vel --verbose` — espere **um** publicador.
+
+    O `laser_x:=` alimenta ao mesmo tempo a medição do `/scan` e a transformada estática
+    `base_footprint → laser_frame`. Os dois números são o mesmo de propósito: medir o
+    feixe num lugar e dizer ao ROS 2 que ele saiu de outro é um viés sistemático que
+    nenhum nó reclama.
 
 !!! tip "Se o RViz2 abrir só com o Grid, não é defeito do sistema"
     É ausência de **displays**. O `rviz2` sem `-d` abre vazio: quadro fixo `map`, status
@@ -171,7 +186,8 @@ qual versão (Fortress, não Harmonic), como montar a ponte, e quando parar.
 | `No module named 'numpy'` | `sudo apt install python3-numpy` — nunca pip no python do sistema |
 | `package 'meu_robo_description' not found` | suba com `modelo:=false` |
 | `/deriva` sempre 0 | subiu com `deriva:=0.0`, ou o robô não está andando |
-| o robô não anda | o `piloto` não subiu, ou `/scan` não está chegando: `ros2 topic hz /scan` |
+| o robô não anda | subiu com `piloto:=false`, ou `/scan` não está chegando: `ros2 topic hz /scan` |
+| o robô anda truncado com outro nó comandando | dois publicadores de `/cmd_vel` — falta `piloto:=false` |
 | `view_frames` mostra duas árvores | faltou o `static_transform_publisher` de `map → odom` |
 | RViz2 vazio | o G3.2 não depende dele — use `view_frames` e `tf2_echo` |
 | o laser desliza para fora das paredes no RViz2 | **é o ponto da aula**: `map → odom` é identidade e a odometria derivou |
