@@ -3,6 +3,7 @@
     ros2 run aula15_nav2 rota
     ros2 run aula15_nav2 rota --ros-args -p voltas:=3
     ros2 run aula15_nav2 rota --ros-args -p rota:="[2.0, 4.0, 0.0, 9.0, 2.0, 1.57]"
+    ros2 run aula15_nav2 rota --ros-args -p arvore:=/caminho/da/sua_arvore.xml
 
 ADVERTENCIA: este arquivo NAO FOI EXECUTADO. Nao havia ROS 2 na maquina em que
 ele foi escrito. Os nomes de action, de campo e de status foram lidos na FONTE
@@ -35,6 +36,11 @@ A INTERFACE, copiada da fonte do Humble (nav2_msgs/action/NavigateToPose):
     `resultado.result.error_code` escreve codigo que nao compila contra esta
     versao -- esse campo nasceu depois do Humble. O que diz se chegou e
     `GoalStatus.STATUS_SUCCEEDED`, que vem do envelope da acao.
+
+    O `behavior_tree` e o campo que resolve metade do item 2 do TP4: vazio, o
+    bt_navigator usa a arvore padrao dele; com o caminho de um XML, usa a SUA
+    naquele objetivo. E o parametro `arvore:=` deste no -- e e so isso que
+    apontar a propria arvore de comportamento exige, do lado do cliente.
 
 POR QUE UMA POSE DE CADA VEZ, e nao `follow_waypoints`:
 
@@ -107,6 +113,11 @@ class Rota(Node):
         self.declare_parameter('rota', ROTA_PADRAO)
         self.declare_parameter('voltas', 1)
         self.declare_parameter('quadro', 'map')
+        # O XML da sua arvore de comportamento. Vazio = a arvore padrao do
+        # bt_navigator. O caminho tem de existir na maquina que roda o
+        # bt_navigator, e o jeito robusto e apontar para dentro do share do seu
+        # pacote instalado, nao para a pasta de fontes.
+        self.declare_parameter('arvore', '')
         self.declare_parameter('espera_servidor_s', 30.0)
 
         bruta = list(self.get_parameter('rota').value)
@@ -117,6 +128,7 @@ class Rota(Node):
         self.pontos = [tuple(bruta[i:i + 3]) for i in range(0, len(bruta), 3)]
         self.voltas = int(self.get_parameter('voltas').value)
         self.quadro = self.get_parameter('quadro').value
+        self.arvore = self.get_parameter('arvore').value
         self.espera = float(self.get_parameter('espera_servidor_s').value)
 
         self.cliente = ActionClient(self, NavigateToPose, 'navigate_to_pose')
@@ -161,6 +173,9 @@ class Rota(Node):
         x, y, yaw = ponto
         objetivo = NavigateToPose.Goal()
         objetivo.pose = pose_stamped(self, self.quadro, x, y, yaw)
+        objetivo.behavior_tree = self.arvore
+        if self.arvore:
+            self.get_logger().info(f'{etiqueta}: arvore = {self.arvore}')
         self.get_logger().info(f'{etiqueta}: indo para ({x:.2f}, {y:.2f}, {yaw:.2f})')
         self.ultimo_aviso = None
 

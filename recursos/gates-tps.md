@@ -90,7 +90,7 @@ Um `[!]` não é vergonha nem perda de nota — é informação. O que custa not
 |---|---|---|---|---|
 | **G4.0** | Nav2 sobe com o mapa do TP3 e localiza (AMCL convergindo) | `ros2 launch` do Nav2 + print do RViz2 com a nuvem de partículas concentrada | `docs/evidencias/tp4/amcl.png` | 30/10 |
 | **G4.1** | Robô navega até **um** goal enviado pelo RViz2 sem intervenção | vídeo curto de 20 s | `docs/evidencias/tp4/goal-unico.mp4` (ou link) | 04/11 |
-| **G4.2** | Rota com **≥3 waypoints** completada, costmaps local e global configurados e explicados | `ros2 topic echo /navigate_through_poses/_action/status` + prints dos costmaps | `config/nav2_params.yaml` + prints | 09/11 |
+| **G4.2** | Rota com **≥3 waypoints** completada, costmaps local e global configurados e explicados | o status da ação que você usou — `/navigate_to_pose`, `/navigate_through_poses` ou `/follow_waypoints` — mais prints dos costmaps | o YAML de parâmetros do Nav2 (`config/nav2*.yaml`) + prints | 09/11 |
 | **G4.3** | Comportamento de obstáculo (<0,5 m) disparando e o robô se recuperando | vídeo do obstáculo entrando na frente do robô | `docs/evidencias/tp4/obstaculo.mp4` (ou link) | 12/11 |
 | **G4.4** | `ros2 bag` gravado e **reproduzível**: dá para rodar a análise sem o robô ligado | `ros2 bag info <bag>` e `ros2 bag play <bag>` alimentando os nós de análise | `bags/` (ou link, se grande) + `docs/evidencias/tp4/bag-info.txt` | 15/11 |
 | **G4.5** | Percepção veicular no MetaDrive: HSV + Canny + Hough sobre a cena, com discussão de falhas | script + prints das três etapas | `docs/evidencias/tp4/veicular/` | 17/11 |

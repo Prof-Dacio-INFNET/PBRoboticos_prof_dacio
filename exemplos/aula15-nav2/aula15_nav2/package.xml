@@ -11,8 +11,9 @@
   <exec_depend>aula11_mundo</exec_depend>
 
   <!-- O Nav2. Pelo apt: sudo apt install ros-humble-navigation2 ros-humble-nav2-bringup
-       O metapacote navigation2 traz os servidores; o nav2_bringup traz os
-       plugins de RViz2 (inclusive o display da nuvem de particulas). -->
+       O metapacote navigation2 traz os servidores E o nav2_rviz_plugins (de
+       onde vem o display da nuvem de particulas); o nav2_bringup traz os
+       launches e os YAMLs de referencia, e depende de navigation2. -->
   <exec_depend>nav2_bringup</exec_depend>
   <exec_depend>nav2_map_server</exec_depend>
   <exec_depend>nav2_amcl</exec_depend>

@@ -10,13 +10,9 @@
 
 **Na Aula 14** o enunciado do TP3 foi lido item por item, com o roteiro de revisão rodando ao lado — e a entrega foi na sexta, 23/10. O que ficou dito ali vale para hoje em outra escala: **o enunciado é a rubrica**, e o TP4 tem quatro itens que nenhum script confere por você.
 
-As peças que a aula de hoje vai montar, todas suas:
+**As peças que a aula de hoje vai montar são todas suas.** Da **Aula 11** vem o mundo e a deriva: a odometria erra 3%, o erro só cresce, e `map → odom` era um `static_transform_publisher` mentiroso publicando identidade — hoje quem publica essa aresta é o AMCL, e ela deixa de ser mentira. Da **Aula 12** vem o mapa que vocês salvaram, o par `.pgm` + `.yaml`, que deixa de ser evidência de entrega e passa a ser **entrada**: é nele que o robô vai se achar. Da **Aula 9** vem a régua declarada antes de medir, senão ela se ajusta ao resultado. Da **Aula 13** vem a frase de que achar não é acertar — o maior IoU médio da tabela era do pior detector —, e hoje a mesma armadilha reaparece com outra roupa, que é a espinha da aula.
 
-- **Aula 11 — o mundo e a deriva.** A odometria erra 3% e o erro só cresce; `map → odom` era um `static_transform_publisher` mentiroso, publicando identidade. Hoje quem publica essa aresta é o AMCL, e ela deixa de ser mentira.
-- **Aula 12 — o SLAM pagou a conta.** Vocês salvaram um mapa, o par `.pgm` + `.yaml`. Hoje esse arquivo deixa de ser evidência de entrega e passa a ser **entrada**: é nele que o robô vai se achar.
-- **Aula 9 — a métrica declarada antes.** A régua se escreve antes de medir, senão ela se ajusta ao resultado.
-- **Aula 13 — achar não é acertar.** O maior IoU médio da tabela era do pior detector. Hoje a mesma armadilha reaparece com outra roupa, e é a espinha da aula.
-- **Aulas 7 e 8 — ações.** Objetivo, feedback, resultado, cancelamento. **O Nav2 é um servidor de ação**: quem entendeu aquelas duas aulas já sabe navegar, e só falta o nome do servidor.
+E das **Aulas 7 e 8** vem a peça que vocês não sabem que já têm: objetivo, feedback, resultado, cancelamento. **O Nav2 é um servidor de ação.** Quem entendeu aquelas duas aulas já sabe navegar, e só falta o nome do servidor.
 
 ## A ideia da aula em uma frase
 
@@ -43,6 +39,9 @@ São uns 200 MB e dois minutos. Faça isso **agora**, no começo da aula, porque
 sudo apt update
 sudo apt install -y ros-humble-navigation2 ros-humble-nav2-bringup
 
+# o bloco 1 roda sem ROS 2, mas precisa destes dois (o segundo so' para a figura)
+sudo apt install -y python3-numpy python3-opencv
+
 # conferir — as três linhas têm de responder
 ros2 pkg list | grep -c '^nav2_'            # 20 ou mais
 ros2 pkg executables nav2_amcl              # nav2_amcl amcl
@@ -54,7 +53,10 @@ ros2 pkg executables nav2_bt_navigator      # nav2_bt_navigator bt_navigator
 
     É a mesma regra do semestre, na terceira vez: **Humble pareia com Gazebo Fortress** (`ros-humble-ros-gz`, binário `ign gazebo`), o `cv_bridge` do apt pareia com **NumPy 1.x e OpenCV 4.5.4**, e o Nav2 pareia com o Humble. Diante de um erro que não faz sentido, a primeira pergunta é **"o que mudou de versão aqui?"**.
 
-O `nav2_bringup` entra por um motivo específico: ele traz o `nav2_rviz_plugins`, e é dele que vem o display da **nuvem de partículas** no RViz2 — a figura que o gate pede. Sem ele, o display não existe na lista e parece que o AMCL não está publicando.
+Os dois pacotes entram por motivos diferentes. O metapacote `navigation2` traz os servidores **e** o `nav2_rviz_plugins`, de onde vem o display da **nuvem de partículas** — a figura que o gate pede. Sem ele, o display não existe na lista do RViz2 e parece que o AMCL não está publicando. O `nav2_bringup` traz os launches e os YAMLs de referência, que são a fonte contra a qual este material foi escrito.
+
+!!! tip "A nuvem só existe depois da pose inicial"
+    No código do AMCL do Humble, a publicação da nuvem começa com `if (!initial_pose_is_known_) return;`. Antes do seu *2D Pose Estimate* o tópico `/particle_cloud` **não tem mensagem nenhuma** — não é display errado, não é QoS, não é o RViz2: é o AMCL esperando você.
 
 ## Preparar o terminal e pegar o material
 
@@ -63,6 +65,7 @@ O `nav2_bringup` entra por um motivo específico: ele traz o `nav2_rviz_plugins`
 export PB_USER=seu-usuario-github          # ← troque pelo seu usuário do GitHub
 export PB_DIR="$HOME/projeto-pb-$PB_USER"
 export PB_WS="$PB_DIR/ros2_ws"
+mkdir -p "$PB_WS/src"
 
 cd /tmp && rm -rf pb-a15 && \
   git clone --depth 1 https://github.com/Prof-Dacio-INFNET/PBRoboticos_prof_dacio.git pb-a15
@@ -97,6 +100,15 @@ source install/setup.bash
 
 !!! tip "A linha `: \"${PB_WS:?...}\"` que aparece nos blocos seguintes"
     Ela confere que as variáveis existem **neste** terminal. Abriu um terminal novo? Elas se perderam — e sem essa linha, `cd "$PB_DIR"` viraria `cd /`, que não falha dizendo o que faltou.
+
+    Num terminal novo, três coisas se perdem juntas, e só a primeira avisa:
+
+    ```bash
+    export PB_USER=seu-usuario-github          # ← troque pelo seu usuário do GitHub
+    export PB_DIR="$HOME/projeto-pb-$PB_USER" && export PB_WS="$PB_DIR/ros2_ws"
+    source /opt/ros/humble/setup.bash
+    source "$PB_WS/install/setup.bash"
+    ```
 
 ---
 
@@ -176,11 +188,11 @@ ros2 launch aula15_nav2 nav2.launch.py rviz:=true
 
     Ela encontrou um defeito, e ele está contado abaixo porque é bom demais para jogar fora: o sistema subiu inteiro, fez exatamente o que foi mandado fazer, e **o RViz2 não abriu** — sem uma única mensagem de erro.
 
-    O `README-pacote.md` tem a lista do que foi e do que não foi verificado, atualizada depois dessa execução.
+    O [README do pacote](../../exemplos/aula15-nav2/aula15_nav2/README-pacote.md) tem a lista do que foi e do que não foi verificado, atualizada depois dessa execução.
 
 ### O primeiro defeito deste pacote, achado na véspera
 
-O comando era este, e a saída tinha quatorze processos — mundo, mapa, AMCL, os sete do Nav2, os dois gerenciadores. **Nenhum deles era o `rviz2`:**
+O comando era este, e a saída tinha **catorze** processos — o mundo da Aula 11 com os seus dois nós auxiliares (a TF estática do laser e o `robot_state_publisher`), o `map_server`, o `amcl`, os sete do Nav2 e os dois gerenciadores de ciclo de vida. **Nenhum deles era o `rviz2`:**
 
 ```bash
 ros2 launch aula15_nav2 nav2.launch.py rviz:=true     # e o RViz2 nao abre
@@ -208,7 +220,7 @@ Sem RViz2 não há como clicar o *2D Pose Estimate*; sem pose inicial o AMCL nã
 
 **O `--show-args` primeiro, sempre.** `ros2 launch` aceita argumento desconhecido **calado** — `rviz:=true` num pacote que não declara `rviz` simplesmente não faz nada, e você fica procurando defeito no RViz2. Se a lista não trouxer `mapa`, `rviz`, `pose_inicial_auto` e `deriva`, o pacote compilado é outro (quase sempre o `cp -r` aninhado).
 
-### As nove peças, e por que elas sobem em duas levas
+### As peças, e por que elas sobem em duas levas
 
 | Ordem | Quem sobe | Papel |
 |---|---|---|
@@ -216,8 +228,8 @@ Sem RViz2 não há como clicar o *2D Pose Estimate*; sem pose inicial o AMCL nã
 | 2 | `map_server` | lê o `.yaml` do mapa e publica `/map` |
 | 3 | `amcl` | **publica `map → odom`** — a aresta que na Aula 11 era mentira |
 | 4 | `lifecycle_manager_localization` | ativa 2 e 3, nesta ordem |
-| 5 | `controller_server` (DWB), `planner_server` (NavFn), `smoother_server`, `behavior_server`, `bt_navigator`, `waypoint_follower`, `velocity_smoother` | o Nav2 propriamente dito |
-| 6 | `lifecycle_manager_navigation` | ativa os sete acima, nesta ordem |
+| 5 | `controller_server` (DWB), `smoother_server`, `planner_server` (NavFn), `behavior_server`, `bt_navigator`, `waypoint_follower`, `velocity_smoother` | o Nav2 propriamente dito |
+| 6 | `lifecycle_manager_navigation` | ativa os sete acima **nesta ordem** — é a ordem da lista `NOS_NAVEGACAO`, no launch |
 
 **Nav2 é software de ciclo de vida.** Nenhum desses nós funciona só porque o processo está no ar: ele precisa ser configurado e ativado, e quem faz isso é o gerenciador. A consequência prática é o modo de falha mais caro do TP4:
 
@@ -284,7 +296,10 @@ Print do RViz2 com a nuvem concentrada, **mais** uma frase dizendo como você sa
 
 ## Bloco 3 — Um goal, e depois a rota
 
-O jeito mais rápido de mandar o primeiro objetivo é o **Nav2 Goal** do RViz2: clique, arraste o rumo, solte. O que você vê é o plano global aparecer (NavFn) e o robô começar a andar, corrigindo com o costmap local (DWB).
+!!! warning "Daqui para frente, nada foi visto funcionando"
+    O ensaio da véspera parou na localização: o launch sobe, o `map_server` lê o mapa, o AMCL ativa. **Nenhum goal foi enviado até agora** — o NavFn nunca planejou uma rota com este YAML, o DWB nunca atravessou a porta de 1,2 m e o `rota.py` nunca enviou um objetivo. A primeira execução é em sala, junto. Quem conseguir primeiro, diga em voz alta: vale para a turma.
+
+O jeito mais rápido de mandar o primeiro objetivo é o **2D Goal Pose** do RViz2: clique, arraste o rumo, solte. Ele publica em `/goal_pose`, que o `bt_navigator` assina. O que **deve** aparecer é o plano global (NavFn) desenhado até o alvo, e o robô começando a andar, corrigindo com o costmap local (DWB).
 
 Depois disso, o objetivo vira **código** — e aqui vocês já sabem fazer:
 
@@ -296,7 +311,7 @@ ros2 run aula15_nav2 rota                         # a rota padrão, uma volta
 ros2 run aula15_nav2 rota --ros-args -p voltas:=0 # patrulha sem fim
 ```
 
-**O Nav2 é um servidor de ação.** `navigate_to_pose` tem objetivo, feedback, resultado e cancelamento — os quatro motivos pelos quais ação existe, e o conteúdo das Aulas 7 e 8. O `rota.py` tem 150 linhas e é o item 1 do TP4 inteiro.
+**O Nav2 é um servidor de ação.** `navigate_to_pose` tem objetivo, feedback, resultado e cancelamento — os quatro motivos pelos quais ação existe, e o conteúdo das Aulas 7 e 8. O `rota.py` tem 227 linhas, das quais quase metade é comentário, e é o item 1 do TP4 inteiro.
 
 Três coisas nele que valem ler antes de copiar para o seu projeto:
 
@@ -306,7 +321,13 @@ Três coisas nele que valem ler antes de copiar para o seu projeto:
 | `status == GoalStatus.STATUS_SUCCEEDED` | no Humble o `result` do `navigate_to_pose` é um `std_msgs/Empty`: **não existe código de erro para ler**. Quem escrever `resultado.result.error_code` escreveu código de uma versão posterior |
 | `spin_until_future_complete` no `main` | bloquear é intencional, e só é legítimo **fora** de callback. Dentro de um callback, o executor esperaria por si mesmo: nada acontece e nada reclama — o mesmo cuidado da Aula 8 |
 
-E o campo que resolve metade do item 2 do TP4, de graça: o goal do `navigate_to_pose` tem um campo **`behavior_tree`** (string). Vazio, usa a árvore padrão; preenchido com o caminho de um XML, o `bt_navigator` usa **a sua árvore** naquele objetivo.
+E o campo que resolve metade do item 2 do TP4, de graça: o goal do `navigate_to_pose` tem um campo **`behavior_tree`** (string). Vazio, usa a árvore padrão; preenchido com o caminho de um XML, o `bt_navigator` usa **a sua árvore** naquele objetivo. No `rota.py` isso é o parâmetro `arvore:=`:
+
+```bash
+# ── herda as variáveis do bloco de preparação ──
+: "${PB_WS:?defina PB_USER, PB_DIR e PB_WS — o bloco está no topo desta página}"
+ros2 run aula15_nav2 rota --ros-args -p arvore:=/caminho/da/sua_arvore.xml
+```
 
 ### O desvio reativo que o item 1 pede
 
@@ -319,12 +340,16 @@ ros2 param get /controller_server FollowPath.max_vel_x
 ros2 param get /local_costmap/local_costmap inflation_layer.inflation_radius
 ```
 
-Os dois costmaps que o enunciado manda configurar **e explicar** dividem o trabalho assim: o **global** é o mapa inteiro com a inflação, e é sobre ele que o NavFn planeja; o **local** é uma janela rolante de poucos metros, reconstruída a partir do laser, e é sobre ela que o DWB decide a próxima velocidade. Quem explicar essa divisão de trabalho com os números do seu YAML (tamanho da janela, resolução, raio de inflação) entrega o item **bem feito** em dois parágrafos.
+Os dois costmaps que o item 1 manda configurar — e que o **gate G4.2** manda *explicar* — dividem o trabalho assim: o **global** é o mapa inteiro com a inflação, e é sobre ele que o NavFn planeja; o **local** é uma janela rolante de poucos metros, reconstruída a partir do laser, e é sobre ela que o DWB decide a próxima velocidade. Quem explicar essa divisão de trabalho com os números do seu YAML (tamanho da janela, resolução, raio de inflação) entrega o item **bem feito** em dois parágrafos.
 
 !!! warning "A aritmética da porta, que vale para o seu cenário também"
-    A porta do mundo tem 1,2 m. O robô tem 0,40 m de diâmetro. Com `inflation_radius: 0,35`, a inflação come 0,35 m de cada lado da parede: sobram 0,50 m de corredor livre para um robô de 0,40 m — passa, com 5 cm de folga de cada lado.
+    A porta do mundo tem 1,2 m e o robô tem 0,40 m de diâmetro. **São duas contas diferentes, e confundi-las é o erro.**
 
-    Aumente a inflação para 0,50 e **a porta fecha**: o planejador devolve `No valid path could be found` e o aluno conclui que o Nav2 não funciona. Faça essa conta com a largura das passagens do **seu** mapa antes de culpar o planejador.
+    A primeira é a que bloqueia: células a menos de `robot_radius` (0,20 m) de uma parede são **intransponíveis** — o planejador trata o robô como ponto, e esse raio já está embutido. Sobram `1,2 − 2 × 0,20 = 0,8 m` de passagem.
+
+    A segunda é a que **encarece**: o `inflation_radius` (0,35 m) põe custo crescente em volta das paredes. Sobram `1,2 − 2 × 0,35 = 0,5 m` de corredor com custo **zero** no meio da porta — espaço confortável para o NavFn mirar.
+
+    Suba a inflação para o valor oficial, 0,55 m, e a porta **não fecha**: sobram 0,1 m de custo zero, e o plano passa raspando ou escolhe outro caminho. Quem esperar `No valid path could be found` por causa da inflação procura no lugar errado — esse erro vem da primeira conta, não da segunda. **Nada disto foi observado**; faça a conta com a passagem mais estreita do seu mapa e depois confira na tela.
 
 ---
 
@@ -341,14 +366,29 @@ O TP4 vence em **21/11, até 12h**, e começa agora: o primeiro gate é **30/10*
 
 ### Item 1 — Nav2, costmaps, AMCL, planejador e a rota
 
-**O que você já tem depois de hoje:** tudo, exceto a adaptação ao seu cenário. O `nav2.yaml` deste pacote é o `nav2_params.yaml` oficial com cinco linhas marcadas `# TROQUE` — são as que dependem do seu robô e do seu mapa.
+**O que você já tem depois de hoje:** o sistema subindo e se localizando, mais o molde do YAML. O `nav2.yaml` deste pacote é o `nav2_params.yaml` oficial com **cinco decisões** marcadas `# TROQUE`, espalhadas por umas trinta linhas — são as que dependem do seu robô, do seu sensor e do seu simulador:
+
+| | O que é | Onde aparece |
+|---|---|---|
+| **TROQUE 1** | `base_frame_id` / `robot_base_frame` — o quadro da base do **seu** URDF | 5 lugares |
+| **TROQUE 2** | o tópico do laser (`scan_topic`, `topic:`) | 3 lugares |
+| **TROQUE 3** | as velocidades máximas, casadas com o seu robô | 6 lugares |
+| **TROQUE 4** | `robot_radius` — o raio do **seu** robô | 2 lugares (os dois costmaps) |
+| **TROQUE 5** | `use_sim_time` | **13 lugares** |
+
+!!! danger "O `use_sim_time` é o mais caro dos cinco, e o enunciado diz \"em Gazebo\""
+    O YAML deste pacote está com `use_sim_time: false` nos treze nós porque o mundo da Aula 11 **não publica `/clock`**. Se o seu item 1 entrar com Gazebo de verdade, os treze viram `true` — **todos ao mesmo tempo**.
+
+    Metade `true` e metade `false` é o defeito mais difícil de achar da etapa: os nós ficam `active`, ninguém reclama, e o sistema simplesmente não processa nada. E repare que o `use_sim_time` vai pelo YAML **e** pelos gerenciadores de ciclo de vida, que o recebem fora do arquivo.
+
+E o mapa **não** se troca no YAML: o `yaml_filename` fica vazio de propósito, porque quem o preenche é o argumento `mapa:=` do launch. Caminho escrito ali é ignorado, sem aviso.
 
 **Onde ele quebra:**
 
 - **O mapa.** O enunciado diz "em Gazebo". A decisão da disciplina é a mesma do TP3: **Gazebo é o Fortress** (`ros-humble-ros-gz`, `ign gazebo`), e **o mundo mínimo da Aula 11 é aceito** desde que você diga isso no relatório, em uma frase. O que o item cobra é o sistema navegando com o **seu** mapa — e o mundo mínimo é um mundo. Não troque de simulador a três semanas da entrega: trocar versão às vésperas derruba o que funciona.
-- **O `robot_radius` e o `inflation_radius`.** Se o robô do seu URDF tem outro tamanho, essas duas linhas mudam, e elas decidem se as passagens do seu mapa abrem ou fecham. Faça a aritmética da porta com as suas medidas.
+- **O `robot_radius` e o `inflation_radius`.** Se o robô do seu URDF tem outro tamanho, as duas mudam — e fazem coisas diferentes: o `robot_radius` decide se a passagem **abre ou fecha**, o `inflation_radius` decide o quanto ela **custa**. Faça as duas contas com a passagem mais estreita do seu mapa.
 - **A pose inicial.** Metade dos "o Nav2 não navega" é AMCL sem pose inicial: o `bt_navigator` fica esperando a TF `map → odom` que ninguém publica. O bloco 2 desta página tem os três comandos que separam esse caso dos outros.
-- **A rota.** Ponto em célula ocupada ou inflada é **goal recusado**, não goal que falhou: o servidor nem tenta. Escolha os pontos olhando o costmap global no RViz2, não o mapa cru.
+- **A rota.** Ponto em célula ocupada, ou a menos de `robot_radius` de uma parede, é **goal recusado** — não goal que falhou: o servidor nem tenta. Escolha os pontos olhando o costmap global no RViz2, não o mapa cru.
 
 ### Item 2 — A árvore de comportamento, e a gravação
 
@@ -357,8 +397,10 @@ São **duas entregas** no mesmo item, e a segunda é a que some: a árvore **e**
 **A árvore.** O `bt_navigator` executa um XML, e os prontos estão em `/opt/ros/humble/share/nav2_bt_navigator/behavior_trees/`. Comece de `navigate_to_pose_w_replanning_and_recovery.xml`, copie para o **seu** pacote, e aponte para ele — pelo parâmetro `default_nav_through_poses_bt_xml` / `default_nav_to_pose_bt_xml` do `bt_navigator`, ou pelo campo `behavior_tree` do goal, que o `rota.py` já sabe preencher.
 
 ```bash
+# ── herda as variáveis do bloco de preparação ──
+: "${PB_WS:?defina PB_USER, PB_DIR e PB_WS — o bloco está no topo desta página}"
 ls /opt/ros/humble/share/nav2_bt_navigator/behavior_trees/
-ros2 param get /bt_navigator default_nav_to_pose_bt_xml
+ros2 param get /bt_navigator default_nav_to_pose_bt_xml     # com o Nav2 no ar
 ```
 
 O comportamento pedido — *interromper abaixo de 0,5 m, aguardar 2 s, retomar o objetivo* — tem **dois caminhos defensáveis**, e o que não é defensável é não dizer qual você usou:
@@ -386,6 +428,8 @@ ros2 bag play sessao-tp4
 
     Liste os tópicos explicitamente, como acima, em vez de `-a`: `-a` grava tudo, inclusive imagem, e um bag de 2 GB não vai para o Git nem para link.
 
+    Mas leia o enunciado com cuidado: ele diz **"grave a sessão inteira"**. A lista acima é o mínimo para reproduzir a trajetória; se a sua análise offline precisa de `/particle_cloud`, `/local_plan`, `/behavior_tree_log` ou dos tópicos de visão do seu projeto, eles entram. A regra é essa: **grave tudo o que a sua análise precisa reproduzir, e diga no relatório o que você excluiu e por quê.** Se a sua versão do `ros2 bag record` aceitar `--exclude` (confira com `ros2 bag record --help`), `-a` menos as imagens é o melhor dos dois mundos.
+
 **O gráfico da trajetória** é o que fecha o item, e o caminho garantido usa o que vocês já sabem: com o bag rodando (`ros2 bag play`), um nó seu assina `/amcl_pose` e escreve um CSV; o gráfico sai do CSV com matplotlib, sem ROS 2. Existe o caminho direto — ler o bag em Python com o `rosbag2_py` — e ele é mais elegante, mas **eu não o exercitei**: se for por ali, teste antes de depender dele na véspera.
 
 Plote **duas** curvas no mesmo eixo: a do `/odom` e a do `/amcl_pose`. A distância entre elas é a deriva que o AMCL corrigiu, e é o gráfico mais eloquente que este TP permite — a Aula 11 inteira numa figura.
@@ -397,7 +441,7 @@ O pipeline é **o mesmo da Aula 13**: máscara HSV, Canny, `HoughLinesP`, sobrep
 ```bash
 # ── herda as variáveis do bloco de preparação ──
 : "${PB_WS:?defina PB_USER, PB_DIR e PB_WS — o bloco está no topo desta página}"
-mkdir -p "$PB_DIR/metadrive" && cd "$PB_DIR/metadrive"
+mkdir -p "$PB_DIR/percepcao-veicular" && cd "$PB_DIR/percepcao-veicular"
 uv venv --system-site-packages .venv-metadrive
 uv pip install --python .venv-metadrive/bin/python "metadrive-simulator==0.4.3"
 
@@ -412,7 +456,7 @@ uv pip install --python .venv-metadrive/bin/python "metadrive-simulator==0.4.3"
 
     **Eu não rodei o MetaDrive em máquina minha.** Os comandos acima são os da documentação oficial, não de uma execução minha. Quem rodar primeiro, diga em sala: isso vale para a turma inteira.
 
-    Duas armadilhas documentadas: o `python -m metadrive...` **falha se o diretório atual tiver uma subpasta chamada `metadrive`** (ou seja: não rode de dentro de um clone do repositório deles), e a documentação recomenda o clone em vez do PyPI — se o pacote do PyPI der problema, o clone com `uv pip install --python .venv-metadrive/bin/python -e .` é o plano B.
+    Duas armadilhas documentadas: o `python -m metadrive...` **falha se o diretório atual tiver uma subpasta chamada `metadrive`**, e a documentação recomenda o clone em vez do PyPI. As duas se cruzam: se você for pelo plano B, clone **fora** da sua pasta de trabalho (`git clone ... "$PB_DIR/metadrive-fonte"`) e instale com `uv pip install --python .venv-metadrive/bin/python -e "$PB_DIR/metadrive-fonte"` — senão o `python -m` passa a falhar de dentro da pasta que você acabou de criar. É por isso que a pasta de trabalho acima **não** se chama `metadrive`.
 
 **O ponto de atenção que vale mais que a instalação:** os itens 3 e 4 pedem **frames salvos em disco**, não um pipeline acoplado ao simulador. Grave as imagens uma vez, trabalhe sobre os arquivos, e o resto do TP não depende mais do MetaDrive subir. Quem acoplar o OpenCV ao laço do simulador vai depurar duas coisas ao mesmo tempo.
 
@@ -421,7 +465,7 @@ Se o MetaDrive não subir na sua máquina, existe **saída declarada**: o `cena_
 **As formas geométricas** (`cv2.HoughCircles` e `cv2.cornerHarris`) são a parte que mais gera texto vazio. Três conselhos concretos:
 
 - **Confira o que existe na cena antes de prometer placa.** Se não houver placa no cenário, o item se cumpre sobre o que há — cones, veículos, a boca do cruzamento — e você **diz isso**. Detector que não tem o que detectar devolve zero, e zero com explicação é resultado; zero sem explicação é item faltando.
-- **`HoughCircles` é o algoritmo mais sensível a parâmetro de todo o OpenCV.** `param2` alto demais: nenhum círculo. Baixo demais: círculos em todo lugar. Registre a faixa que você testou — isso é o "discuta as falhas" do enunciado.
+- **`HoughCircles` é o algoritmo mais sensível a parâmetro de todo o OpenCV.** `param2` alto demais: nenhum círculo. Baixo demais: círculos em todo lugar. Registre a faixa que você testou — é o "com discussão de falhas" que o **gate G4.5** cobra.
 - **Harris devolve um mapa de resposta, não cantos.** Ele precisa de limiar e de supressão de vizinhança; quem plotar o mapa cru entrega uma imagem vermelha inteira.
 
 ### Item 4 — A CNN, com e sem augmentation
@@ -432,20 +476,23 @@ A exigência que decide o item não é a rede: é a **comparação**. Duas rodad
 # ── herda as variáveis do bloco de preparação ──
 : "${PB_WS:?defina PB_USER, PB_DIR e PB_WS — o bloco está no topo desta página}"
 mkdir -p "$PB_DIR/cnn" && cd "$PB_DIR/cnn"
-uv venv --system-site-packages .venv-cnn
-uv pip install --python .venv-cnn/bin/python tensorflow-cpu matplotlib scikit-learn
+uv venv .venv-cnn                 # SEM --system-site-packages: veja o aviso abaixo
+uv pip install --python .venv-cnn/bin/python \
+  tensorflow-cpu opencv-python-headless matplotlib scikit-learn
 uv pip list --python .venv-cnn/bin/python | grep -i tensorflow   # anote a versao
 ```
 
 **A versão que vier, anote no relatório.** É a regra de alinhamento do semestre aplicada ao seu caso: resultado de treino sem versão de framework declarada não é reprodutível.
 
-!!! danger "A CNN é script solto, nunca nó ROS 2"
-    O TensorFlow instala o NumPy dele dentro do ambiente, e o `cv_bridge` do sistema foi compilado contra o NumPy 1.x do apt. Misturar os dois no mesmo processo é o `_ARRAY_API not found` da Aula 13 de volta. **Treine fora do ROS 2**, salve o modelo, e — se algum dia quiser inferência dentro de um nó — carregue o modelo num processo separado.
+!!! danger "Este é o único venv do semestre SEM `--system-site-packages`"
+    A regra da disciplina é `uv venv --system-site-packages`, e ela existe para o ambiente continuar enxergando o `rclpy` e o `PyQt5` do sistema. **Aqui ela se inverte**, e vale entender por quê: o TensorFlow instala o NumPy dele *dentro* do venv, que tem precedência; com `--system-site-packages`, o `python3-opencv` do apt — compilado contra o NumPy 1.x — fica visível ao lado dele, e o primeiro `import cv2` para carregar os frames devolve `_ARRAY_API not found`. É o erro da Aula 13, dentro do ambiente criado para evitá-lo.
+
+    Como este script **nunca** é um nó ROS 2, ele não precisa ver o `rclpy`: ambiente fechado, com o OpenCV vindo de dentro (`opencv-python-headless`). **Treine fora do ROS 2**, salve o modelo, e — se algum dia quiser inferência dentro de um nó — carregue o modelo num processo separado.
 
 **Onde o item quebra, em ordem de frequência:**
 
 - **Os 500 frames rotulados.** Esta é a parte caríssima, e ninguém a estima certo. 500 imagens em 3 classes (`via livre`, `obstáculo`, `cruzamento`) precisam ser **vistas uma a uma** por você. Salve os frames com nome que já carregue o rótulo (`livre_0001.png`), ou escreva um rotulador de dez linhas que mostra a imagem e espera uma tecla. Comece isso na **primeira** semana, não na última.
-- **Classes desbalanceadas.** Se 400 frames são `via livre`, a rede acerta 80% prevendo sempre `via livre` — e a acurácia parece ótima. **É por isso que o enunciado pede matriz de confusão**: é ela que mostra a coluna vazia. Mesma lição da Aula 9: acurácia agregada esconde o caso que importa.
+- **Classes desbalanceadas.** Se 400 frames são `via livre`, a rede acerta 80% prevendo sempre `via livre` — e a acurácia parece ótima. **O gate G4.6 pede matriz de confusão** (o enunciado não pede), e é ela que mostra a coluna vazia. Mesma lição da Aula 9: acurácia agregada esconde o caso que importa — e repare que a rubrica cobra mais que o enunciado, sempre.
 - **Augmentation que estraga o rótulo.** O enunciado pede rotação ±15°, zoom 0,2 e **espelhamento horizontal**. Pense no espelhamento antes de ligá-lo: num problema de faixa, espelhar troca o lado da pista. Se isso muda o significado da sua classe, diga no relatório — perceber isso vale mais do que o número final.
 - **Comparar duas rodadas que não são comparáveis.** Mesma semente, mesma divisão treino/validação, mesmas épocas. Senão a comparação não mede augmentation, mede sorte.
 
@@ -457,7 +504,7 @@ O `BatchNormalization` e o `Dropout(0.5)` são pedidos explicitamente: ponha, e 
 
 **O que fazer.** O Nav2 subindo no **seu** projeto, com o **seu** mapa do TP3, o AMCL convergindo, e o robô cumprindo uma rota de três pontos do seu cenário.
 
-**O que usar.** O `aula15_nav2` como molde: copie `launch/nav2.launch.py`, `config/nav2.yaml` e `rviz/nav2.rviz` para o seu pacote e mexa nas cinco linhas marcadas `# TROQUE` — `yaml_filename` (o seu mapa), `robot_radius`, `inflation_radius`, `max_vel_x` e a pose inicial. O `rota.py` entra com os seus pontos.
+**O que usar.** O `aula15_nav2` como molde: copie `launch/nav2.launch.py`, `config/nav2.yaml` e `rviz/nav2.rviz` para o seu pacote e percorra as cinco decisões marcadas `# TROQUE` (a tabela está no bloco 4 desta página). O mapa entra pelo argumento `mapa:=`, não pelo YAML; a pose inicial, pelo RViz2 ou por `pose_inicial_auto:=true`. O `rota.py` entra com os seus pontos.
 
 **Como adequar ao seu projeto.** Três perguntas, nesta ordem: o mapa é do seu cenário? O raio do robô é o do seu URDF? As passagens do seu mapa abrem com a sua inflação? A terceira é a que trava gente, e a conta está no bloco 3 desta página.
 

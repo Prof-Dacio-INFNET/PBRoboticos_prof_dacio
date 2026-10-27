@@ -94,10 +94,12 @@ amcl:
     # laser 2D sao correlacionados, e usar todos custa CPU sem ganhar precisao.
     max_beams: 60
     # Desvio esperado entre a leitura e a parede do mapa, em metros. 0,2 m e
-    # quatro celulas do mapa -- folga confortavel, e precisamos dela: o
-    # simulador da Aula 11 mede o /scan a partir do CENTRO do robo mas publica
-    # no quadro `laser_frame`, 0,10 m a frente. Esse vies de 10 cm existe e e
-    # do simulador; o sigma_hit o absorve.
+    # quatro celulas do mapa -- folga confortavel. Ate 26/10 havia um vies de
+    # 10 cm aqui, do simulador da Aula 11, que media o /scan a partir do CENTRO
+    # do robo e o publicava no quadro `laser_frame`, 0,10 m a frente; esse
+    # defeito foi corrigido (`laser_x` e `pose_do_laser()`), e o mesmo numero
+    # agora alimenta a medicao e a transformada. A folga continua por conta do
+    # ruido do laser e da discretizacao do mapa.
     sigma_hit: 0.2
     z_hit: 0.5
     z_rand: 0.5

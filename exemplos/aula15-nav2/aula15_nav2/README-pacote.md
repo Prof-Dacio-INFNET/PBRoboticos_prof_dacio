@@ -21,8 +21,8 @@ estou dentro dele?".
 | 2 | `map_server` | lê o `mapa.yaml` e publica `/map` |
 | 3 | `amcl` | publica `map → odom`, calculado a partir do `/scan` |
 | 4 | `lifecycle_manager_localization` | ativa os dois acima |
-| 5 | `controller_server` (DWB), `smoother_server`, `planner_server` (NavFn), `behavior_server`, `waypoint_follower`, `velocity_smoother` | o Nav2 propriamente dito |
-| 6 | `lifecycle_manager_navigation` | ativa os seis acima |
+| 5 | `controller_server` (DWB), `smoother_server`, `planner_server` (NavFn), `behavior_server`, `bt_navigator`, `waypoint_follower`, `velocity_smoother` | o Nav2 propriamente dito |
+| 6 | `lifecycle_manager_navigation` | ativa os sete acima, **nesta ordem** |
 | 7 | `rviz2` | só com `rviz:=true` |
 
 A árvore de TF que resulta:
@@ -238,12 +238,13 @@ estão listadas. Cada uma virou um pedaço deste pacote: `amcl` (não sabia onde
 estava), `bt_navigator` (não sabia para onde ia), `planner_server` (não
 planejava rota) e `behavior_server` (não se recuperava).
 
-## O nó `rota` — o item 1 do TP4 em 150 linhas
+## O nó `rota` — o item 1 do TP4 em duas telas
 
 O enunciado do TP4 pede, no item 1, *"um nó Python enviando goals sequenciais ao
-Nav2, definindo uma rota de patrulha ou inspeção"*. É o `rota.py` deste pacote, e
-ele é pequeno por um motivo que vale dizer em voz alta: **o Nav2 é um servidor de
-ação**, e vocês escreveram cliente de ação em setembro, nas Aulas 7 e 8.
+Nav2, definindo uma rota de patrulha ou inspeção"*. É o `rota.py` deste pacote —
+227 linhas das quais quase metade é comentário e docstring, porque **o Nav2 é um
+servidor de ação** e vocês escreveram cliente de ação em setembro, nas Aulas 7
+e 8. O que ele faz de novo cabe em duas telas.
 
 ```bash
 # ── herda as variáveis do bloco de download ──
@@ -265,6 +266,7 @@ Três coisas nele merecem leitura antes de copiar para o seu projeto:
 | `alvo.header.frame_id = quadro` (`map`) | o objetivo é um lugar **no mapa**. Mandar o mesmo goal em `base_link` pede "ande 2 m para a frente e 4 m para a esquerda" — e o Nav2 obedece, sem reclamar |
 | `status == GoalStatus.STATUS_SUCCEEDED` | no Humble o `result` do `navigate_to_pose` é um `std_msgs/Empty`: **não há código de erro para ler**. Quem escrever `resultado.result.error_code` escreve código de uma versão posterior |
 | `rclpy.spin_until_future_complete` no `main` | bloquear é de propósito, e só é legítimo **fora** de callback. Dentro de um callback, o executor esperaria por si mesmo: nada acontece e nada reclama — o mesmo cuidado da Aula 8 |
+| `objetivo.behavior_tree = self.arvore` | o parâmetro `arvore:=` aponta o XML da **sua** árvore de comportamento naquele objetivo; vazio, vale a árvore padrão do `bt_navigator`. É metade do item 2 do TP4, de graça |
 
 Existem três ações para isto, e o enunciado aceita qualquer uma:
 `navigate_to_pose` (uma pose), `follow_waypoints` (a lista inteira, com

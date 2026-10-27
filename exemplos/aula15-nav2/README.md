@@ -220,7 +220,7 @@ Sete grupos, cerca de 20 segundos, todos com a resposta sabida de antemão:
 | `uniforme` converge para o lugar errado | é esperado em mapa simétrico — veja a seção da sala gêmea. Suba `--particulas` ou dê a pose inicial |
 | o filtro leva uma eternidade | o custo é `particulas × feixes × ciclos`; baixe `--particulas` ou `--feixes` antes de baixar `--segundos` |
 | no Nav2 real, o AMCL "perde" o robô numa curva | `alpha1`/`alpha2` baixos demais: a nuvem não abre o suficiente para a hipótese certa sobreviver ao giro |
-| no Nav2 real, `/particle_cloud` não aparece no RViz2 | o tópico é `BEST_EFFORT`; ponha o display **PoseArray** em Best Effort (a mesma armadilha de QoS da Aula 13) |
+| no Nav2 real, `/particle_cloud` não aparece no RViz2 | três causas, nesta ordem: **você ainda não deu a pose inicial** (o AMCL só publica a nuvem depois dela — `if (!initial_pose_is_known_) return;`); o display tem de ser **`nav2_rviz_plugins/ParticleCloud`** (vem com o metapacote `navigation2`), porque no Humble o tópico é `nav2_msgs/ParticleCloud` e um display `PoseArray` é de outro tipo de mensagem; e o QoS tem de ser **Best Effort**, a mesma armadilha da Aula 13 |
 | no Nav2 real, a nuvem nunca encolhe | o AMCL não está recebendo `/scan`, ou o `base_frame_id`/`odom_frame_id` não batem com a sua TF |
 | no Nav2 real, a nuvem encolhe e a pose fica parada | `update_min_d` alto demais para o seu percurso: o filtro não está atualizando |
 
