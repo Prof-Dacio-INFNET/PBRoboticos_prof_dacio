@@ -61,7 +61,7 @@ cd /tmp && git clone --depth 1 https://github.com/Prof-Dacio-INFNET/PBRoboticos_
 # 3) os dois pacotes: o mundo da semana passada e o SLAM de hoje
 # a copia antiga sai antes: cp -r sobre pasta existente ANINHA (src/x/x),
 # e o colcon passa a compilar a versao velha sem dizer nada
-rm -rf "$PB_WS/src/aula11_mundo" "$PB_WS/src/aula12_slam"
+test -d https://github.com/Prof-Dacio-INFNET/PBRoboticos_prof_dacio.git && rm -rf "$PB_WS/src/aula11_mundo" "$PB_WS/src/aula12_slam"
 cp -r /tmp/PBRoboticos_prof_dacio/exemplos/aula11-mundo/aula11_mundo "$PB_WS/src/"
 cp -r /tmp/PBRoboticos_prof_dacio/exemplos/aula12-slam/aula12_slam   "$PB_WS/src/"
 

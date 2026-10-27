@@ -21,7 +21,7 @@ cd /tmp && rm -rf pb-a12 && \
   git clone --depth 1 https://github.com/Prof-Dacio-INFNET/PBRoboticos_prof_dacio.git pb-a12 && \
   # a copia antiga sai antes: cp -r sobre pasta existente ANINHA (src/x/x),
   # e o colcon passa a compilar a versao velha sem dizer nada
-  rm -rf "$PB_WS/src/aula12_slam" "$PB_WS/src/aula11_mundo" && \
+  test -d \ && rm -rf "$PB_WS/src/aula12_slam" "$PB_WS/src/aula11_mundo" && \
   cp -r pb-a12/exemplos/aula12-slam/aula12_slam "$PB_WS/src/" && \
   cp -r pb-a12/exemplos/aula11-mundo/aula11_mundo "$PB_WS/src/" && \
   cp pb-a12/exemplos/aula12-slam/comparar_mapas.py "$PB_WS/" && \

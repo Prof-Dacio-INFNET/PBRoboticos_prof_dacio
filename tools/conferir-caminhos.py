@@ -81,6 +81,8 @@ UV_ALVO = re.compile(r'uv\s+pip\s+install\b[^\n]*--python\s+\S*venv\S*')
 VENV_STDLIB = re.compile(r'python3?(\.\d+)?\s+-m\s+venv\b')
 COPIA_PASTA = re.compile(r'cp\s+-r\s+\S+?([\w.-]+)\s+"(\$PB_WS/src|\$PB_DIR)/"')
 LIMPA_ANTES = re.compile(r'rm\s+-rf\s+[^\n]*\$PB_')
+# rm -rf que apaga pasta do ALUNO (nao a do clone temporario em /tmp)
+RM_DESTRUTIVO = re.compile(r'rm\s+-rf\s+[^\n]*\$PB_')
 PIP_INSTALL = re.compile(r'(?<!uv )\bpip\s+install\b')
 
 
@@ -97,6 +99,20 @@ def blocos_de_codigo(texto: str):
             continue
         if atual is not None:
             atual.append(linha)
+    return saida
+
+
+def juntar_continuacoes(linhas):
+    """Junta linhas terminadas em `\\` -- uma linha logica do shell por item."""
+    saida, acumulado = [], ''
+    for l in linhas:
+        if l.rstrip().endswith('\\'):
+            acumulado += l.rstrip()[:-1] + ' '
+            continue
+        saida.append(acumulado + l)
+        acumulado = ''
+    if acumulado:
+        saida.append(acumulado)
     return saida
 
 
@@ -117,6 +133,13 @@ def conferir_venv(p: pathlib.Path, texto: str, achados: list):
     Nenhum erro em lugar nenhum. Por isso todo bloco que copia pasta tem de
     limpar o destino antes.
 
+    A quarta nasceu as 00h30 de 27/10, quando um bloco destes apagou os pacotes
+    da maquina do professor: o `git clone` falhou (caminho do Windows num shell
+    do WSL) e o `rm -rf` da linha seguinte rodou assim mesmo. Num shell
+    interativo nao ha `set -e`: linha que falha nao interrompe o resto. Por isso
+    todo `rm -rf` de pasta do aluno, em bloco que clona, tem de pender de um
+    `cd <clone> &&` -- sem clone, sem `cd`, sem destruicao.
+
     A segunda: `python -m venv` nao e' a ferramenta da disciplina. Ele depende
     do ensurepip (pacote python3.10-venv), falha calado quando ele falta, e ai
     a saida facil e' rodar o pip solto -- que e' exatamente a primeira regra.
@@ -135,6 +158,19 @@ def conferir_venv(p: pathlib.Path, texto: str, achados: list):
                             'do destino no mesmo bloco: repetir o bloco ANINHA (src/x/x) e o '
                             'colcon compila a versao velha sem dizer nada',
                             corpo.strip()[:88]))
+        for linha in juntar_continuacoes(linhas):
+            if COMENTARIO.match(linha) or not RM_DESTRUTIVO.search(linha):
+                continue
+            if 'git clone' not in corpo:
+                continue
+            antes = linha[:RM_DESTRUTIVO.search(linha).start()]
+            if '&&' not in antes:
+                achados.append((p, inicio, 'rm -rf de pasta do aluno solto num bloco que '
+                                'clona: se o clone falhar, o rm roda assim mesmo e a pessoa '
+                                'fica sem a versao nova E sem a antiga. Encadeie a partir de '
+                                '`cd <clone> && rm -rf ... && cp -r ...`',
+                                linha.strip()[:88]))
+
         if VENV_STDLIB.search(corpo):
             achados.append((p, inicio, 'a disciplina gerencia ambiente com uv: troque '
                             '`python3 -m venv` por `uv venv --system-site-packages`',

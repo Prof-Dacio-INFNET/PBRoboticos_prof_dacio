@@ -40,7 +40,7 @@ cd /tmp && rm -rf pb-a14 && \
 
 # a copia antiga sai antes: cp -r sobre pasta existente ANINHA (src/x/x),
 # e o colcon passa a compilar a versao velha sem dizer nada
-rm -rf "$PB_DIR/aula13-instancia" "$PB_WS/src/aula13_instancia"
+test -d pb-a14 && rm -rf "$PB_DIR/aula13-instancia" "$PB_WS/src/aula13_instancia"
 cp pb-a14/exemplos/tp3/revisar-entrega/revisar_tp3.py "$PB_DIR/"
 cp -r pb-a14/exemplos/aula13-instancia "$PB_DIR/"
 cp -r pb-a14/exemplos/aula13-instancia/aula13_instancia "$PB_WS/src/"

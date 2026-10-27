@@ -62,7 +62,7 @@ mkdir -p "$PB_WS/src" && cd /tmp && rm -rf pb-a15 && \
   git clone --depth 1 https://github.com/Prof-Dacio-INFNET/PBRoboticos_prof_dacio.git pb-a15 && \
   # a cópia antiga sai antes: cp -r sobre pasta existente ANINHA (src/x/x),
   # e o colcon passa a compilar a versão velha sem dizer nada
-  rm -rf "$PB_WS/src/aula15_nav2" "$PB_WS/src/aula11_mundo" && \
+  test -d \ && rm -rf "$PB_WS/src/aula15_nav2" "$PB_WS/src/aula11_mundo" && \
   cp -r pb-a15/exemplos/aula15-nav2/aula15_nav2 "$PB_WS/src/" && \
   cp -r pb-a15/exemplos/aula11-mundo/aula11_mundo "$PB_WS/src/" && \
   cd "$PB_WS" && colcon build --packages-select aula11_mundo aula15_nav2 && \

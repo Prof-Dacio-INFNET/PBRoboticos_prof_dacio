@@ -27,7 +27,7 @@ Baixe o exemplo do repositório de material e copie o pacote para `ros2_ws/src/`
 cd /tmp && git clone --depth 1 https://github.com/Prof-Dacio-INFNET/PBRoboticos_prof_dacio.git
 # a copia antiga sai antes: cp -r sobre pasta existente ANINHA (src/x/x),
 # e o colcon passa a compilar a versao velha sem dizer nada
-rm -rf "$PB_WS/src/aula02_comunicacao"
+test -d https://github.com/Prof-Dacio-INFNET/PBRoboticos_prof_dacio.git && rm -rf "$PB_WS/src/aula02_comunicacao"
 cp -r /tmp/PBRoboticos_prof_dacio/exemplos/aula02-comunicacao/aula02_comunicacao "$PB_WS/src/"
 cd "$PB_DIR"
 ```

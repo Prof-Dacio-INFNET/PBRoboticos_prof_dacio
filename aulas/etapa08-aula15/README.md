@@ -67,12 +67,17 @@ export PB_WS="$PB_DIR/ros2_ws"
 cd /tmp && rm -rf pb-a15 && \
   git clone --depth 1 https://github.com/Prof-Dacio-INFNET/PBRoboticos_prof_dacio.git pb-a15
 
-# a copia antiga sai antes: cp -r sobre pasta existente ANINHA (src/x/x),
-# e o colcon passa a compilar a versao velha sem dizer nada
-rm -rf "$PB_DIR/aula15-nav2" "$PB_WS/src/aula15_nav2" "$PB_WS/src/aula11_mundo"
-cp -r pb-a15/exemplos/aula15-nav2 "$PB_DIR/"
-cp -r pb-a15/exemplos/aula15-nav2/aula15_nav2 "$PB_WS/src/"
-cp -r pb-a15/exemplos/aula11-mundo/aula11_mundo "$PB_WS/src/"
+# o `test -d` nao e enfeite: sem ele, um clone que falha deixa o rm -rf rodar
+# assim mesmo, e voce fica sem a versao nova E sem a antiga. Shell interativo
+# nao tem `set -e`: linha que falha nao interrompe as de baixo.
+#
+# e o rm -rf tem de vir antes do cp -r: cp -r sobre pasta existente ANINHA
+# (src/x/x), e o colcon passa a compilar a versao velha sem dizer nada
+test -d pb-a15 && \
+  rm -rf "$PB_DIR/aula15-nav2" "$PB_WS/src/aula15_nav2" "$PB_WS/src/aula11_mundo" && \
+  cp -r pb-a15/exemplos/aula15-nav2 "$PB_DIR/" && \
+  cp -r pb-a15/exemplos/aula15-nav2/aula15_nav2 "$PB_WS/src/" && \
+  cp -r pb-a15/exemplos/aula11-mundo/aula11_mundo "$PB_WS/src/"
 cd "$PB_WS" && colcon build --symlink-install \
   --packages-select aula11_mundo aula15_nav2
 source install/setup.bash
