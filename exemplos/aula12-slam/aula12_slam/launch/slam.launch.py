@@ -16,7 +16,8 @@ import os
 
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
+from launch.actions import (DeclareLaunchArgument, GroupAction,
+                            IncludeLaunchDescription, SetLaunchConfiguration)
 from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
@@ -42,14 +43,28 @@ def generate_launch_description():
             'rviz', default_value='true',
             description='abrir o RViz2 com o mapa do SLAM ao lado do mundo real'),
 
+        # ARMADILHA DO `launch`, e e por causa dela que o RViz2 desta aula
+        # nunca subiu: `launch_arguments` de um IncludeLaunchDescription NAO
+        # sao escopadas -- o include devolve um SetLaunchConfiguration por
+        # argumento no escopo de quem inclui. O `'rviz': 'false'` abaixo
+        # apagava o `rviz` daqui (que tem default 'true'!) antes de o no do
+        # RViz2 ser avaliado. Sem erro, sem aviso.
+        #
+        # Duas camadas de correcao: o GroupAction (scoped=True por padrao)
+        # impede o vazamento, e o `rviz_slam` abaixo e um nome que o filho nao
+        # conhece -- ele sobrevive mesmo se o escopo falhar.
+        SetLaunchConfiguration('rviz_slam', rviz),
+
         # O mundo da Aula 11, SEM o placeholder de map -> odom.
-        IncludeLaunchDescription(
-            PythonLaunchDescriptionSource(
-                os.path.join(mundo_pkg, 'launch', 'mundo.launch.py')),
-            launch_arguments={'map_odom': 'false',
-                              'deriva': deriva,
-                              'rviz': 'false'}.items(),
-        ),
+        GroupAction([
+            IncludeLaunchDescription(
+                PythonLaunchDescriptionSource(
+                    os.path.join(mundo_pkg, 'launch', 'mundo.launch.py')),
+                launch_arguments={'map_odom': 'false',
+                                  'deriva': deriva,
+                                  'rviz': 'false'}.items(),
+            ),
+        ]),
 
         # Quem passa a publicar map -> odom.
         Node(package='slam_toolbox', executable='async_slam_toolbox_node',
@@ -57,6 +72,6 @@ def generate_launch_description():
              parameters=[slam_params]),
 
         Node(package='rviz2', executable='rviz2', name='rviz2',
-             condition=IfCondition(rviz), output='screen',
+             condition=IfCondition(LaunchConfiguration('rviz_slam')), output='screen',
              arguments=['-d', os.path.join(pkg, 'rviz', 'slam.rviz')]),
     ])

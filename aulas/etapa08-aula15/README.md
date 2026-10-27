@@ -166,12 +166,40 @@ ros2 launch aula15_nav2 nav2.launch.py --show-args      # SEMPRE antes
 ros2 launch aula15_nav2 nav2.launch.py rviz:=true
 ```
 
-!!! danger "Este pacote nunca subiu — e a primeira execução é a de hoje"
-    O `aula15_nav2` foi escrito contra a **fonte do Nav2 do Humble**: cada nome de nó, executável, parâmetro e plugin foi lido no repositório, e o `config/nav2.yaml` marca com `(oficial: X)` toda linha em que ele divergiu do `nav2_params.yaml` de referência. Mas **não houve `colcon build` nem `ros2 launch`** antes de hoje: não havia ROS 2 na máquina em que ele foi escrito.
+!!! danger "Este pacote subiu pela primeira vez na véspera — e achou um defeito"
+    O `aula15_nav2` foi escrito contra a **fonte do Nav2 do Humble**: cada nome de nó, executável, parâmetro e plugin foi lido no repositório, e o `config/nav2.yaml` marca com `(oficial: X)` toda linha em que ele divergiu do `nav2_params.yaml` de referência. Mas ele foi escrito **sem ROS 2 na máquina**, e a primeira execução foi na noite de 26/10.
 
-    Isso é dito aqui de propósito, e é a mesma honestidade que vocês devem ao relatório: **material que finge ter sido testado custa caro na hora da entrega.** O `README-pacote.md` tem a lista completa do que foi e do que não foi verificado.
+    Ela encontrou um defeito, e ele está contado abaixo porque é bom demais para jogar fora: o sistema subiu inteiro, fez exatamente o que foi mandado fazer, e **o RViz2 não abriu** — sem uma única mensagem de erro.
 
-    Se ele falhar no projetor, a aula continua: o bloco 1 está medido e roda sem ROS 2.
+    O `README-pacote.md` tem a lista do que foi e do que não foi verificado, atualizada depois dessa execução.
+
+### O primeiro defeito deste pacote, achado na véspera
+
+O comando era este, e a saída tinha quatorze processos — mundo, mapa, AMCL, os sete do Nav2, os dois gerenciadores. **Nenhum deles era o `rviz2`:**
+
+```bash
+ros2 launch aula15_nav2 nav2.launch.py rviz:=true     # e o RViz2 nao abre
+```
+
+A causa está na biblioteca `launch`, não no Nav2: **`launch_arguments` de um `IncludeLaunchDescription` não são escopadas.** O include devolve um `SetLaunchConfiguration` por argumento, **no escopo de quem inclui**, e esse `Set` grava sem olhar o que já estava lá. Como este launch inclui o mundo da Aula 11 passando `'rviz': 'false'`, esse `false` **apagava o `rviz:=true` que você digitou** — e o nó do RViz2, avaliado depois, não subia.
+
+E aí vem a cascata que você veria no terminal, toda ela consequência de um RViz2 que não abriu:
+
+```
+[amcl] AMCL cannot publish a pose or update the transform. Please set the initial pose...
+[global_costmap] Timed out waiting for transform from base_footprint to map ...
+                 Invalid frame ID "map" ... frame does not exist
+```
+
+Sem RViz2 não há como clicar o *2D Pose Estimate*; sem pose inicial o AMCL não publica `map → odom`; sem essa aresta **o quadro `map` não existe**, e o `planner_server` espera por ele para sempre. Três mensagens, nenhuma falando de argumento de launch.
+
+!!! quote "Por que este defeito vale uma seção da página"
+    Ele é a tese da disciplina em forma de bug: **o sistema fez exatamente o que foi mandado fazer, e ninguém mandou o que queria.** A correção tem duas camadas, e as duas foram exercitadas com a própria biblioteca `launch` do Humble, cada uma sozinha:
+
+    1. o include vai dentro de um `GroupAction([...])`, que é `scoped=True` por padrão;
+    2. o nó do RViz2 passa a depender de `rviz_nav2`, um nome que o launch incluído não conhece.
+
+    E, pela regra da casa, **erro que reincide não se corrige relendo com mais cuidado**: nasceu o `tools/conferir-launch.py`, que percorre os `*.launch.py` do repositório e falha quando um include fixa, em constante, um argumento que o próprio arquivo declara. Ele achou o mesmo defeito no `aula12_slam` — cujo `rviz` tinha padrão `true`, ou seja, **o RViz2 daquela aula nunca subiu para ninguém**, e isso passou despercebido por três semanas.
 
 **O `--show-args` primeiro, sempre.** `ros2 launch` aceita argumento desconhecido **calado** — `rviz:=true` num pacote que não declara `rviz` simplesmente não faz nada, e você fica procurando defeito no RViz2. Se a lista não trouxer `mapa`, `rviz`, `pose_inicial_auto` e `deriva`, o pacote compilado é outro (quase sempre o `cp -r` aninhado).
 

@@ -74,7 +74,8 @@ import os
 
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
+from launch.actions import (DeclareLaunchArgument, GroupAction,
+                            IncludeLaunchDescription, SetLaunchConfiguration)
 from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
@@ -172,6 +173,28 @@ def generate_launch_description():
             'pose_yaw', default_value='0.0',
             description='yaw da pose inicial, em rad, com pose_inicial_auto:=true'),
 
+        # --------------------------------------------------------------- 0
+        # ARMADILHA DO `launch`, e ela custou o RViz2 de duas aulas.
+        #
+        # `launch_arguments` de um IncludeLaunchDescription NAO sao escopadas:
+        # o include devolve um SetLaunchConfiguration por argumento, no escopo
+        # de QUEM INCLUI (launch/actions/include_launch_description.py, no fim
+        # do execute()). Entao o `'rviz': 'false'` que passamos ao mundo da
+        # Aula 11 SOBRESCREVIA o `rviz:=true` que voce digitou na linha de
+        # comando -- e o no do RViz2, avaliado depois, nunca subia. Sem erro,
+        # sem aviso: exatamente a familia de defeito de que esta aula trata.
+        #
+        # A correcao tem duas camadas, de proposito, porque este arquivo nao
+        # pode ser exercitado antes da aula:
+        #   1. o include vai dentro de um GroupAction, que por padrao e
+        #      scoped=True -- ele embrulha tudo em Push/PopLaunchConfigurations
+        #      e nada que o filho defina vaza para ca;
+        #   2. o no do RViz2 passa a depender de `rviz_nav2`, um nome que o
+        #      filho nao conhece e nao pode sobrescrever nem se a camada 1
+        #      falhar. A linha abaixo o define a partir do `rviz:=` ANTES do
+        #      include, e e por isso que ela esta aqui e nao mais embaixo.
+        SetLaunchConfiguration('rviz_nav2', rviz),
+
         # --------------------------------------------------------------- 1
         # O mundo da Aula 11, SEM o placeholder de map -> odom e SEM o piloto
         # reativo -- os dois seriam publicador duplicado de algo que o Nav2
@@ -179,15 +202,17 @@ def generate_launch_description():
         # quem abre o RViz2 aqui e este launch, com a configuracao deste
         # pacote. Os parametros do mundo ficam os da Aula 11: com o piloto
         # fora, nao ha nada a ajustar nele por causa do Nav2.
-        IncludeLaunchDescription(
-            PythonLaunchDescriptionSource(
-                os.path.join(mundo_pkg, 'launch', 'mundo.launch.py')),
-            launch_arguments={'map_odom': 'false',
-                              'piloto': 'false',
-                              'deriva': deriva,
-                              'modelo': modelo,
-                              'rviz': 'false'}.items(),
-        ),
+        GroupAction([
+            IncludeLaunchDescription(
+                PythonLaunchDescriptionSource(
+                    os.path.join(mundo_pkg, 'launch', 'mundo.launch.py')),
+                launch_arguments={'map_odom': 'false',
+                                  'piloto': 'false',
+                                  'deriva': deriva,
+                                  'modelo': modelo,
+                                  'rviz': 'false'}.items(),
+            ),
+        ]),
 
         # --------------------------------------------------------------- 2
         # O mapa estatico. `yaml_filename` vem do argumento `mapa:=` e
@@ -252,6 +277,6 @@ def generate_launch_description():
         # O "-d" nao e detalhe: sem ele o rviz2 abre com Grid e mais nada, a
         # janela parece vazia, e o aluno conclui que o sistema nao subiu.
         Node(package='rviz2', executable='rviz2', name='rviz2',
-             condition=IfCondition(rviz), output='screen',
+             condition=IfCondition(LaunchConfiguration('rviz_nav2')), output='screen',
              arguments=['-d', os.path.join(pkg, 'rviz', 'nav2.rviz')]),
     ])

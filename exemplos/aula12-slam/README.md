@@ -39,6 +39,11 @@ ros2 launch aula12_slam slam.launch.py deriva:=6.0    # erro maior, correção m
 ros2 launch aula12_slam slam.launch.py rviz:=false
 ```
 
+!!! danger "Se o RViz2 desta aula nunca abriu para você, não era a sua máquina"
+    O `slam.launch.py` tinha um defeito que só foi encontrado em **27/10**, montando a Aula 15: `launch_arguments` de um `IncludeLaunchDescription` **não são escopadas**. O `'rviz': 'false'` que ele passa ao mundo da Aula 11 era gravado no escopo de quem inclui e **apagava o `rviz` daqui** — cujo padrão é `true` — antes de o nó do RViz2 ser avaliado.
+
+    Resultado: o RViz2 nunca subiu, com ou sem `rviz:=true`, e **nenhuma mensagem** foi emitida. Está corrigido; recopie o pacote e recompile. E repare no formato do defeito, porque ele é o assunto do semestre inteiro: o sistema fez exatamente o que foi mandado fazer, e ninguém mandou o que queria.
+
 No RViz2 você vê o mapa do SLAM crescendo por cima do mundo real, que fica em
 cinza por baixo. Onde os dois coincidem, o SLAM acertou.
 
@@ -141,6 +146,7 @@ laço não fechado aparece como um lado do cenário torto em relação ao outro.
 
 | Sintoma | Causa provável |
 |---|---|
+| **o RViz2 não abre, nem com `rviz:=true`** | defeito **corrigido em 27/10**: o `launch_arguments` do include apagava o seu `rviz` — veja o aviso abaixo. Recopie e recompile o pacote |
 | `Package 'slam_toolbox' not found` | falta `sudo apt install ros-humble-slam-toolbox` |
 | o mapa não aparece | `base_frame` errado no YAML, ou `/scan` não está publicando |
 | `view_frames` mostra duas árvores | esqueceu o `map_odom:=false` — dois publicadores da mesma aresta |

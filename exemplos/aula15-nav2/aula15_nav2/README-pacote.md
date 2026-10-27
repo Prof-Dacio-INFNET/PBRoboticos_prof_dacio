@@ -7,11 +7,11 @@ estou dentro dele?".
 
 > ## Leia isto antes de qualquer coisa
 >
-> **Nada neste pacote foi executado.** Ele foi escrito numa máquina sem ROS 2:
-> não houve `colcon build`, não houve `ros2 launch`, o Nav2 nunca subiu com
-> estes arquivos. O que **foi** verificado está listado na seção
-> **"O que foi e o que não foi verificado"**, no fim desta página. Leia essa
-> seção antes de concluir que o erro é seu.
+> **Este pacote foi escrito numa máquina sem ROS 2** — sem `colcon build` e sem
+> `ros2 launch`. A primeira execução foi na noite de **26/10**, e está relatada
+> na seção **"O que foi e o que não foi verificado"**, no fim desta página:
+> o que subiu, o que não subiu, e o defeito que ela encontrou. Leia essa seção
+> antes de concluir que o erro é seu.
 
 ## O que o launch sobe
 
@@ -336,12 +336,28 @@ finge ter sido testado custa caro na hora da entrega.
 - os nomes de nó, executável, pacote, parâmetro e plugin foram lidos na **fonte
   do Humble**, não de memória — as URLs estão abaixo.
 
-**Não foi verificado, porque não havia ROS 2 na máquina:**
+**A primeira execução, em 26/10 — o que ela provou e o que ela achou:**
 
-- `colcon build` neste pacote — nunca rodou;
-- `ros2 launch aula15_nav2 nav2.launch.py` — nunca rodou;
-- o Nav2 nunca subiu com este `nav2.yaml`: nenhum nó foi configurado, ativado ou
-  exercitado;
+- `colcon build` passou, e `ros2 launch aula15_nav2 nav2.launch.py rviz:=true`
+  subiu os **catorze processos**;
+- o `map_server` leu o par do mapa (`240 X 160 map @ 0.05 m/cell`) e o AMCL o
+  recebeu (`Received a 240 X 160 map`);
+- o gerenciador de localização ativou `map_server` e `amcl`, com bond;
+- o `controller_server` e o `smoother_server` ativaram; o `local_costmap`
+  esperou o quadro `odom` e seguiu assim que o nó `mundo` começou a publicar;
+- **o RViz2 não abriu**, e isso era um defeito deste launch: `launch_arguments`
+  de um `IncludeLaunchDescription` não são escopadas, e o `'rviz': 'false'`
+  passado ao mundo da Aula 11 apagava o `rviz:=true` da linha de comando. Está
+  corrigido em duas camadas (`GroupAction` escopado e o nome `rviz_nav2`), e as
+  duas foram exercitadas contra a biblioteca `launch` do branch `humble`, cada
+  uma sozinha. Nasceu daí o `tools/conferir-launch.py`;
+- sem RViz2 não houve *2D Pose Estimate*, logo sem `map → odom`, logo o
+  `global_costmap` ficou em `Invalid frame ID "map"` e o `planner_server` não
+  ativou. **Esse comportamento é correto** — é o Nav2 esperando a pose inicial.
+
+**Continua NÃO verificado:**
+
+- o Nav2 **navegando**: nenhum goal foi enviado, nenhuma rota foi planejada;
 - o AMCL nunca localizou neste mapa; **não sabemos quanto tempo a nuvem leva
   para fechar**, nem se os `alpha` escolhidos bastam para a deriva de 3%;
 - o NavFn nunca planejou uma rota, e o DWB nunca atravessou a porta de 1,2 m com

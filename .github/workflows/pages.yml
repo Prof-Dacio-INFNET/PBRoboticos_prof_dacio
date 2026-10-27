@@ -42,6 +42,13 @@ jobs:
       - name: Conferir que todo item do nav existe
         run: python3 tools/conferir-nav.py
 
+      # launch_arguments de um IncludeLaunchDescription NAO sao escopadas: um
+      # include que fixa, em constante, um argumento que o proprio arquivo
+      # declara apaga o valor da linha de comando, calado. Aconteceu duas vezes
+      # (aula12_slam e aula15_nav2) e o RViz2 simplesmente nao subia.
+      - name: Conferir escopo dos argumentos de launch
+        run: python3 tools/conferir-launch.py
+
       # --strict: link quebrado e referencia a arquivo inexistente derrubam o
       # build em vez de virar aviso que ninguem le no log do Actions.
       - run: mkdocs build --strict
