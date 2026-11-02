@@ -249,6 +249,29 @@ def cenario_d():
             'acoes': ACOES_TODAS, 'topicos': topicos_saudaveis(), 'hz': {}}
 
 
+def cenario_d2():
+    """(d2) O que a maquina do professor mostrou em 26/10: sem pose inicial, o
+    planner_server fica preso em "Timed out waiting for transform ... map" e o
+    gerenciador de navegacao para nele -- planner, behavior, bt_navigator,
+    waypoint_follower e velocity_smoother ficam inativos. A CAUSA e a pose
+    inicial; os nos inativos sao consequencia. A lista tem de dizer isso nessa
+    ordem, senao o aluno vai ler o terminal do gerenciador atras de um erro que
+    nao esta la.
+    """
+    topicos = topicos_saudaveis()
+    topicos['/cmd_vel']['pubs'] = []
+    topicos['/cmd_vel_nav']['subs'] = []
+    return {'nos': NOS_NAV2 + ['/mundo', '/rviz2'], 'estado_padrao': 'active [3]',
+            'estados': {'/planner_server': 'inactive [2]',
+                        '/behavior_server': 'inactive [2]',
+                        '/bt_navigator': 'inactive [2]',
+                        '/waypoint_follower': 'inactive [2]',
+                        '/velocity_smoother': 'inactive [2]'},
+            'tf_static': True, 'map_odom': False, 'amcl_pose_msg': False,
+            'acoes': ['/compute_path_to_pose', '/follow_path'],
+            'topicos': topicos, 'hz': {}}
+
+
 def cenario_e():
     """(e) Dois publicadores em /cmd_vel -- o piloto da Aula 11 ficou no ar."""
     return {'nos': NOS_NAV2 + ['/mundo', '/rviz2', '/piloto'],
@@ -460,6 +483,19 @@ def main() -> int:
                  'initial_pose_is_known_' in d.receita('aresta map -> odom'))
         conferir('duas pendencias, e sao essas duas', len(d.lista()) == 2,
                  ', '.join(d.lista()))
+
+        print('4b. cenario (d2): sem pose inicial E o gerenciador parado no planner_server')
+        d2 = diagnosticar(base, pasta, cenario_d2())
+        conferir('map -> odom vem ANTES do planner_server inativo na lista final',
+                 d2.lista().index('aresta map -> odom')
+                 < d2.lista().index('ativo: planner_server'), ', '.join(d2.lista()))
+        conferir('o primeiro inativo e o planner_server, e os de baixo sao consequencia',
+                 d2.estado('ativo: planner_server') == 'nao achei'
+                 and 'consequencia' in d2.receita('ativo: bt_navigator'))
+        conferir('a receita do planner_server manda comecar pela aresta',
+                 'map -> odom' in d2.receita('ativo: planner_server'))
+        conferir('a receita da aresta explica a cadeia ate o planner_server',
+                 'planner_server' in d2.receita('aresta map -> odom'))
 
         print('5. cenario (e): DOIS publicadores em /cmd_vel')
         e = diagnosticar(base, pasta, cenario_e())

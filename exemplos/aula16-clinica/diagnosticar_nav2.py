@@ -354,13 +354,15 @@ def secao_3_ciclo(presentes):
             # gerenciador parou. Os de baixo estao inativos por consequencia:
             # tratar todos como causa manda o aluno consertar o lugar errado.
             primeiro_inativo = False
-            conferir(f'ativo: {nome}', 'nao', estado, ordem=4,
+            conferir(f'ativo: {nome}', 'nao', estado, ordem=5,
                      cura=f'este e\' o primeiro da ordem de subida que nao esta ativo: o '
-                          f'gerenciador parou AQUI. Leia o terminal do lifecycle_manager, que '
+                          f'gerenciador parou AQUI. Se a lista tambem acusar `map -> odom` '
+                          f'ausente, comece por ela (e\' a pose inicial, e este no e\' '
+                          f'consequencia). Senao, leia o terminal do lifecycle_manager, que '
                           f'nomeia o no em que travou, e tente a mao com `ros2 lifecycle set '
                           f'{presentes[nome]} configure` para ver o erro que ele engoliu')
         else:
-            conferir(f'ativo: {nome}', 'nao', estado, ordem=5,
+            conferir(f'ativo: {nome}', 'nao', estado, ordem=6,
                      cura=f'provavelmente consequencia, nao causa: o gerenciador ativa um no '
                           f'por vez e parou antes de chegar em {nome}. Conserte o primeiro '
                           f'inativo da lista acima e rode isto de novo')
@@ -399,12 +401,14 @@ def secao_4_tf():
     else:
         conferir('aresta map -> odom', 'nao',
                  f'tf2_echo map odom nao devolveu transformada em {OPCOES["timeout"]}s',
-                 ordem=10,
+                 ordem=4,
                  cura='quem publica essa aresta e\' o AMCL, e no Humble ele nao publica NADA '
                       'antes da pose inicial (`if (!initial_pose_is_known_) return;`): clique '
                       'o 2D Pose Estimate no RViz2, ou suba o launch com '
-                      '`pose_inicial_auto:=true`. Sem map -> odom o planejador nao tem onde '
-                      'planejar e todo goal e\' recusado')
+                      '`pose_inicial_auto:=true`. Sem o quadro `map` o planner_server fica '
+                      'preso em "Timed out waiting for transform from base_footprint to '
+                      'map" e o gerenciador de navegacao para nele -- por isso este item vem '
+                      'ANTES de qualquer no inativo na lista: de a pose e rode isto de novo')
 
 
 # ---------------------------------------------------------------- 5. pose

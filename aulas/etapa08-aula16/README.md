@@ -33,7 +33,7 @@ As datas de cada etapa estão na tabela abaixo e em [Gates de cada TP](../../rec
 
 | Bloco | O que você sai com | Vence em |
 |---|---|---|
-| 1. A clínica — pôr o Nav2 para navegar | um goal cumprido sem intervenção, com o print | **04/11** |
+| 1. A clínica — pôr o Nav2 para navegar | um goal cumprido sem intervenção, com o vídeo de 20 s | **04/11** |
 | 2. A rota de três pontos e os costmaps | o `rota.py` com os seus pontos e os dois costmaps explicados | 09/11 |
 | 3. A árvore: o que o Humble tem, e o que não tem | a decisão de qual caminho você vai seguir | 12/11 |
 | 4. A sessão gravada e a figura | o bag, o CSV e o gráfico da trajetória | 15/11 |
@@ -98,7 +98,7 @@ Ele percorre dez verificações na ordem em que compensa olhar — ambiente, nó
 | O que você vê | O que é, e o que fazer |
 |---|---|
 | o gerenciador parado em `Configuring`, calado | um nome na lista do gerenciador sem nó correspondente no ar. O diagnóstico aponta **o primeiro nó inativo**: é ali que ele parou, e os de baixo são consequência |
-| `bt_navigator` ativo, mas nada acontece com o goal | falta `map → odom`: **o AMCL não recebeu a pose inicial**. No Humble ele só publica depois dela (`if (!initial_pose_is_known_) return;`) |
+| o `planner_server` repete *Timed out waiting for transform from base_footprint to map*, e o gerenciador de navegação para nele | falta `map → odom`: **o AMCL não recebeu a pose inicial**, e sem essa aresta o quadro `map` não existe. No Humble ele só publica depois dela (`if (!initial_pose_is_known_) return;`). A mensagem fala de transformada; a causa é um clique que faltou |
 | o robô anda truncado, ou anda sozinho | `/cmd_vel` com **dois publicadores**. Não dá erro: o robô obedece ao último que falou. O diagnóstico nomeia os dois |
 | o robô não anda e ninguém reclama | a cadeia do `/cmd_vel`: o `controller_server` fala em `/cmd_vel_nav` e, sem o `velocity_smoother` ou com os remapeamentos desfeitos, ninguém ouve |
 
