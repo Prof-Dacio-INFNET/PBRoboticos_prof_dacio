@@ -272,6 +272,22 @@ def cenario_d2():
             'topicos': topicos, 'hz': {}}
 
 
+def cenario_f():
+    """(f) autostart:=false: NENHUM no gerenciavel ativou, e por isso tambem nao
+    ha map -> odom. Aqui a aresta ausente e' CONSEQUENCIA -- a causa e' o ciclo
+    de vida parado no primeiro no, o map_server. A lista tem de dizer isso nessa
+    ordem, ao contrario do cenario d2.
+    """
+    topicos = topicos_saudaveis()
+    topicos['/cmd_vel']['pubs'] = []
+    topicos['/cmd_vel_nav']['subs'] = []
+    topicos['/map']['pubs'] = []
+    estados = {n: 'unconfigured [1]' for n in NOS_NAV2 if 'lifecycle_manager' not in n}
+    return {'nos': NOS_NAV2 + ['/mundo', '/rviz2'], 'estado_padrao': 'active [3]',
+            'estados': estados, 'tf_static': True, 'map_odom': False,
+            'amcl_pose_msg': False, 'acoes': [], 'topicos': topicos, 'hz': {}}
+
+
 def cenario_e():
     """(e) Dois publicadores em /cmd_vel -- o piloto da Aula 11 ficou no ar."""
     return {'nos': NOS_NAV2 + ['/mundo', '/rviz2', '/piloto'],
@@ -496,6 +512,16 @@ def main() -> int:
                  'map -> odom' in d2.receita('ativo: planner_server'))
         conferir('a receita da aresta explica a cadeia ate o planner_server',
                  'planner_server' in d2.receita('aresta map -> odom'))
+
+        print('4c. cenario (f): autostart:=false -- nenhum no ativou')
+        f = diagnosticar(base, pasta, cenario_f())
+        conferir('o primeiro da lista e o primeiro no inativo, nao a aresta',
+                 f.lista()[:1] == ['ativo: map_server'], ', '.join(f.lista()))
+        conferir('a aresta ausente e marcada como consequencia do ciclo de vida',
+                 'consequencia' in f.receita('aresta map -> odom')
+                 and 'pose inicial' not in f.receita('aresta map -> odom').split('.')[0])
+        conferir('a receita do primeiro inativo admite a desativacao manual',
+                 'a mao' in f.receita('ativo: map_server'))
 
         print('5. cenario (e): DOIS publicadores em /cmd_vel')
         e = diagnosticar(base, pasta, cenario_e())

@@ -121,6 +121,10 @@ SEM_OPCAO = re.compile(r'unrecognized arguments|invalid choice|no such option')
 # decidido em `main`, depois do import, e assim nenhuma funcao precisa de
 # `global` nem de carregar o valor por seis niveis de chamada.
 OPCOES = {'timeout': 6}
+# O que a secao 3 viu de cada no (nome curto -> True se `active [3]`). A secao 4
+# consulta isto: aresta map -> odom ausente com o AMCL ATIVO e' pose inicial que
+# faltou (causa); com o AMCL inativo e' consequencia do ciclo de vida parado.
+ATIVOS = {}
 
 pendencias = []                                   # (ordem, nome, o que fazer)
 quantos = {'achei': 0, 'nao': 0, 'olhe': 0}
@@ -344,7 +348,8 @@ def secao_3_ciclo(presentes):
     for nome in alvos:
         _, saida = rodar(['ros2', 'lifecycle', 'get', presentes[nome]])
         estado = ultima_linha(saida, '')
-        if ATIVO.search(saida):
+        ATIVOS[nome] = bool(ATIVO.search(saida))
+        if ATIVOS[nome]:
             conferir(f'ativo: {nome}', 'achei', estado)
         elif not estado:
             conferir(f'ativo: {nome}', 'olhe',
@@ -356,10 +361,11 @@ def secao_3_ciclo(presentes):
             primeiro_inativo = False
             conferir(f'ativo: {nome}', 'nao', estado, ordem=5,
                      cura=f'este e\' o primeiro da ordem de subida que nao esta ativo: o '
-                          f'gerenciador parou AQUI. Se a lista tambem acusar `map -> odom` '
-                          f'ausente, comece por ela (e\' a pose inicial, e este no e\' '
-                          f'consequencia). Senao, leia o terminal do lifecycle_manager, que '
-                          f'nomeia o no em que travou, e tente a mao com `ros2 lifecycle set '
+                          f'gerenciador parou AQUI -- ou alguem o desativou a mao. Se a '
+                          f'lista tambem acusar `map -> odom` ausente ACIMA desta linha, '
+                          f'comece por ela (e\' a pose inicial, e este no e\' consequencia). '
+                          f'Senao, leia o terminal do lifecycle_manager, que nomeia o no em '
+                          f'que travou, e tente a mao com `ros2 lifecycle set '
                           f'{presentes[nome]} configure` para ver o erro que ele engoliu')
         else:
             conferir(f'ativo: {nome}', 'nao', estado, ordem=6,
@@ -398,6 +404,14 @@ def secao_4_tf():
     if TEM_TF.search(tf):
         linha = next((l.strip() for l in tf.splitlines() if 'Translation' in l), 'existe')
         conferir('aresta map -> odom', 'achei', linha[:56])
+    elif ATIVOS.get('amcl') is False:
+        # O AMCL nem esta ativo: a aresta ausente e' consequencia do ciclo de
+        # vida, e mandar dar a pose inicial seria apontar para o lugar errado.
+        conferir('aresta map -> odom', 'nao',
+                 'o AMCL nao esta ativo -- ninguem publica esta aresta ainda', ordem=10,
+                 cura='consequencia, nao causa: resolva primeiro o ciclo de vida (a secao 3 '
+                      'acima diz onde o gerenciador parou). A aresta aparece sozinha depois '
+                      'que o AMCL ativar E receber a pose inicial')
     else:
         conferir('aresta map -> odom', 'nao',
                  f'tf2_echo map odom nao devolveu transformada em {OPCOES["timeout"]}s',
