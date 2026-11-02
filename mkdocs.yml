@@ -126,7 +126,7 @@ nav:
       - "Aula 13 — Achar não é acertar": aulas/etapa07-aula13/index.md
       - "Aula 14 — Aterrissagem do TP3": aulas/etapa07-aula14/index.md
       - "Aula 15 — Navegação autônoma com o Nav2": aulas/etapa08-aula15/index.md
-      - "Aula 16 — A clínica do Nav2 e a sessão gravada": aulas/etapa08-aula16/index.md
+      - "Aula 16 — O caminho até o Nav2 navegar": aulas/etapa08-aula16/index.md
 
   - Tutoriais:
       - tutoriais/index.md

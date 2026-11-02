@@ -54,9 +54,9 @@ Aulas às **terças, 07h00–09h30, sala SJ205** · Prof. Dácio Moreira de Souz
 
 ## Aula mais recente
 
-**Aula 16 — terça, 03/11/2026 — A clínica do Nav2, e a sessão que se reproduz sem o robô** <span class="pb-tag next">atual</span>
+**Aula 16 — terça, 03/11/2026 — O caminho até o Nav2 navegar, e a sessão que se reproduz sem o robô** <span class="pb-tag next">atual</span>
 
-**Um sistema que só funciona com você na frente dele não está entregue.** Metade da aula é clínica: pôr o Nav2 de cada um para navegar de verdade. A outra metade abre o item 2 do TP4, onde a navegação deixa de depender de você — a árvore decide sem você, e o bag prova sem você.
+**Um sistema que só funciona com você na frente dele não está entregue.** A aula demonstra o caminho até o Nav2 navegar — e os três casos mais prováveis em que ele não navega, lidos pelo diagnóstico — e abre o item 2 do TP4, onde a navegação deixa de depender de você: a árvore decide sem você, e o bag prova sem você. O que é para rodar no seu ambiente está na **tarefa da semana**, com o caminho, para fazer no seu tempo.
 
 [Conteúdo e slides da aula](aulas/etapa08-aula16/index.md){ .md-button .md-button--primary }
 [Diagnóstico do Nav2](exemplos/aula16-clinica/index.md){ .md-button }

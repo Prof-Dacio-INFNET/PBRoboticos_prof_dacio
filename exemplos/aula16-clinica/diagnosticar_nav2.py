@@ -8,7 +8,7 @@ responsabilidade pela entrega e' sua -- antes e depois de rodar isto.
 
 Por que existe: "o Nav2 nao navega" tem umas dez causas, e nove delas nao dao
 mensagem de erro nenhuma. O gerenciador de ciclo de vida que para calado, a
-pose inicial que ninguem deu, o segundo publicador em /cmd_vel. Sozinho na
+pose inicial que ninguem deu, o publicador intruso em /cmd_vel. Sozinho na
 vespera do G4.1, o aluno testa essas dez coisas na ordem errada e gasta a noite
 na ultima. Este script testa na ordem em que compensa.
 
@@ -112,6 +112,14 @@ CURA_NO = {
         'vai ativa-los: acrescente-o ao launch com a lista do navigation_launch.py',
 }
 
+# Quem pode publicar em /cmd_vel num Nav2 saudavel. Visto na maquina do
+# professor em 02/11, no Humble: o velocity_smoother (um) e o behavior_server
+# VARIAS vezes -- um publicador por plugin de comportamento (spin, backup,
+# drive_on_heading, assisted_teleop, wait). A quantidade de behavior_server muda
+# com os plugins que o seu nav2.yaml declara, e por isso nao e' contada: e' o
+# NOME de fora desta lista que denuncia o intruso, nao o numero de publicadores.
+PUBLICAM_CMD_VEL = ('velocity_smoother', 'behavior_server')
+
 ATIVO = re.compile(r'\bactive\s*\[3\]')
 TAXA_HZ = re.compile(r'average rate:\s*([\d.]+)')
 TEM_TF = re.compile(r'(?:At time|Translation:|- Translation:)')
@@ -121,12 +129,20 @@ SEM_OPCAO = re.compile(r'unrecognized arguments|invalid choice|no such option')
 # decidido em `main`, depois do import, e assim nenhuma funcao precisa de
 # `global` nem de carregar o valor por seis niveis de chamada.
 OPCOES = {'timeout': 6}
-# O que a secao 3 viu de cada no (nome curto -> True se `active [3]`). A secao 4
-# consulta isto: aresta map -> odom ausente com o AMCL ATIVO e' pose inicial que
-# faltou (causa); com o AMCL inativo e' consequencia do ciclo de vida parado.
+# O que a secao 3 viu de cada no (nome curto -> True se `active [3]`, False se
+# respondeu outro estado; ausente se nao respondeu). A secao 4 consulta isto:
+# aresta map -> odom ausente com o AMCL ATIVO e' pose inicial que faltou
+# (causa); com o AMCL inativo e' consequencia do ciclo de vida parado. Quem nao
+# respondeu fica de fora de proposito: silencio nao e' prova de inativo.
 ATIVOS = {}
 
-pendencias = []                                   # (ordem, nome, o que fazer)
+# Cada pendencia e' (ordem, nome, o que fazer, papel, rotulo). O papel e' '' para
+# uma pendencia comum, 'raiz' para o primeiro no inativo da ordem de subida e
+# 'consequencia' para o que o mesmo ciclo de vida parado explica. A lista final
+# junta as consequencias numa linha so', embaixo da raiz: com autostart:=false
+# eram onze itens, oito deles eco do primeiro, e a unica linha que importava se
+# afogava no meio. O rotulo e' o nome curto que vai nessa linha agrupada.
+pendencias = []
 quantos = {'achei': 0, 'nao': 0, 'olhe': 0}
 
 
@@ -149,17 +165,19 @@ def secao(titulo):
     print(f'{NEGRITO}{titulo}{FIM}')
 
 
-def conferir(nome, estado, detalhe='', ordem=99, cura=''):
+def conferir(nome, estado, detalhe='', ordem=99, cura='', papel='', rotulo=''):
     """Imprime uma linha e, se nao achou, guarda o que fazer para o fim.
 
     So' `nao achei` entra na lista final. `olhe` nao entra de proposito: ele
     nao e' pendencia, e' o reconhecimento de que um comando nao decide aquilo.
+    A linha da secao sai sempre, inclusive para consequencia: no meio do
+    relatorio ela ajuda a ver ate' onde o gerenciador chegou.
     """
     cor, marca = marca_de(estado)
     quantos[estado] += 1
     print(f'  {cor}{marca}{FIM}  {nome:<44}{detalhe}'.rstrip())
     if estado == 'nao':
-        pendencias.append((ordem, nome, cura or detalhe))
+        pendencias.append((ordem, nome, cura or detalhe, papel, rotulo or nome))
 
 
 def quebrar(texto, largura):
@@ -218,9 +236,9 @@ def contagem(texto, rotulo):
 def pontas(texto, tipo):
     """Nomes de no das pontas de um tipo ('PUBLISHER' ou 'SUBSCRIPTION').
 
-    Le os NOMES e nao so' a contagem porque, com dois publicadores em /cmd_vel,
-    saber que sao dois nao ajuda: saber que um deles e' o `piloto` da Aula 11
-    diz o que derrubar.
+    Le os NOMES e nao so' a contagem porque, em /cmd_vel, a contagem nao decide
+    nada: um Nav2 saudavel ja' tem seis publicadores ali. Saber que um deles e'
+    o `piloto` da Aula 11 e' o que diz o que derrubar.
     """
     nomes = []
     for bloco in texto.split('Node name:')[1:]:
@@ -239,6 +257,18 @@ def durabilidade_do_publicador(texto):
         if m:
             return m.group(1)
     return ''
+
+
+def resumo(nomes):
+    """'a, b, b, b' -> 'a + b x3', na ordem em que cada nome apareceu primeiro.
+
+    Seis nomes repetidos numa linha (behavior_server, behavior_server, ...)
+    escondem o que importa; a contagem por nome diz a mesma coisa em uma olhada.
+    """
+    vistos = {}
+    for n in nomes:
+        vistos[n] = vistos.get(n, 0) + 1
+    return ' + '.join(n if k == 1 else f'{n} x{k}' for n, k in vistos.items())
 
 
 def info_topico(topico):
@@ -348,8 +378,8 @@ def secao_3_ciclo(presentes):
     for nome in alvos:
         _, saida = rodar(['ros2', 'lifecycle', 'get', presentes[nome]])
         estado = ultima_linha(saida, '')
-        ATIVOS[nome] = bool(ATIVO.search(saida))
-        if ATIVOS[nome]:
+        if ATIVO.search(saida):
+            ATIVOS[nome] = True
             conferir(f'ativo: {nome}', 'achei', estado)
         elif not estado:
             conferir(f'ativo: {nome}', 'olhe',
@@ -358,8 +388,9 @@ def secao_3_ciclo(presentes):
             # O primeiro da ordem de subida que nao esta ativo e' onde o
             # gerenciador parou. Os de baixo estao inativos por consequencia:
             # tratar todos como causa manda o aluno consertar o lugar errado.
+            ATIVOS[nome] = False
             primeiro_inativo = False
-            conferir(f'ativo: {nome}', 'nao', estado, ordem=5,
+            conferir(f'ativo: {nome}', 'nao', estado, ordem=5, papel='raiz',
                      cura=f'este e\' o primeiro da ordem de subida que nao esta ativo: o '
                           f'gerenciador parou AQUI -- ou alguem o desativou a mao. Se a '
                           f'lista tambem acusar `map -> odom` ausente ACIMA desta linha, '
@@ -368,7 +399,9 @@ def secao_3_ciclo(presentes):
                           f'que travou, e tente a mao com `ros2 lifecycle set '
                           f'{presentes[nome]} configure` para ver o erro que ele engoliu')
         else:
+            ATIVOS[nome] = False
             conferir(f'ativo: {nome}', 'nao', estado, ordem=6,
+                     papel='consequencia', rotulo=nome,
                      cura=f'provavelmente consequencia, nao causa: o gerenciador ativa um no '
                           f'por vez e parou antes de chegar em {nome}. Conserte o primeiro '
                           f'inativo da lista acima e rode isto de novo')
@@ -409,6 +442,7 @@ def secao_4_tf():
         # vida, e mandar dar a pose inicial seria apontar para o lugar errado.
         conferir('aresta map -> odom', 'nao',
                  'o AMCL nao esta ativo -- ninguem publica esta aresta ainda', ordem=10,
+                 papel='consequencia', rotulo='a aresta map -> odom',
                  cura='consequencia, nao causa: resolva primeiro o ciclo de vida (a secao 3 '
                       'acima diz onde o gerenciador parou). A aresta aparece sozinha depois '
                       'que o AMCL ativar E receber a pose inicial')
@@ -462,29 +496,66 @@ def secao_5_pose():
 # ---------------------------------------------------------------- 6. cmd_vel
 
 def secao_6_cmd_vel():
-    secao('6. O /cmd_vel -- dois publicadores e\' defeito, e nao da erro')
+    secao('6. O /cmd_vel -- publicador que nao e\' do Nav2 e\' defeito, e nao da erro')
 
+    # A regra antiga era "UM publicador", e a primeira execucao contra um Nav2
+    # real (02/11) a desmentiu: o Humble saudavel tem seis -- velocity_smoother
+    # e behavior_server x5. O que denuncia o defeito e' o NOME de fora da lista.
+    item = '/cmd_vel so\' com os publicadores do Nav2'
     _, info = info_topico('/cmd_vel')
     pubs = contagem(info, 'Publisher count')
     assina = contagem(info, 'Subscription count')
     if pubs is None:
-        conferir('/cmd_vel tem UM publicador', 'olhe', ultima_linha(info))
+        conferir(item, 'olhe', ultima_linha(info))
         return
 
-    nomes = pontas(info, 'PUBLISHER')
-    if pubs == 1:
-        conferir('/cmd_vel tem UM publicador', 'achei', ', '.join(nomes) or '1 publicador')
-    elif pubs == 0:
-        conferir('/cmd_vel tem UM publicador', 'nao', 'Publisher count: 0', ordem=12,
-                 cura='ninguem fala em /cmd_vel: o velocity_smoother nao esta ativo (secao 3), '
-                      'ou o remapeamento cmd_vel_smoothed -> cmd_vel saiu do launch')
+    nomes = [nome_curto(n) for n in pontas(info, 'PUBLISHER')]
+    intrusos = [n for n in nomes if n not in PUBLICAM_CMD_VEL]
+    suavizadores = nomes.count('velocity_smoother')
+    if pubs and not nomes:
+        # Contagem sem blocos legiveis: o formato do --verbose mudou, e sem os
+        # nomes nao ha como separar o Nav2 do intruso. Melhor admitir.
+        conferir(item, 'olhe', f'{pubs} publicador(es), mas nenhum nome legivel no --verbose')
+    elif intrusos:
+        sem_suave = '' if suavizadores else (
+            ' E repare que o velocity_smoother nem esta entre eles: veja tambem a secao 3.')
+        conferir(item, 'nao',
+                 ('intruso: ' if len(set(intrusos)) == 1 else 'intrusos: ') + resumo(intrusos),
+                 ordem=6,
+                 cura=f'derrube o intruso ({resumo(intrusos)}): publicador que nao e\' do Nav2 '
+                      f'e\' defeito. O piloto reativo da Aula 11 sai com Ctrl+C no terminal do '
+                      f'`ros2 run aula11_mundo piloto`, ou com `piloto:=false` se veio pelo '
+                      f'launch; um teleop_twist_keyboard esquecido sai com Ctrl+C. O robo '
+                      f'obedece ao ultimo que falou, o sintoma e\' andar truncado e nenhum no '
+                      f'emite aviso. Os outros publicadores ficam: o velocity_smoother e o '
+                      f'behavior_server (um por comportamento -- spin, backup, '
+                      f'drive_on_heading, assisted_teleop, wait) sao do Nav2.{sem_suave}')
+    elif suavizadores > 1:
+        # Dois velocity_smoother com o mesmo nome so' aparecem com dois Nav2 no
+        # ar -- um launch antigo que ficou num terminal esquecido.
+        conferir(item, 'nao', resumo(sorted(nomes, key=PUBLICAM_CMD_VEL.index))
+                 + ' -- um velocity_smoother a mais', ordem=6,
+                 cura='ha dois velocity_smoother falando em /cmd_vel: e\' um segundo launch do '
+                      'Nav2 no ar, num terminal esquecido. Derrube um deles (Ctrl+C, ou '
+                      '`ros2 node list` para achar o terminal) e rode isto de novo')
+    elif not suavizadores:
+        detalhe = 'Publisher count: 0' if not nomes else f'sem velocity_smoother: {resumo(nomes)}'
+        cura = ('o velocity_smoother nao fala em /cmd_vel: ele nao esta ativo (secao 3), ou o '
+                'remapeamento cmd_vel_smoothed -> cmd_vel saiu do launch. Os do '
+                'behavior_server so\' falam durante uma recuperacao; quem leva o goal ao robo '
+                'e\' o velocity_smoother')
+        if ATIVOS.get('velocity_smoother') is False:
+            # O velocity_smoother esta parado no ciclo de vida: o /cmd_vel mudo
+            # e' o mesmo defeito visto de outro angulo, nao um item proprio.
+            conferir(item, 'nao', detalhe, ordem=12, cura=cura,
+                     papel='consequencia', rotulo='o /cmd_vel sem velocity_smoother')
+        else:
+            conferir(item, 'nao', detalhe, ordem=12, cura=cura)
     else:
-        conferir('/cmd_vel tem UM publicador', 'nao',
-                 f'{pubs} publicadores: ' + ', '.join(nomes), ordem=6,
-                 cura='derrube o que NAO e\' o velocity_smoother (o piloto reativo da Aula '
-                      '11 com `piloto:=false`, um teleop_twist_keyboard esquecido, um segundo '
-                      'launch no ar): o robo obedece ao ultimo que falou, o sintoma e\' andar '
-                      'truncado e nenhum no emite aviso')
+        # Ordem fixa, e nao a do --verbose: o velocity_smoother e' quem leva o
+        # goal ao robo, e e' o primeiro nome que o aluno deve reconhecer.
+        conferir(item, 'achei',
+                 resumo(sorted(nomes, key=PUBLICAM_CMD_VEL.index)) + ', como esperado')
 
     if assina is None or assina >= 1:
         conferir('/cmd_vel tem assinante', 'achei',
@@ -730,6 +801,26 @@ def main() -> int:
     return fechar()
 
 
+def linha_agrupada(eco):
+    """A linha unica que junta as consequencias embaixo do primeiro inativo.
+
+    Nomeia cada uma, porque o aluno precisa reconhecer ali o no que ele viu
+    `nao achei` na secao 3 -- so' nao precisa de oito receitas para ele.
+    """
+    eco = sorted(eco, key=lambda x: x[0])
+    nos = [r for _, n, _, _, r in eco if n.startswith('ativo: ')]
+    outros = [r for _, n, _, _, r in eco if not n.startswith('ativo: ')]
+    partes = []
+    if nos:
+        quais = 'no inativo' if len(nos) == 1 else 'nos inativos'
+        partes.append(f'e mais {len(nos)} {quais} por consequencia: {", ".join(nos)}')
+    if outros:
+        partes.append(('e, pelo mesmo ciclo de vida parado, ' if nos
+                       else 'e, por consequencia do ciclo de vida parado, ')
+                      + ' e '.join(outros))
+    return '(' + '; '.join(partes) + ' -- resolva o primeiro e rode de novo)'
+
+
 def fechar() -> int:
     """A contagem, a lista do que fazer, e o que a lista vazia nao significa."""
     print()
@@ -745,12 +836,23 @@ def fechar() -> int:
         print('Releia os "olhe" acima e o enunciado do TP4.')
         return 0
 
+    # As consequencias do ciclo de vida parado viram UMA linha embaixo da raiz.
+    # Sem raiz na lista (nao deveria acontecer, mas a secao 3 pode ter caido em
+    # `olhe`), elas voltam a ser itens proprios: esconder pendencia e' pior do
+    # que repetir.
+    tem_raiz = any(p[3] == 'raiz' for p in pendencias)
+    itens = [p for p in pendencias if not (tem_raiz and p[3] == 'consequencia')]
+    eco = [p for p in pendencias if tem_raiz and p[3] == 'consequencia']
+
     print()
     print(f'{NEGRITO}Onde olhar, na ordem em que costuma compensar:{FIM}')
-    for i, (_, nome, cura) in enumerate(sorted(pendencias, key=lambda x: x[0]), 1):
+    for i, (_, nome, cura, papel, _) in enumerate(sorted(itens, key=lambda x: x[0]), 1):
         print(f'  {i:>2}. {VERMELHO}{nome}{FIM}')
         for linha in quebrar(cura, 72):
             print(f'      {linha}')
+        if papel == 'raiz' and eco:
+            for linha in quebrar(linha_agrupada(eco), 72):
+                print(f'      {linha}')
     print()
     print('Nenhuma dessas linhas e um veredito sobre a sua entrega: sao lugares para olhar.')
     return 1

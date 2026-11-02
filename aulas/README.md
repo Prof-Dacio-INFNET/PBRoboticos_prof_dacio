@@ -21,7 +21,7 @@ O bloco tem dez etapas de conteúdo distribuídas em dois trimestres (26T3, de 2
 | [Aula 13](etapa07-aula13/index.md) | 13/10/2026 | 7 | Achar não é acertar: instância e percepção veicular | <span class="pb-tag ok">dada</span> |
 | [Aula 14](etapa07-aula14/index.md) | 20/10/2026 | 7 | Aterrissagem do TP3: o enunciado, item por item | <span class="pb-tag ok">dada</span> |
 | [Aula 15](etapa08-aula15/index.md) | 27/10/2026 | 8 | Navegação autônoma: o Nav2 em cima do seu mapa | <span class="pb-tag ok">dada</span> |
-| [Aula 16](etapa08-aula16/index.md) | 03/11/2026 | 8 | A clínica do Nav2, e a sessão que se reproduz sem o robô | <span class="pb-tag next">próxima</span> |
+| [Aula 16](etapa08-aula16/index.md) | 03/11/2026 | 8 | O caminho até o Nav2 navegar, e a sessão que se reproduz sem o robô | <span class="pb-tag next">próxima</span> |
 | Aula 17 | 10/11/2026 | 9 | A interrupção escolhida, e a análise do bag | <span class="pb-tag soon">a seguir</span> |
 
 !!! note "Por que as Aulas 4 e 5 apontam para a página da Aula 3"

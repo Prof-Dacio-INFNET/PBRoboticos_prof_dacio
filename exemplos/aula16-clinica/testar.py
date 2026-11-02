@@ -10,11 +10,14 @@ verdade, por subprocess -- ele nao sabe que o `ros2` e falso, e e exatamente
 isso que faz o teste valer.
 
 O que estes grupos provam: que o diagnostico LE certo a saida dos comandos --
-que `unconfigured [1]` vira "nao achei" no no certo, que dois publicadores em
-/cmd_vel sao achados e nomeados, que map -> odom ausente aponta a pose inicial.
-O que eles NAO provam: que `ros2 lifecycle get` de verdade responde assim na
-maquina do aluno. Nenhum teste aqui chega perto de um Nav2 real -- isso so a
-Aula 16 dira.
+que `unconfigured [1]` vira "nao achei" no no certo, que o publicador intruso
+em /cmd_vel e achado e nomeado no meio dos seis do Nav2, que map -> odom
+ausente aponta a pose inicial. Os formatos que o `ros2` falso imprime foram
+conferidos contra um Humble de verdade em 02/11, na maquina do professor, e
+bateram; os cenarios (a2), (e2) e (f) reproduzem as duas telas daquele dia.
+O que eles NAO provam: que todo Nav2 de aluno responde assim -- um nav2.yaml
+com outros plugins muda a contagem do behavior_server, por exemplo, e o
+diagnostico foi escrito para nao depender dela.
 
 Aqui o vocabulario e `ok` / `FALHA`, e nao o `achei` / `nao achei` do
 diagnostico. A diferenca e de autoridade, nao de estilo: um teste SABE a
@@ -78,7 +81,10 @@ def bloco(no, tipo, msg, dur):
 def topico_info(nome):
     t = CEN.get('topicos', {}).get(nome)
     if t is None:
-        return 'Type: Unknown\n\nPublisher count: 0\n\nSubscription count: 0\n'
+        # Topico que ninguem criou: o CLI do Humble responde assim e sai com 1.
+        # No de ciclo de vida em unconfigured ainda nao criou os publicadores
+        # dele, e e por isso que a tela do autostart:=false tinha tantos `olhe`.
+        sai("Unknown topic '%s'\n" % nome, 1, saida=sys.stderr)
     msg, dur = t.get('tipo', 'std_msgs/msg/String'), t.get('dur', 'VOLATILE')
     pubs, subs = t.get('pubs', []), t.get('subs', [])
     linhas = ['Type: ' + msg, '', 'Publisher count: %d' % len(pubs), '']
@@ -207,11 +213,28 @@ def topicos_saudaveis(cmd_vel_pubs=('/velocity_smoother',)):
 
 
 def cenario_a():
-    """(a) Tudo no ar e ativo, pose inicial dada, um publicador em /cmd_vel."""
+    """(a) Tudo no ar e ativo, pose inicial dada, so o velocity_smoother em /cmd_vel."""
     return {'nos': NOS_NAV2 + ['/mundo', '/rviz2'], 'estado_padrao': 'active [3]',
             'tf_static': True, 'map_odom': True, 'amcl_pose_msg': True,
             'acoes': ACOES_TODAS, 'topicos': topicos_saudaveis(),
             'hz': {'/cmd_vel_nav': '19.918'}}
+
+
+# O que a maquina do professor mostrou em 02/11: num Humble saudavel o
+# behavior_server aparece CINCO vezes em /cmd_vel, um publicador por plugin de
+# comportamento (spin, backup, drive_on_heading, assisted_teleop, wait).
+CMD_VEL_NAV2 = ('/behavior_server',) * 5 + ('/velocity_smoother',)
+
+
+def cenario_a2():
+    """(a2) Saudavel DE VERDADE: os seis publicadores do Nav2 em /cmd_vel.
+
+    A regra antiga ("UM publicador") dizia `nao achei` aqui -- num sistema sem
+    defeito nenhum. Este cenario existe para isso nunca mais passar calado.
+    """
+    cen = cenario_a()
+    cen['topicos'] = topicos_saudaveis(CMD_VEL_NAV2)
+    return cen
 
 
 def cenario_b():
@@ -277,24 +300,41 @@ def cenario_f():
     ha map -> odom. Aqui a aresta ausente e' CONSEQUENCIA -- a causa e' o ciclo
     de vida parado no primeiro no, o map_server. A lista tem de dizer isso nessa
     ordem, ao contrario do cenario d2.
+
+    Como na tela real de 02/11: com todo no em unconfigured, os topicos que os
+    nos do Nav2 criariam na configuracao NAO existem (o `topic info` responde
+    "Unknown topic" e o diagnostico diz `olhe`). So sobra o /cmd_vel, que existe
+    porque o `mundo` o assina -- com zero publicadores.
     """
-    topicos = topicos_saudaveis()
-    topicos['/cmd_vel']['pubs'] = []
-    topicos['/cmd_vel_nav']['subs'] = []
-    topicos['/map']['pubs'] = []
+    topicos = {'/cmd_vel': {'tipo': 'geometry_msgs/msg/Twist', 'pubs': [],
+                            'subs': ['/mundo']}}
     estados = {n: 'unconfigured [1]' for n in NOS_NAV2 if 'lifecycle_manager' not in n}
     return {'nos': NOS_NAV2 + ['/mundo', '/rviz2'], 'estado_padrao': 'active [3]',
             'estados': estados, 'tf_static': True, 'map_odom': False,
             'amcl_pose_msg': False, 'acoes': [], 'topicos': topicos, 'hz': {}}
 
 
-def cenario_e():
-    """(e) Dois publicadores em /cmd_vel -- o piloto da Aula 11 ficou no ar."""
+def cenario_e(pubs=('/velocity_smoother', '/piloto')):
+    """(e) O piloto da Aula 11 ficou no ar e tambem fala em /cmd_vel."""
     return {'nos': NOS_NAV2 + ['/mundo', '/rviz2', '/piloto'],
             'estado_padrao': 'active [3]', 'tf_static': True, 'map_odom': True,
             'amcl_pose_msg': True, 'acoes': ACOES_TODAS,
-            'topicos': topicos_saudaveis(('/velocity_smoother', '/piloto')),
+            'topicos': topicos_saudaveis(pubs),
             'hz': {'/cmd_vel_nav': '19.918'}}
+
+
+def cenario_e2():
+    """(e2) A tela 1 de 02/11: os seis do Nav2 e o `piloto` -- sete publicadores,
+    na ordem em que o `topic info --verbose` de verdade os listou. So o piloto
+    e intruso; o behavior_server cinco vezes e normal."""
+    return cenario_e(('/piloto',) + CMD_VEL_NAV2)
+
+
+def cenario_g():
+    """(g) Dois Nav2 no ar: o velocity_smoother aparece duas vezes em /cmd_vel."""
+    cen = cenario_e(CMD_VEL_NAV2 + CMD_VEL_NAV2)
+    cen['nos'] = NOS_NAV2 + NOS_NAV2 + ['/mundo']
+    return cen
 
 
 # ---------------------------------------------------------------- execucao
@@ -304,6 +344,8 @@ MARCAS = ('achei', 'nao achei', 'olhe')
 # um. O re.M nao e opcional aqui -- sem ele o findall procura o inicio do TEXTO,
 # nao o de cada linha, e a lista volta sempre vazia (foi o primeiro bug deste teste).
 ITEM_DA_LISTA = re.compile(r'^ {2,3}\d+\. (.+)$', re.M)
+CMD = "/cmd_vel so' com os publicadores do Nav2"
+AGRUPADA = 'nos inativos por consequencia'
 
 
 class Diagnostico:
@@ -405,7 +447,7 @@ def main() -> int:
                  shutil.which('ros2', path=str(pasta)) == str(pasta / 'ros2'),
                  str(pasta / 'ros2'))
 
-        print('1. cenario (a): tudo no ar e ativo, pose dada, UM publicador em /cmd_vel')
+        print('1. cenario (a): tudo no ar e ativo, pose dada, so o velocity_smoother em /cmd_vel')
         a = diagnosticar(base, pasta, cenario_a())
         conferir('nao sobrou pendencia', a.lista() == [], '%d item(ns)' % len(a.lista()))
         conferir('sai com codigo 0', a.codigo == 0, 'codigo %d' % a.codigo)
@@ -419,9 +461,9 @@ def main() -> int:
                  'eles gerenciam o ciclo de vida, nao o tem')
         conferir('a aresta map -> odom e achada', a.estado('aresta map -> odom') == 'achei',
                  a.detalhe('aresta map -> odom')[:34])
-        conferir('/cmd_vel com UM publicador, nomeado',
-                 a.estado('/cmd_vel tem UM publicador') == 'achei'
-                 and 'velocity_smoother' in a.detalhe('/cmd_vel tem UM publicador'))
+        conferir('/cmd_vel so com o velocity_smoother: achei, nomeado',
+                 a.estado(CMD) == 'achei' and 'velocity_smoother' in a.detalhe(CMD),
+                 a.detalhe(CMD))
         conferir('a taxa de /cmd_vel_nav e lida da saida parcial do timeout',
                  a.estado('trafego em /cmd_vel_nav') == 'achei'
                  and '19.918' in a.detalhe('trafego em /cmd_vel_nav'),
@@ -432,6 +474,22 @@ def main() -> int:
         conferir('lista vazia NAO e declarada como pronto',
                  'NAO quer dizer que o Nav2 esta pronto' in a.texto
                  and 'esgotei o que um script enxerga' in a.texto)
+
+        print('1b. cenario (a2): saudavel DE VERDADE -- velocity_smoother + behavior_server x5')
+        a2 = diagnosticar(base, pasta, cenario_a2())
+        conferir('seis publicadores do Nav2 em /cmd_vel dao achei',
+                 a2.estado(CMD) == 'achei', a2.detalhe(CMD))
+        conferir('o detalhe conta cada nome em vez de repetir behavior_server cinco vezes',
+                 a2.detalhe(CMD) == 'velocity_smoother + behavior_server x5, como esperado')
+        conferir('lista final vazia e saida 0', a2.lista() == [] and a2.codigo == 0,
+                 ', '.join(a2.lista()) or 'nenhuma')
+        # O nav2.yaml do aluno pode declarar menos plugins de comportamento: a
+        # contagem do behavior_server nao pode ser regra.
+        a3 = diagnosticar(base, pasta,
+                          cenario_e(('/behavior_server',) * 2 + ('/velocity_smoother',)))
+        conferir('e com outra quantidade de behavior_server (dois) tambem',
+                 a3.estado(CMD) == 'achei' and 'behavior_server x2' in a3.detalhe(CMD),
+                 a3.detalhe(CMD))
 
         print('2. cenario (b): nenhum no do Nav2 no ar')
         b = diagnosticar(base, pasta, cenario_b())
@@ -464,12 +522,19 @@ def main() -> int:
         conferir('e a receita dele diz que o gerenciador parou ALI',
                  'parou AQUI' in c.receita('ativo: bt_navigator')
                  and 'lifecycle set' in c.receita('ativo: bt_navigator'))
-        conferir('os de baixo sao tratados como consequencia, nao como causa',
-                 'consequencia' in c.receita('ativo: waypoint_follower')
-                 and 'consequencia' in c.receita('ativo: velocity_smoother'))
+        conferir('os de baixo sao agrupados como consequencia, embaixo do bt_navigator',
+                 'e mais 2 ' + AGRUPADA + ': waypoint_follower, velocity_smoother'
+                 in c.receita('ativo: bt_navigator')
+                 and 'ativo: waypoint_follower' not in c.lista(),
+                 ', '.join(c.lista()))
+        conferir('mas continuam com linha propria na secao 3',
+                 c.estado('ativo: waypoint_follower') == 'nao achei'
+                 and c.estado('ativo: velocity_smoother') == 'nao achei')
         conferir('sem velocity_smoother ativo, /cmd_vel fica sem publicador',
-                 c.estado('/cmd_vel tem UM publicador') == 'nao achei'
-                 and 'count: 0' in c.detalhe('/cmd_vel tem UM publicador'))
+                 c.estado(CMD) == 'nao achei' and 'count: 0' in c.detalhe(CMD))
+        conferir('e esse /cmd_vel mudo entra na linha agrupada, nao como item proprio',
+                 CMD not in c.lista()
+                 and '/cmd_vel sem velocity_smoother' in c.receita('ativo: bt_navigator'))
         conferir('e /navigate_to_pose desaparece da lista de acoes',
                  c.estado('/navigate_to_pose existe') == 'nao achei'
                  and 'bt_navigator' in c.receita('/navigate_to_pose existe'))
@@ -507,7 +572,8 @@ def main() -> int:
                  < d2.lista().index('ativo: planner_server'), ', '.join(d2.lista()))
         conferir('o primeiro inativo e o planner_server, e os de baixo sao consequencia',
                  d2.estado('ativo: planner_server') == 'nao achei'
-                 and 'consequencia' in d2.receita('ativo: bt_navigator'))
+                 and 'e mais 4 ' + AGRUPADA + ': behavior_server, bt_navigator, '
+                 'waypoint_follower, velocity_smoother' in d2.receita('ativo: planner_server'))
         conferir('a receita do planner_server manda comecar pela aresta',
                  'map -> odom' in d2.receita('ativo: planner_server'))
         conferir('a receita da aresta explica a cadeia ate o planner_server',
@@ -517,29 +583,68 @@ def main() -> int:
         f = diagnosticar(base, pasta, cenario_f())
         conferir('o primeiro da lista e o primeiro no inativo, nao a aresta',
                  f.lista()[:1] == ['ativo: map_server'], ', '.join(f.lista()))
-        conferir('a aresta ausente e marcada como consequencia do ciclo de vida',
-                 'consequencia' in f.receita('aresta map -> odom')
-                 and 'pose inicial' not in f.receita('aresta map -> odom').split('.')[0])
+        conferir('UMA entrada na lista final: a tela real tinha onze, oito delas eco',
+                 f.lista() == ['ativo: map_server'], ', '.join(f.lista()))
+        conferir('com a linha agrupada embaixo, nomeando os oito nos',
+                 'e mais 8 ' + AGRUPADA + ': amcl, controller_server, smoother_server, '
+                 'planner_server, behavior_server, bt_navigator, waypoint_follower, '
+                 'velocity_smoother' in f.receita('ativo: map_server'),
+                 f.receita('ativo: map_server')[-120:])
+        conferir('a aresta e o /cmd_vel entram na mesma linha, como consequencia',
+                 'a aresta map -> odom e o /cmd_vel sem velocity_smoother -- resolva o '
+                 'primeiro e rode de novo)' in f.receita('ativo: map_server'))
+        conferir('a secao 3 continua com as nove linhas individuais',
+                 sum(1 for m, n, _ in f.linhas
+                     if n.startswith('ativo: ') and m == 'nao achei') == 9)
+        conferir('a aresta, na secao 4, nao manda dar a pose inicial',
+                 f.estado('aresta map -> odom') == 'nao achei'
+                 and 'AMCL nao esta ativo' in f.detalhe('aresta map -> odom'))
+        conferir('topico que nao existe vira olhe, nao pendencia',
+                 f.estado('/map com publicador') == 'olhe'
+                 and 'Unknown topic' in f.detalhe('/map com publicador'))
         conferir('a receita do primeiro inativo admite a desativacao manual',
                  'a mao' in f.receita('ativo: map_server'))
+        conferir('sai com codigo 1', f.codigo == 1, 'codigo %d' % f.codigo)
+        fa = f
 
-        print('5. cenario (e): DOIS publicadores em /cmd_vel')
+        print('5. cenario (e): o piloto da Aula 11 junto do velocity_smoother em /cmd_vel')
         e = diagnosticar(base, pasta, cenario_e())
-        conferir('acha dois publicadores e os NOMEIA',
-                 e.estado('/cmd_vel tem UM publicador') == 'nao achei'
-                 and '2 publicadores' in e.detalhe('/cmd_vel tem UM publicador')
-                 and 'piloto' in e.detalhe('/cmd_vel tem UM publicador'),
-                 e.detalhe('/cmd_vel tem UM publicador'))
+        conferir('acha o intruso e nomeia SO ele',
+                 e.estado(CMD) == 'nao achei' and e.detalhe(CMD) == 'intruso: piloto',
+                 e.detalhe(CMD))
         conferir('UMA pendencia: nada mais esta errado neste cenario',
-                 e.lista() == ['/cmd_vel tem UM publicador'], ', '.join(e.lista()))
+                 e.lista() == [CMD], ', '.join(e.lista()))
         conferir('a receita diz o que derrubar, e como',
-                 'piloto:=false' in e.receita('/cmd_vel tem UM publicador')
-                 and 'ultimo que falou' in e.receita('/cmd_vel tem UM publicador'))
-        conferir('o ciclo de vida nao acusa nada: dois publicadores nao dao erro',
+                 'piloto:=false' in e.receita(CMD) and 'Ctrl+C' in e.receita(CMD)
+                 and 'ultimo que falou' in e.receita(CMD))
+        conferir('e diz a regra certa, nao a de "UM publicador"',
+                 "publicador que nao e' do Nav2 e' defeito" in e.receita(CMD)
+                 and 'UM publicador' not in e.texto)
+        conferir('o ciclo de vida nao acusa nada: o intruso nao da erro',
                  not any(n.startswith('ativo: ') and m == 'nao achei'
                          for m, n, _ in e.linhas))
 
-        print('6. cenario (f): sem `ros2` no PATH -- rodar no Windows nao quebra nada')
+        print('5b. cenario (e2): a tela 1 de 02/11 -- os seis do Nav2 e o piloto')
+        e2 = diagnosticar(base, pasta, cenario_e2())
+        conferir('nao achei, nomeando so o piloto entre sete publicadores',
+                 e2.estado(CMD) == 'nao achei' and e2.detalhe(CMD) == 'intruso: piloto',
+                 e2.detalhe(CMD))
+        conferir('nem behavior_server nem velocity_smoother sao chamados de intruso',
+                 'behavior_server' not in e2.detalhe(CMD)
+                 and 'velocity_smoother' not in e2.detalhe(CMD))
+        conferir('UMA pendencia, e e essa', e2.lista() == [CMD], ', '.join(e2.lista()))
+        conferir('a receita explica por que o behavior_server aparece varias vezes',
+                 'um por comportamento' in e2.receita(CMD))
+
+        print('5c. cenario (g): dois Nav2 no ar -- velocity_smoother em dobro')
+        g = diagnosticar(base, pasta, cenario_g())
+        conferir('velocity_smoother x2 e nao achei, sem intruso de nome estranho',
+                 g.estado(CMD) == 'nao achei' and 'velocity_smoother x2' in g.detalhe(CMD),
+                 g.detalhe(CMD))
+        conferir('e a receita aponta o segundo launch',
+                 'segundo launch' in g.receita(CMD))
+
+        print('6. cenario (h): sem `ros2` no PATH -- rodar no Windows nao quebra nada')
         f = diagnosticar(base, pasta, cenario_a(), com_ros2=False, distro='')
         conferir('acusa o comando ausente e a variavel vazia',
                  f.estado('comando ros2 no PATH') == 'nao achei'
@@ -551,15 +656,22 @@ def main() -> int:
 
         print('7. as opcoes e as regras que valem em TODO cenario')
         r = diagnosticar(base, pasta, cenario_d(), extra=['--rapido'])
-        conferir('--rapido olha 1, 2, 3 e 6', r.estado('/cmd_vel tem UM publicador') == 'achei'
+        conferir('--rapido olha 1, 2, 3 e 6', r.estado(CMD) == 'achei'
                  and r.estado('ativo: amcl') == 'achei')
+        rf = diagnosticar(base, pasta, cenario_f(), extra=['--rapido'])
+        conferir('--rapido tambem agrupa o /cmd_vel mudo embaixo do map_server',
+                 rf.lista() == ['ativo: map_server']
+                 and '/cmd_vel sem velocity_smoother' in rf.receita('ativo: map_server'),
+                 ', '.join(rf.lista()))
         conferir('--rapido NAO olha 4, 5, 7, 8, 9 e 10',
                  r.estado('aresta map -> odom') is None
                  and r.estado('/map com publicador') is None
                  and r.estado('TF, pose, cadeia, acoes, costmaps e mapa') == 'olhe')
         conferir('--rapido nao esconde a pendencia que ele nao olhou: ele a declara',
                  r.lista() == [], 'em --rapido o cenario (d) parece limpo, e a saida avisa')
-        todos = {'(a)': a, '(b)': b, '(c)': c, '(d)': d, '(e)': e, '(f)': f, '--rapido': r}
+        todos = {'(a)': a, '(a2)': a2, '(b)': b, '(c)': c, '(d)': d, '(d2)': d2,
+                 '(e)': e, '(e2)': e2, '(f) autostart': fa, '(g)': g, '(h) sem ros2': f,
+                 '--rapido': r}
         conferir('--sem-cor nao deixa nenhum codigo de escape na saida',
                  not any('\033' in x.texto for x in todos.values()))
         conferir('o vocabulario e so achei / nao achei / olhe, em todo cenario',
@@ -586,7 +698,7 @@ def main() -> int:
         conferir('todo item da lista final vem com o que fazer a seguir',
                  all(len(x.receita(n)) > 40 for x in todos.values() for n in x.lista()),
                  '%d receita(s)' % sum(len(x.lista()) for x in todos.values()))
-        conferir('o codigo de saida acompanha a lista final, nos sete casos',
+        conferir('o codigo de saida acompanha a lista final, em todos os casos',
                  all(x.codigo == (1 if x.lista() else 0) for x in todos.values()))
         mau = diagnosticar(base, pasta, cenario_a(), extra=['--timeout', '0'])
         conferir('--timeout 0 e recusado com codigo 2', mau.codigo == 2,
