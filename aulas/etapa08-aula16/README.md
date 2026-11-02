@@ -18,6 +18,17 @@ Hoje a aula tem duas metades e as duas descendem daquilo. A primeira é fazer o 
 
 **Um sistema que só funciona com você na frente dele não está entregue.** É isso que o item 2 do TP4 cobra quando pede uma árvore de comportamento *e* uma sessão gravada que se reproduz offline: a árvore decide sem você, e o bag prova sem você. O resto da aula é consequência disso.
 
+## O que você sai sabendo hoje, e o que isso vale no seu projeto
+
+| A capacidade | No seu projeto |
+|---|---|
+| descobrir, em dez segundos, por que o seu Nav2 não está navegando | você deixa de depender de mim para destravar — e trava menos |
+| mandar o robô até um objetivo e **provar que ele chegou** | é a primeira vez que o seu sistema faz algo de ponta a ponta sozinho |
+| escolher, e saber dizer, **onde mora a decisão** de interromper | é arquitetura, e é o que você defende na arguição |
+| medir uma sessão gravada com o robô desligado | a demonstração do fim do semestre deixa de depender de sorte |
+
+As datas de cada etapa estão na tabela abaixo e em [Gates de cada TP](../../recursos/gates-tps.md) — elas são **referência para consultar**, não o assunto da aula.
+
 ## A ordem de hoje, e o que cede se o tempo apertar
 
 | Bloco | O que você sai com | Vence em |
