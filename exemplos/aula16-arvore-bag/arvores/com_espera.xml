@@ -1,0 +1,165 @@
+<?xml version="1.0"?>
+<!--
+  ===========================================================================
+  A VARIANTE COM A ESPERA DE 2 s - e o que ela NAO faz
+  ===========================================================================
+
+  COMO USAR: os comandos exatos estao no README deste exemplo, na secao
+  "A arvore de comportamento, e o que ela nao sabe fazer". Eles nao cabem
+  aqui, e a razao e curiosa o bastante para ficar registrada: um comentario
+  XML nao pode conter dois tracos seguidos (e proibicao da especificacao do
+  XML, nao do Nav2), e toda opcao de linha de comando do ROS 2 comeca com
+  dois tracos. O tinyxml2 da BehaviorTree.CPP recusa o arquivo INTEIRO por
+  causa disso, com uma mensagem que nao menciona tracos. Se voce colar um
+  comando dentro de uma arvore sua, e ela parar de carregar, e isto.
+
+  Em prosa, sao tres maneiras de apontar esta arvore, e as tres recebem o
+  mesmo caminho:
+
+    pelo parametro `arvore` do no `vigia` deste pacote (vale no goal dele);
+    pelo parametro `arvore` do no `rota` da Aula 15 (cada goal da rota);
+    pelo parametro `default_nav_to_pose_bt_xml` do bt_navigator (todos os
+    goals, inclusive os do botao "2D Goal Pose" do RViz2).
+
+  O caminho tem de ser o do arquivo INSTALADO (dentro de `install/.../share/`),
+  nao o da pasta de fontes: quem le o XML e o processo do bt_navigator, em
+  tempo de execucao, e ele pode nem estar na mesma maquina que o seu editor.
+
+  ===========================================================================
+  O QUE MUDOU EM RELACAO A `padrao_comentada.xml`
+  ===========================================================================
+
+  DUAS coisas, e nenhum no novo:
+
+    1. o `<Wait wait_duration="5"/>` virou `<Wait wait_duration="2"/>`,
+       porque o enunciado do TP4 pede 2 s;
+    2. ele subiu para ser a PRIMEIRA entrada do RoundRobin, em vez da
+       terceira.
+
+  A segunda mudanca e a que importa. O RoundRobin tenta uma recuperacao por
+  vez, em rodizio: na arvore padrao, a sequencia e limpar costmaps -> girar ->
+  esperar -> recuar, e a espera so chega na TERCEIRA falha. Com ela na frente,
+  a primeira reacao do Nav2 a uma navegacao que falhou passa a ser: parar 2 s,
+  e entao tentar o objetivo de novo - porque o RecoveryNode acima retenta o
+  ramo de navegacao assim que o ramo de recuperacao devolve SUCCESS.
+
+  "Esperar 2 s e retomar o objetivo", que e a frase do enunciado, e exatamente
+  isso. Com nos prontos do Humble, sem C++, sem plugin novo, sem recompilar
+  nada: `Wait`, `RoundRobin`, `Sequence`, `ReactiveFallback`, `GoalUpdated`,
+  `RecoveryNode`, `PipelineSequence`, `RateController`, `ComputePathToPose`,
+  `FollowPath`, `ClearEntireCostmap`, `Spin`, `BackUp`. Todos os treze estao
+  no `nav2_behavior_tree/nav2_tree_nodes.xml` do branch humble (os de controle
+  genericos, `Sequence` e `ReactiveFallback`, vem da BehaviorTree.CPP v3, que
+  e a versao que o Humble usa).
+
+  ===========================================================================
+  O QUE ESTA ARVORE **NAO** FAZ - leia antes de escrever o relatorio
+  ===========================================================================
+
+  ELA NAO SABE MEDIR 0,5 m. Nenhum no de condicao do `nav2_behavior_tree` do
+  Humble le a distancia a um obstaculo. Procure na lista: as condicoes sao
+  GoalReached, IsStuck, TransformAvailable, GoalUpdated, GlobalUpdatedGoal,
+  IsBatteryLow, IsBatteryCharging, DistanceTraveled, TimeExpired,
+  PathExpiringTimer, InitialPoseReceived e IsPathValid. A unica com
+  "distancia" no nome, `DistanceTraveled`, mede quanto o ROBO andou - nao
+  quanto falta para bater em alguma coisa.
+
+  ENTAO QUANDO ESTA ESPERA DISPARA? Quando a NAVEGACAO FALHA: quando o
+  `FollowPath` devolve FAILURE (o controlador nao achou trajetoria viavel, ou
+  o progress checker declarou travamento) ou quando o `ComputePathToPose`
+  devolve FAILURE (o planejador nao achou rota). Um obstaculo a 0,5 m
+  normalmente PRODUZ uma dessas falhas - o DWB descarta as trajetorias que
+  colidem e, se descartar todas, falha. Mas "normalmente" nao e "quando a
+  distancia for menor que 0,5 m", e a diferenca tem de estar no relatorio:
+
+      esta arvore reage a CONSEQUENCIA (a navegacao falhou)
+      o item 2 pede reacao a CAUSA     (o sensor viu menos de 0,5 m)
+
+  OS DOIS CAMINHOS PARA FECHAR ESSA LACUNA, e o exemplo escolheu o segundo:
+
+    (a) um no de condicao em C++, por exemplo `ObstaculoProximo`, assinando o
+        /scan e devolvendo SUCCESS abaixo do limiar. Vira um plugin, entra em
+        `bt_navigator.plugin_lib_names`, e a arvore ganha um
+        `<ReactiveSequence>` com ele no topo do ramo de navegacao. E o
+        caminho certo para producao. Custa um pacote `ament_cmake`, um
+        `pluginlib`, e um `colcon build` que falha de tres jeitos diferentes
+        antes de passar.
+
+    (b) o `vigia.py` deste pacote: um no Python que le o /scan, cancela o goal
+        em andamento com `cancel_goal_async`, espera 2 s e reenvia o MESMO
+        objetivo. Nao toca na arvore e nao precisa de C++. Reage no proximo
+        /scan, e nao no proximo tick - o atraso extra esta documentado no
+        docstring dele.
+
+  QUEM USA AS DUAS COISAS JUNTAS tem o item 2 inteiro: o `vigia.py` para o
+  portao de 0,5 m, esta arvore para a espera de 2 s em toda e qualquer falha
+  de navegacao. E vale dizer no relatorio que as duas esperas podem se somar.
+
+  E A ARMADILHA DO ENUNCIADO, que vale a nota: esperar 2 s so resolve
+  obstaculo que SAI SOZINHO. Contra uma caixa no chao, a sequencia vira
+  esperar -> tentar -> falhar -> esperar -> tentar, e o robo fica preso ali
+  ate as seis tentativas do RecoveryNode acabarem e o goal ser abortado.
+  Repare que a arvore padrao tem razao em NAO por a espera na frente: limpar
+  o costmap e girar mudam alguma coisa no mundo do robo; esperar nao muda
+  nada. Troque a ordem com conhecimento de causa, e diga no relatorio por que.
+-->
+<root main_tree_to_execute="MainTree">
+  <BehaviorTree ID="MainTree">
+    <RecoveryNode number_of_retries="6" name="NavigateRecovery">
+
+      <!-- Identico a arvore padrao: replaneja a 1 Hz enquanto dirige. -->
+      <PipelineSequence name="NavigateWithReplanning">
+        <RateController hz="1.0">
+          <RecoveryNode number_of_retries="1" name="ComputePathToPose">
+            <ComputePathToPose goal="{goal}" path="{path}" planner_id="GridBased"/>
+            <ClearEntireCostmap name="ClearGlobalCostmap-Context" service_name="global_costmap/clear_entirely_global_costmap"/>
+          </RecoveryNode>
+        </RateController>
+        <RecoveryNode number_of_retries="1" name="FollowPath">
+          <FollowPath path="{path}" controller_id="FollowPath"/>
+          <ClearEntireCostmap name="ClearLocalCostmap-Context" service_name="local_costmap/clear_entirely_local_costmap"/>
+        </RecoveryNode>
+      </PipelineSequence>
+
+      <ReactiveFallback name="RecoveryFallback">
+
+        <!-- Continua primeiro: goal novo aborta a recuperacao em andamento,
+             inclusive a espera de 2 s. Sem ele, mandar um goal novo durante a
+             espera nao faria nada por ate 2 s. -->
+        <GoalUpdated/>
+
+        <RoundRobin name="RecoveryActions">
+
+          <!-- ================= A UNICA MUDANCA DE VERDADE =================
+               Primeira recuperacao: ficar parado 2 s. Quando ela devolve
+               SUCCESS, o RecoveryNode la de cima retenta o ramo de navegacao
+               - que e "retomar o objetivo".
+
+               `wait_duration` e INT no Humble (BT::InputPort<int> em
+               wait_action.hpp): escrever "2.5" aqui nao da meio segundo a
+               mais, da erro de conversao no primeiro tick.
+
+               Quem serve esta acao e o behavior_server, pelo plugin
+               `nav2_behaviors/Wait` declarado em `behavior_plugins` do
+               nav2_params.yaml. Se voce enxugou a lista de plugins do seu
+               YAML e tirou o `wait`, esta arvore carrega sem reclamar e
+               falha no primeiro tick deste no - confira com
+               `ros2 action list | grep wait`.
+          -->
+          <Wait wait_duration="2" name="EsperaDoisSegundos"/>
+
+          <!-- Daqui para baixo, as tres recuperacoes da arvore padrao, na
+               ordem original. Elas continuam existindo porque esperar nao
+               muda nada no mundo: se a espera nao resolveu, o rodizio passa
+               para quem muda. -->
+          <Sequence name="ClearingActions">
+            <ClearEntireCostmap name="ClearLocalCostmap-Subtree" service_name="local_costmap/clear_entirely_local_costmap"/>
+            <ClearEntireCostmap name="ClearGlobalCostmap-Subtree" service_name="global_costmap/clear_entirely_global_costmap"/>
+          </Sequence>
+          <Spin spin_dist="1.57"/>
+          <BackUp backup_dist="0.30" backup_speed="0.05"/>
+        </RoundRobin>
+      </ReactiveFallback>
+    </RecoveryNode>
+  </BehaviorTree>
+</root>

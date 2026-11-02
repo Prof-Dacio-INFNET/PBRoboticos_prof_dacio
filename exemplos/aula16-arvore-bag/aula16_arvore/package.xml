@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>aula16_arvore</name>
+  <version>0.1.0</version>
+  <description>Arvore de comportamento, portao de obstaculo e analise de bag -- Aula 16, item 2 do TP4.</description>
+  <maintainer email="dacioms@gmail.com">Dacio Moreira de Souza</maintainer>
+  <license>MIT</license>
+
+  <!-- O mundo, o /scan, o /odom e a TF odom->base_footprint vem da Aula 11;
+       o Nav2 com AMCL, mapa e bt_navigator vem da Aula 15. Este pacote nao
+       sobe nenhum dos dois: ele acrescenta o vigia e o gravador. -->
+  <exec_depend>aula11_mundo</exec_depend>
+  <exec_depend>aula15_nav2</exec_depend>
+
+  <!-- O bt_navigator, que carrega os XML de arvore de `arvores/`. -->
+  <exec_depend>nav2_bt_navigator</exec_depend>
+  <exec_depend>nav2_behavior_tree</exec_depend>
+  <!-- O `Wait` da arvore e uma acao servida pelo behavior_server: sem este
+       pacote, a arvore carrega e o no Wait falha no primeiro tick. -->
+  <exec_depend>nav2_behaviors</exec_depend>
+  <exec_depend>nav2_msgs</exec_depend>
+
+  <!-- Os dois nos deste pacote. -->
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>action_msgs</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>nav_msgs</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+
+  <!-- A gravacao e a reproducao da sessao: o gate G4.4.
+       Pelo apt: sudo apt install ros-humble-rosbag2 ros-humble-rosbag2-storage-default-plugins -->
+  <exec_depend>rosbag2</exec_depend>
+  <exec_depend>ros2bag</exec_depend>
+  <exec_depend>rosbag2_storage_default_plugins</exec_depend>
+
+  <exec_depend>launch</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>

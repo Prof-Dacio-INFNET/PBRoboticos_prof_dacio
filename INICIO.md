@@ -54,18 +54,18 @@ Aulas às **terças, 07h00–09h30, sala SJ205** · Prof. Dácio Moreira de Souz
 
 ## Aula mais recente
 
-**Aula 15 — terça, 27/10/2026 — Navegação autônoma: o Nav2 em cima do seu mapa** <span class="pb-tag next">atual</span>
+**Aula 16 — terça, 03/11/2026 — A clínica do Nav2, e a sessão que se reproduz sem o robô** <span class="pb-tag next">atual</span>
 
-**A nuvem concentrar prova confiança, não localização.** O mapa que vocês salvaram no TP3 deixa de ser evidência e passa a ser entrada: é nele que o robô se acha. E a aula mede, com número, a diferença entre um robô localizado e um robô 5,92 m fora do lugar com a nuvem de partículas igualmente concentrada.
+**Um sistema que só funciona com você na frente dele não está entregue.** Metade da aula é clínica: pôr o Nav2 de cada um para navegar de verdade. A outra metade abre o item 2 do TP4, onde a navegação deixa de depender de você — a árvore decide sem você, e o bag prova sem você.
 
-[Conteúdo e slides da aula](aulas/etapa08-aula15/index.md){ .md-button .md-button--primary }
-[Exemplo: a convergência medida](exemplos/aula15-nav2/index.md){ .md-button }
+[Conteúdo e slides da aula](aulas/etapa08-aula16/index.md){ .md-button .md-button--primary }
+[Diagnóstico do Nav2](exemplos/aula16-clinica/index.md){ .md-button }
 
-!!! danger "O TP4 já começou: o primeiro gate vence sexta, 30/10"
-    O Nav2 subindo com o **seu** mapa e o AMCL convergindo, provado com o print do RViz2 — e a evidência **commitada** em `docs/evidencias/tp4/`. A instalação é uma linha, e é a primeira coisa a fazer:
+!!! danger "O G4.1 vence quarta, 04/11 — e ele não é o mesmo que o G4.0"
+    O G4.0 era **localizar**; o G4.1 é **navegar**: o robô indo sozinho até um goal, sem intervenção, com vídeo curto. Quem fechou sexta passada não fechou este. Se travar, o diagnóstico diz onde olhar:
 
     ```bash
-    sudo apt install -y ros-humble-navigation2 ros-humble-nav2-bringup
+    python3 diagnosticar_nav2.py          # com o seu Nav2 no ar
     ```
 
 ## Calendário de entregas

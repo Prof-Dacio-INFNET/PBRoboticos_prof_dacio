@@ -83,6 +83,9 @@ COPIA_PASTA = re.compile(r'cp\s+-r\s+\S+?([\w.-]+)\s+"(\$PB_WS/src|\$PB_DIR)/"')
 LIMPA_ANTES = re.compile(r'rm\s+-rf\s+[^\n]*\$PB_')
 # rm -rf que apaga pasta do ALUNO (nao a do clone temporario em /tmp)
 RM_DESTRUTIVO = re.compile(r'rm\s+-rf\s+[^\n]*\$PB_')
+# `test -d ALVO` usado como guarda, e o `git clone` que deveria ter criado ALVO
+GUARDA = re.compile(r'test\s+-d\s+(\S+)')
+CLONE = re.compile(r'git\s+clone\s+([^\n]*)')
 PIP_INSTALL = re.compile(r'(?<!uv )\bpip\s+install\b')
 
 
@@ -99,6 +102,37 @@ def blocos_de_codigo(texto: str):
             continue
         if atual is not None:
             atual.append(linha)
+    return saida
+
+
+def destinos_do_clone(corpo: str):
+    """Os diretorios que os `git clone` deste bloco criam.
+
+    Com destino explicito, e o ultimo argumento; sem ele, e o nome do
+    repositorio sem o `.git`. A guarda `test -d` tem de nomear um destes --
+    foi escrever `test -d \\` e `test -d <URL>` em nove blocos de uma vez que
+    fez esta regra existir. Nos dois casos a guarda nao guardava nada: a
+    primeira e sempre verdadeira (um argumento nao vazio), a segunda e sempre
+    falsa (nao existe diretorio com nome de URL), e nenhuma das duas reclama.
+    """
+    saida = set()
+    for linha in juntar_continuacoes(corpo.split('\n')):
+        linha = linha.split('#', 1)[0]      # o que vem depois do # e comentario
+        m = CLONE.search(linha)
+        if not m:
+            continue
+        partes = [t for t in m.group(1).split() if t not in ('&&', '\\')]
+        partes = [t for t in partes if not t.startswith('-')]
+        # `--depth 1` deixa o `1` solto; ele nao e destino
+        partes = [t for t in partes if t != '1']
+        if not partes:
+            continue
+        ultimo = partes[-1]
+        if ultimo.startswith('http') or ultimo.endswith('.git'):
+            nome = ultimo.rstrip('/').rsplit('/', 1)[-1]
+            saida.add(nome[:-4] if nome.endswith('.git') else nome)
+        else:
+            saida.add(ultimo)
     return saida
 
 
@@ -170,6 +204,29 @@ def conferir_venv(p: pathlib.Path, texto: str, achados: list):
                                 'fica sem a versao nova E sem a antiga. Encadeie a partir de '
                                 '`cd <clone> && rm -rf ... && cp -r ...`',
                                 linha.strip()[:88]))
+
+        continua = False
+        for n_rel, linha in enumerate(linhas):
+            if continua and COMENTARIO.match(linha):
+                achados.append((p, inicio, 'comentario DENTRO de uma cadeia `&& \\`: o shell '
+                                'encerra o comando ali, e o que vem depois deixa de ser '
+                                'guardado pelo && (ponha o comentario acima do bloco)',
+                                linha.strip()[:88]))
+            continua = linha.rstrip().endswith('\\')
+
+        if 'git clone' in corpo:
+            destinos = destinos_do_clone(corpo)
+            for linha in juntar_continuacoes(linhas):
+                if COMENTARIO.match(linha):
+                    continue
+                for m in GUARDA.finditer(linha):
+                    alvo = m.group(1).rstrip('/').rsplit('/', 1)[-1]
+                    if alvo not in destinos:
+                        achados.append((p, inicio, 'a guarda `test -d %s` nao nomeia o '
+                                        'diretorio que o clone deste bloco cria (%s): ela nao '
+                                        'guarda nada e nao reclama'
+                                        % (m.group(1), ', '.join(sorted(destinos)) or 'nenhum'),
+                                        linha.strip()[:88]))
 
         if VENV_STDLIB.search(corpo):
             achados.append((p, inicio, 'a disciplina gerencia ambiente com uv: troque '

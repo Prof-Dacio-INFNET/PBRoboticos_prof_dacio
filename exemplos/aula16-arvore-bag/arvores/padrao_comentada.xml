@@ -1,0 +1,217 @@
+<?xml version="1.0"?>
+<!--
+  ===========================================================================
+  A ARVORE PADRAO DO NAV2 NO HUMBLE, COMENTADA BLOCO A BLOCO
+  ===========================================================================
+
+  DE ONDE ELA VEIO, literalmente:
+
+      /opt/ros/humble/share/nav2_bt_navigator/behavior_trees/
+          navigate_to_pose_w_replanning_and_recovery.xml
+
+  que e o arquivo instalado pelo pacote `ros-humble-nav2-bt-navigator`, e
+  cuja fonte esta em:
+
+      https://github.com/ros-navigation/navigation2/blob/humble/
+          nav2_bt_navigator/behavior_trees/
+          navigate_to_pose_w_replanning_and_recovery.xml
+
+  Confira voce mesmo, no seu Ubuntu, que esta copia bate com a instalada. Um
+  `diff` nao serve (os comentarios estariam em todas as linhas); o que serve e
+  comparar a ARVORE, que e o que o bt_navigator le, descartando comentario. O
+  comando esta no README deste exemplo, na secao "A arvore de comportamento,
+  e o que ela nao sabe fazer" - comando nao mora dentro de XML aqui, pelo
+  motivo que o `com_espera.xml` explica no topo dele.
+
+  O `testar.py` deste exemplo ja roda essa comparacao, contra uma copia do
+  XML oficial embutida nele: se alguem mexer nesta arvore sem querer, o teste
+  acusa sem precisar de ROS 2 nenhum.
+
+  ESTA E A ARVORE QUE JA ESTA RODANDO. Ela e o valor padrao do parametro
+  `default_nav_to_pose_bt_xml` do bt_navigator - o `nav2_params.yaml` do
+  Humble nem sequer a escreve, so a menciona num comentario. Ou seja: todo
+  goal que voce mandou na Aula 15 foi executado por este arquivo. O item 2 do
+  TP4 nao pede que voce invente uma arvore do zero; pede que voce saiba LER
+  esta e mexer nela com conhecimento de causa. E o que o `com_espera.xml`
+  deste mesmo diretorio faz, mudando dois atributos.
+
+  COMO SE LE UMA ARVORE DE COMPORTAMENTO, em um paragrafo: ela e tiqueteada
+  de cima para baixo, da esquerda para a direita, muitas vezes por segundo
+  (`bt_loop_duration`, 10 ms no Humble). Cada no devolve SUCCESS, FAILURE ou
+  RUNNING. Os nos de CONTROLE decidem o que fazer com a resposta dos filhos;
+  os nos de ACAO falam com os servidores do Nav2; as CONDICOES so olham e
+  respondem. Nada aqui e' uma maquina de estados com memoria: tudo e'
+  retiqueteado o tempo todo, e e' isso que torna a arvore reativa.
+
+  A arvore tem DUAS metades. A de cima navega; a de baixo se recupera. A
+  leitura em uma frase: "tente navegar; se nao der, tente se desenrascar e
+  volte a tentar navegar - ate seis vezes".
+-->
+<root main_tree_to_execute="MainTree">
+  <BehaviorTree ID="MainTree">
+
+    <!--
+      RecoveryNode (controle, do nav2_behavior_tree): DOIS filhos, e so dois.
+      O primeiro e' o trabalho; o segundo e' o plano B. Se o trabalho falha,
+      ele roda o plano B e TENTA O TRABALHO DE NOVO, ate `number_of_retries`
+      vezes. Se o plano B tambem falha, a arvore inteira falha.
+
+      Seis tentativas aqui. Cada tentativa consome UMA acao do RoundRobin la
+      embaixo - entao, na pratica, as seis tentativas percorrem o ciclo de
+      quatro recuperacoes uma vez e meia.
+    -->
+    <RecoveryNode number_of_retries="6" name="NavigateRecovery">
+
+      <!--
+        PipelineSequence (controle): parece uma Sequence e NAO e'. Numa
+        Sequence comum, o filho 2 so' e' tiqueteado quando o filho 1 devolve
+        SUCCESS, e um filho em RUNNING segura a fila. Aqui, quando um filho
+        devolve RUNNING, os filhos ANTERIORES continuam sendo tiqueteados.
+
+        E' exatamente o que "replanejar enquanto dirige" significa: o
+        ComputePathToPose continua recalculando a rota a 1 Hz enquanto o
+        FollowPath esta la embaixo, em RUNNING, dirigindo pela rota anterior.
+        Com uma Sequence comum, o planejamento rodaria UMA vez e o robo
+        seguiria um plano velho ate o fim.
+      -->
+      <PipelineSequence name="NavigateWithReplanning">
+
+        <!--
+          RateController (decorador): limita o filho a `hz`. Sem ele, o
+          planejador global rodaria a cada tick - 100 vezes por segundo,
+          queimando CPU para produzir quase sempre a mesma rota.
+          1 Hz e' o padrao do Nav2 e e' um bom primeiro chute.
+        -->
+        <RateController hz="1.0">
+
+          <!--
+            Mesmo padrao de novo, um nivel abaixo: tente planejar; se nao
+            der, limpe o costmap global e tente mais uma vez. UMA tentativa:
+            se limpar o costmap nao resolveu, o problema nao e' costmap sujo.
+          -->
+          <RecoveryNode number_of_retries="1" name="ComputePathToPose">
+
+            <!--
+              ComputePathToPose (acao): chama o planner_server.
+              `goal="{goal}"` le a chave `goal` do BLACKBOARD - o quadro
+              negro da arvore. Quem escreve essa chave e' o proprio
+              bt_navigator, com a pose que chegou pela acao
+              navigate_to_pose. E' por aqui que o seu `rota.py` (Aula 15) e o
+              seu `vigia.py` conversam com a arvore.
+              `path="{path}"` grava a rota no blackboard, para o FollowPath
+              ler mais abaixo.
+              `planner_id="GridBased"` tem de bater com um nome declarado em
+              `planner_server.planner_plugins` do seu YAML. Nome que nao bate
+              da erro no primeiro tick, e e' o erro mais facil de cometer
+              quando se copia uma arvore de outro projeto.
+            -->
+            <ComputePathToPose goal="{goal}" path="{path}" planner_id="GridBased"/>
+
+            <!--
+              ClearEntireCostmap (acao): chama um SERVICO, nao uma acao - por
+              isso `service_name` e nao `server_name`. O nome tem de existir:
+              `ros2 service list | grep clear_entirely`.
+            -->
+            <ClearEntireCostmap name="ClearGlobalCostmap-Context" service_name="global_costmap/clear_entirely_global_costmap"/>
+          </RecoveryNode>
+        </RateController>
+
+        <!--
+          Mesma figura para o controlador: dirija; se o controlador falhar,
+          limpe o costmap LOCAL e tente dirigir mais uma vez.
+          `controller_id="FollowPath"` tem de bater com
+          `controller_server.controller_plugins` do seu YAML.
+        -->
+        <RecoveryNode number_of_retries="1" name="FollowPath">
+          <FollowPath path="{path}" controller_id="FollowPath"/>
+          <ClearEntireCostmap name="ClearLocalCostmap-Context" service_name="local_costmap/clear_entirely_local_costmap"/>
+        </RecoveryNode>
+      </PipelineSequence>
+
+      <!--
+        ===================== A METADE DE BAIXO: RECUPERACAO ================
+
+        ReactiveFallback (controle, da BehaviorTree.CPP v3): tiquetea os
+        filhos da esquerda para a direita e para no primeiro que NAO falha. O
+        "Reactive" e' a parte que importa: a cada tick ele recomeca do
+        primeiro filho, mesmo com um filho posterior em RUNNING.
+
+        E' isso que permite ABORTAR uma recuperacao no meio. Veja o proximo
+        comentario.
+      -->
+      <ReactiveFallback name="RecoveryFallback">
+
+        <!--
+          GoalUpdated (condicao): devolve SUCCESS quando a chave `goal` do
+          blackboard MUDOU desde o tick anterior. Como o ReactiveFallback
+          retiquetea do inicio, esta condicao e' consultada a cada tick - e
+          no instante em que um goal novo chega, ela devolve SUCCESS, o
+          ReactiveFallback para ali e a recuperacao em andamento e' halted.
+
+          Traduzindo: se voce mandar um goal novo enquanto o robo esta no meio
+          de um giro de recuperacao, ele larga o giro e vai atras do goal
+          novo. Sem este no, voce esperaria o giro terminar.
+
+          Na PRIMEIRA vez que e' tiqueteada ela devolve FAILURE de proposito
+          (ela ainda nao tem com o que comparar). Isso esta na fonte:
+          nav2_behavior_tree/plugins/condition/goal_updated_condition.cpp.
+        -->
+        <GoalUpdated/>
+
+        <!--
+          RoundRobin (controle): tiquetea UM filho por vez e, quando ele
+          falha, passa a vez para o proximo NA PROXIMA ENTRADA. Ele guarda
+          onde parou. E' isso que faz as recuperacoes serem tentadas em
+          rodizio: primeiro limpar os costmaps, depois girar, depois esperar,
+          depois recuar - e so entao voltar a limpar.
+
+          Note que a ordem e' do mais barato e menos invasivo para o mais
+          invasivo. Limpar costmap nao mexe o robo; recuar mexe.
+        -->
+        <RoundRobin name="RecoveryActions">
+
+          <!--
+            Sequence (controle, da BT.CPP v3): os dois costmaps, um depois do
+            outro, os dois tem de dar certo. E' a primeira tentativa porque
+            e' a mais provavel: boa parte dos travamentos do Nav2 e' lixo no
+            costmap - leitura espuria que virou obstaculo permanente.
+          -->
+          <Sequence name="ClearingActions">
+            <ClearEntireCostmap name="ClearLocalCostmap-Subtree" service_name="local_costmap/clear_entirely_local_costmap"/>
+            <ClearEntireCostmap name="ClearGlobalCostmap-Subtree" service_name="global_costmap/clear_entirely_global_costmap"/>
+          </Sequence>
+
+          <!--
+            Spin (acao): gira no lugar `spin_dist` radianos (1,57 = 90 graus),
+            chamando o behavior_server. Serve para o laser ver o que esta em
+            volta e repovoar o costmap local.
+          -->
+          <Spin spin_dist="1.57"/>
+
+          <!--
+            Wait (acao): fica parado `wait_duration` SEGUNDOS, e o tipo da
+            porta e' INT (BT::InputPort<int>("wait_duration", 1, "Wait time")
+            no wait_action.hpp do Humble) - nao adianta escrever "2.5".
+
+            ESTE E' O NO QUE O ITEM 2 DO TP4 PEDE, e ele ja esta aqui, com
+            cinco segundos. O `com_espera.xml` deste diretorio muda duas
+            coisas nele: o valor para 2 e a POSICAO, para que a espera seja a
+            PRIMEIRA recuperacao em vez da terceira.
+
+            Por que esperar e' uma recuperacao: se o que bloqueou o caminho
+            foi uma pessoa andando, ela sai sozinha. Se foi um movel, nao
+            sai, e esperar nao resolve - so adia.
+          -->
+          <Wait wait_duration="5"/>
+
+          <!--
+            BackUp (acao): recua `backup_dist` metros a `backup_speed` m/s.
+            E' a recuperacao mais invasiva, e e' a ultima por isso: o robo
+            anda PARA TRAS, e a maioria dos robos nao tem sensor atras.
+          -->
+          <BackUp backup_dist="0.30" backup_speed="0.05"/>
+        </RoundRobin>
+      </ReactiveFallback>
+    </RecoveryNode>
+  </BehaviorTree>
+</root>
