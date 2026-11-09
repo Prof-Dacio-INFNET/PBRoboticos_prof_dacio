@@ -78,7 +78,8 @@ from rclpy.node import Node
 ROTA_PADRAO = [
     2.0, 4.0, 0.0,      # perto da largada, olhando para a porta
     6.1, 4.0, 0.0,      # a porta, no meio do vao de 1,2 m
-    9.0, 5.5, 1.57,     # sala 2, canto de cima
+    10.5, 6.5, 1.57,    # sala 2, canto de cima (ate 09/11 era (9.0, 5.5), que cai
+                        # DENTRO do obstaculo retangular da sala 2 -- goal recusado)
     9.0, 2.2, -1.57,    # sala 2, canto de baixo
     6.1, 4.0, 3.14,     # a porta de volta, olhando para a sala 1
 ]

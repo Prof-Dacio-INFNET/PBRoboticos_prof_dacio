@@ -54,19 +54,16 @@ Aulas às **terças, 07h00–09h30, sala SJ205** · Prof. Dácio Moreira de Souz
 
 ## Aula mais recente
 
-**Aula 16 — terça, 03/11/2026 — O caminho até o Nav2 navegar, e a sessão que se reproduz sem o robô** <span class="pb-tag next">atual</span>
+**Aula 17 — terça, 10/11/2026 — Fechar o item 2, a câmera que não é a sua, e a rede que decora** <span class="pb-tag next">atual</span>
 
-**Um sistema que só funciona com você na frente dele não está entregue.** A aula demonstra o caminho até o Nav2 navegar — e os três casos mais prováveis em que ele não navega, lidos pelo diagnóstico — e abre o item 2 do TP4, onde a navegação deixa de depender de você: a árvore decide sem você, e o bag prova sem você. O que é para rodar no seu ambiente está na **tarefa da semana**, com o caminho, para fazer no seu tempo.
+**Acertar 90% respondendo sempre a mesma coisa não é aprender.** A aula fecha o item 2 do TP4 com uma sessão gravada de verdade — o `vigia` interrompendo, o bag tocado sem o robô e a régua lendo o que aconteceu —, sobe o MetaDrive para o item 3 (e mostra que ele não tem placa, e que o detector da Aula 13 acha zero ali até ser ajustado), e treina a mesma rede duas vezes para o item 4, com os três números que denunciam a rede que decora. O que é para rodar no seu ambiente está na **tarefa da semana**, em nove passos.
 
-[Conteúdo e slides da aula](aulas/etapa08-aula16/index.md){ .md-button .md-button--primary }
-[Diagnóstico do Nav2](exemplos/aula16-clinica/index.md){ .md-button }
+[Conteúdo e slides da aula](aulas/etapa09-aula17/index.md){ .md-button .md-button--primary }
+[MetaDrive](exemplos/aula17-metadrive/index.md){ .md-button }
+[A CNN e a matriz](exemplos/aula17-cnn/index.md){ .md-button }
 
-!!! danger "O G4.1 vence quarta, 04/11 — e ele não é o mesmo que o G4.0"
-    O G4.0 era **localizar**; o G4.1 é **navegar**: o robô indo sozinho até um goal, sem intervenção, com vídeo curto. Quem fechou sexta passada não fechou este. Se travar, o diagnóstico diz onde olhar:
-
-    ```bash
-    python3 diagnosticar_nav2.py          # com o seu Nav2 no ar
-    ```
+!!! danger "A decisão do TP5 vence antes da entrega do TP4"
+    O registro da opção do TP5 — **A, hardware**, ou **B, drone PX4 simulado**, com plano B — vai para o `docs/decisoes.md` e vence em **14/11**, uma semana antes do TP4 (21/11, **até 12h**). E a captura dos 500 quadros do MetaDrive leva uns 20 minutos ou mais: dispare-a primeiro. As datas de cada item estão em [Gates de cada TP](recursos/gates-tps.md).
 
 ## Calendário de entregas
 

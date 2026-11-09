@@ -1,0 +1,22 @@
+dados   : desequilibrado -- 500 imagens, via_livre 450, obstaculo 0, cruzamento 50
+divisao : 400 treino / 100 validacao, semente 7; 20 epocas, lote 32, entrada 128x96, BN momentum 0.9
+linha de base: responder SEMPRE "via_livre" acerta 0.900 da validacao
+
+rodada  acc_val  perda_val  acc_treino  melhor_acc_val(ep)  pior recall          acc_val_pert   tempo
+sem       1.000      0.000       1.000       1.000 ( 5)     cruzamento  1.000         0.980    39.8 s
+com       1.000      0.000       1.000       1.000 ( 4)     cruzamento  1.000         1.000    43.5 s
+diferenca (com - sem) na acc_val final: +0.000; na acc_val_pert: +0.020
+acc_val_pert = a MESMA validacao passada uma vez (semente fixa) por rotacao, zoom e flip
+
+recall por classe   via_li  obstac  cruzam
+  sem                1.000    n/a    1.000
+  com                1.000    n/a    1.000
+
+matriz sem (linha = verdade, coluna = previsto, via_livre / obstaculo / cruzamento)
+  via_livre      90     0     0
+  obstaculo       0     0     0
+  cruzamento      0     0    10
+matriz com (linha = verdade, coluna = previsto, via_livre / obstaculo / cruzamento)
+  via_livre      90     0     0
+  obstaculo       0     0     0
+  cruzamento      0     0    10

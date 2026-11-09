@@ -1,7 +1,7 @@
 """Cancela o objetivo quando o /scan ve menos de 0,5 m, espera 2 s e reenvia.
 
     ros2 run aula16_arvore vigia
-    ros2 run aula16_arvore vigia --ros-args -p objetivo:="[9.0, 5.5, 1.57]"
+    ros2 run aula16_arvore vigia --ros-args -p objetivo:="[10.5, 6.5, 1.57]"
     ros2 run aula16_arvore vigia --ros-args -p limiar_m:=0.6 -p espera_s:=3.0
     ros2 run aula16_arvore vigia --ros-args \\
       -p arvore:=/caminho/do/share/aula16_arvore/arvores/com_espera.xml
@@ -101,7 +101,10 @@ from aula16_arvore.varredura import SETOR_PADRAO_GRAUS, menor_distancia
 
 # O objetivo padrao, em [x, y, yaw] achatado -- a mesma forma do `rota.py` da
 # Aula 15, e pelo mesmo motivo: parametro do ROS 2 nao aceita lista de listas.
-OBJETIVO_PADRAO = [9.0, 5.5, 1.57]
+# Ate 09/11 o padrao era (9.0, 5.5), que cai DENTRO do obstaculo retangular da
+# sala 2 do mundo da Aula 11 (8,6-9,6 x 5,2-5,8): o Nav2 recusa o goal e o
+# vigia nao tem o que vigiar. Conferido com Mundo().ocupado(9.0, 5.5) == True.
+OBJETIVO_PADRAO = [10.5, 6.5, 1.57]
 
 # Os dois numeros do enunciado. Nao sao escolha nossa.
 LIMIAR_PADRAO_M = 0.5

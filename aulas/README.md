@@ -21,8 +21,9 @@ O bloco tem dez etapas de conteúdo distribuídas em dois trimestres (26T3, de 2
 | [Aula 13](etapa07-aula13/index.md) | 13/10/2026 | 7 | Achar não é acertar: instância e percepção veicular | <span class="pb-tag ok">dada</span> |
 | [Aula 14](etapa07-aula14/index.md) | 20/10/2026 | 7 | Aterrissagem do TP3: o enunciado, item por item | <span class="pb-tag ok">dada</span> |
 | [Aula 15](etapa08-aula15/index.md) | 27/10/2026 | 8 | Navegação autônoma: o Nav2 em cima do seu mapa | <span class="pb-tag ok">dada</span> |
-| [Aula 16](etapa08-aula16/index.md) | 03/11/2026 | 8 | O caminho até o Nav2 navegar, e a sessão que se reproduz sem o robô | <span class="pb-tag next">próxima</span> |
-| Aula 17 | 10/11/2026 | 9 | A interrupção escolhida, e a análise do bag | <span class="pb-tag soon">a seguir</span> |
+| [Aula 16](etapa08-aula16/index.md) | 03/11/2026 | 8 | O caminho até o Nav2 navegar, e a sessão que se reproduz sem o robô | <span class="pb-tag ok">dada</span> |
+| [Aula 17](etapa09-aula17/index.md) | 10/11/2026 | 9 | Fechar o item 2, a câmera que não é a sua, e a rede que decora | <span class="pb-tag next">próxima</span> |
+| Aula 18 | 17/11/2026 | 9 | Aterrissagem do TP4: o enunciado, item por item | <span class="pb-tag soon">a seguir</span> |
 
 !!! note "Por que as Aulas 4 e 5 apontam para a página da Aula 3"
     O material da Aula 3 é denso e foi trabalhado ao longo de três encontros — 04, 11 e 18/08 —, com a leitura oficial do TP1 no último deles. As datas do calendário não mudaram; o que mudou foi o ritmo, e isso é normal num bloco prático. As três aulas compartilham a mesma página porque compartilham o mesmo conteúdo.
@@ -75,7 +76,11 @@ Esta tabela existe para uma pergunta específica: **a redistribuição das aulas
 | G4.1 | robô navega até um goal sem intervenção | [Aula 15](etapa08-aula15/index.md) · 27/10 | 04/11 | 8 dias |
 | G4.2 | rota com ≥3 waypoints, costmaps explicados | [Aula 15](etapa08-aula15/index.md) · 27/10 (o nó `rota`) e [Aula 16](etapa08-aula16/index.md) · 03/11 (os costmaps explicados) | 09/11 | 6 dias |
 | G4.3 | comportamento de obstáculo disparando e recuperação | [Aula 16](etapa08-aula16/index.md) · 03/11 | 12/11 | 9 dias |
-| G4.4 | `ros2 bag` gravado e reproduzível | [Aula 16](etapa08-aula16/index.md) · 03/11 | 15/11 | 12 dias |
+| G4.4 | `ros2 bag` gravado e reproduzível | [Aula 16](etapa08-aula16/index.md) · 03/11 (a régua) e [Aula 17](etapa09-aula17/index.md) · 10/11 (o bag gravado, tocado e medido) | 15/11 | 5 dias |
+| G4.5 | percepção veicular no MetaDrive: HSV + Canny + Hough, com discussão de falhas | [Aula 17](etapa09-aula17/index.md) · 10/11 | 17/11 | 7 dias |
+| G4.6 | CNN com ≥500 frames, comparação com/sem augmentation e matriz de confusão | [Aula 17](etapa09-aula17/index.md) · 10/11 | 19/11 | 9 dias |
+| G4.7 | entrega: relatório, branch, tag, Moodle até 12h | [Aula 17](etapa09-aula17/index.md) · 10/11 | 21/11 | 11 dias |
+| G5.0 | opção A (hardware) ou B (drone PX4) registrada, com plano B | [Aula 17](etapa09-aula17/index.md) · 10/11 | 14/11 | 4 dias |
 
 ### O que a redistribuição custou, dito com todas as letras
 

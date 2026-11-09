@@ -1,0 +1,22 @@
+dados   : sintetico -- 500 imagens, via_livre 167, obstaculo 167, cruzamento 166
+divisao : 400 treino / 100 validacao, semente 7; 20 epocas, lote 32, entrada 128x96, BN momentum 0.99
+linha de base: responder SEMPRE "via_livre" acerta 0.330 da validacao
+
+rodada  acc_val  perda_val  acc_treino  melhor_acc_val(ep)  pior recall          acc_val_pert   tempo
+sem       0.330      2.542       0.913       0.620 ( 1)     cruzamento  0.000         0.330    39.8 s
+com       0.600      1.024       0.678       0.600 (20)     cruzamento  0.182         0.460    44.8 s
+diferenca (com - sem) na acc_val final: +0.270; na acc_val_pert: +0.130
+acc_val_pert = a MESMA validacao passada uma vez (semente fixa) por rotacao, zoom e flip
+
+recall por classe   via_li  obstac  cruzam
+  sem                1.000   0.000   0.000
+  com                1.000   0.618   0.182
+
+matriz sem (linha = verdade, coluna = previsto, via_livre / obstaculo / cruzamento)
+  via_livre      33     0     0
+  obstaculo      34     0     0
+  cruzamento     33     0     0
+matriz com (linha = verdade, coluna = previsto, via_livre / obstaculo / cruzamento)
+  via_livre      33     0     0
+  obstaculo      13    21     0
+  cruzamento     27     0     6

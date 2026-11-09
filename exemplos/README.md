@@ -25,6 +25,8 @@ Pacotes ROS 2 prontos para rodar, usados em aula e pensados para serem **copiado
 | [`aula15-nav2`](aula15-nav2/index.md) | Aula 15 | a convergência do AMCL medida contra a verdade — e o Nav2 sobre o mundo mínimo | gates G4.0 a G4.2 |
 | [`aula16-clinica`](aula16-clinica/index.md) | Aula 16 | diagnóstico do Nav2: dez verificações que dizem onde olhar — não corrige nem valida | gates G4.1 e G4.2 |
 | [`aula16-arvore-bag`](aula16-arvore-bag/index.md) | Aula 16 | a árvore de comportamento, a sessão gravada e a régua que mede o bag | gates G4.3 e G4.4 |
+| [`aula17-metadrive`](aula17-metadrive/index.md) | Aula 17 | o MetaDrive sem janela: a captura com o rótulo sugerido, as faixas medidas com dois limiares, e as formas que a cena tem (e a placa que não tem) | gates G4.5 e G4.6 |
+| [`aula17-cnn`](aula17-cnn/index.md) | Aula 17 | a mesma CNN treinada sem e com augmentation, a rotulagem com revisão, as curvas e a matriz — e a rede que acerta 90% decorando | gate G4.6 |
 
 ## Exemplos por TP
 

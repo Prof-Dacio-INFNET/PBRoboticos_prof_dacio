@@ -127,6 +127,7 @@ nav:
       - "Aula 14 — Aterrissagem do TP3": aulas/etapa07-aula14/index.md
       - "Aula 15 — Navegação autônoma com o Nav2": aulas/etapa08-aula15/index.md
       - "Aula 16 — O caminho até o Nav2 navegar": aulas/etapa08-aula16/index.md
+      - "Aula 17 — Fechar o item 2, a câmera sintética e a rede que decora": aulas/etapa09-aula17/index.md
 
   - Tutoriais:
       - tutoriais/index.md
@@ -174,6 +175,8 @@ nav:
       - "Aula 15 — o pacote do Nav2, por dentro": exemplos/aula15-nav2/aula15_nav2/README-pacote.md
       - "Aula 16 — diagnóstico do Nav2": exemplos/aula16-clinica/index.md
       - "Aula 16 — árvore e sessão gravada": exemplos/aula16-arvore-bag/index.md
+      - "Aula 17 — câmera sintética: MetaDrive": exemplos/aula17-metadrive/index.md
+      - "Aula 17 — a CNN e a matriz de confusão": exemplos/aula17-cnn/index.md
       - "TP3 — roteiro de revisão da entrega": exemplos/tp3/revisar-entrega/index.md
       - TP1: exemplos/tp1/index.md
       - TP2: exemplos/tp2/index.md

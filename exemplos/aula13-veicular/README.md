@@ -237,30 +237,13 @@ def fonte_pasta(pasta):
             yield bgr
 ```
 
-É ela que o `faixas.py --pasta DIR` consome. Trocá-la por MetaDrive é escrever outra com a mesma assinatura — `detectar_faixas()` não muda uma linha:
+É ela que o `faixas.py --pasta DIR` consome. Trocá-la por MetaDrive é escrever outra com a mesma assinatura — e o exemplo da Aula 17, [`aula17-metadrive`](../aula17-metadrive/index.md), faz exatamente isso: o `capturar_frames.py` sobe o MetaDrive sem janela e grava uma pasta de `quadroNNN.png`, que é o que o `fonte_pasta()` lê. O MetaDrive **rodou** em 09/11, num servidor Linux sem placa de vídeo, e três coisas que esta seção dizia antes estavam erradas:
 
-```python
-# esboco NAO EXECUTADO -- a forma de pedir a imagem muda entre versoes do
-# MetaDrive; confira a sua com o verify_headless_installation antes de confiar
-def fonte_metadrive(passos=200):
-    from metadrive.envs import MetaDriveEnv
-    env = MetaDriveEnv({'use_render': False, 'image_observation': True})
-    env.reset()
-    for _ in range(passos):
-        obs, *_ = env.step([0.0, 0.5])
-        yield obs['image'][..., ::-1]                # RGB -> BGR
-    env.close()
-```
+**A imagem já sai BGR, e tem quatro eixos.** A observação do MetaDrive é um dicionário, e `obs['image']` tem a forma `(altura, largura, 3, pilha)`, porque ele empilha os últimos quadros para o aprendizado por reforço. O quadro é `obs['image'][..., -1]`, já na ordem BGR do OpenCV — direto no `cv2.imwrite`, sem inverter nada. O esboço que estava aqui, `obs['image'][..., ::-1]`, invertia o eixo da **pilha**, não o dos canais, e devolvia um array que nenhum detector aceita. A forma certa de pedir a imagem — câmera RGB como observação, `norm_pixel=False`, `stack_size=1`, semente fixada — está no README da Aula 17, testada.
 
-Instalar é com `uv`, como todo ambiente Python da disciplina — nunca no python do sistema, nunca dentro de um nó ROS 2:
+**A instalação pede o Python 3.10, e são uns 850 MB, não 2 GB.** O venv se cria com `uv venv --python 3.10 --system-site-packages`: o MetaDrive 0.4.3 depende do `panda3d==1.10.13`, que não tem wheel para o Python 3.12 nem para o 3.13, e o `uv` recusa com `has no wheels with a matching Python ABI tag`. Na primeira execução ele baixa mais uns 170 MB de modelos e texturas. Sem servidor X, a conferência do pacote falha com um `set_shader` em `None` — no WSL2 o WSLg fornece o X; num servidor sem tela, o `xvfb-run` resolve. Os comandos, e o que cada um tem de mostrar, estão no [`aula17-metadrive`](../aula17-metadrive/index.md#instalar-o-metadrive).
 
-```bash
-uv venv --system-site-packages .venv-metadrive
-uv pip install --python .venv-metadrive/bin/python "metadrive-simulator==0.4.3"
-.venv-metadrive/bin/python -m metadrive.examples.verify_headless_installation --camera rgb
-```
-
-São uns 2 GB e alguns minutos; por isso ele é opcional e por isso a aula não espera por ele. **Eu não o executei**: a 0.4.3 é a última versão publicada (dezembro de 2024), a documentação afirma suportar renderização sem tela, e o comando acima é a conferência que o próprio pacote oferece. O `python -m metadrive...` falha se o diretório atual tiver uma subpasta chamada `metadrive`.
+**O `faixas.py` não roda inalterado sobre o MetaDrive: ele acha zero.** Com a configuração deste exemplo, o detector encontra **0 segmentos em 60 quadros**. A tinta do MetaDrive chega no máximo a V = 149 e o limiar branco daqui é 150; a faixa amarela tem 1 pixel de largura a 320×240 e a abertura morfológica 3×3 a apaga; e o contraste dela no cinza é pouco para `Canny(50, 150)`. A função `detectar_faixas()` não muda uma linha — o que muda é o `CFG_PADRAO`, e o `medir_faixas.py` da Aula 17 roda as duas configurações lado a lado: a daqui, com zero, e uma ajustada (o quadro ampliado 3×, branco a partir de 130, Canny (20, 60)), que acha as duas faixas em **51 dos 60**. É a mesma lição desta página, numa câmera que você não desenhou: **o limiar é da fonte de imagem, e se declara**.
 
 Para sentir como é rodar sem verdade antes de instalar coisa nenhuma, aponte o `--pasta` para qualquer pasta de PNG:
 
@@ -271,14 +254,14 @@ cd "$PB_DIR/aula13-veicular"
 python3 faixas.py --pasta estrada/noite
 ```
 
-Ele imprime o ângulo de cada faixa por quadro e **nenhuma coluna de erro** — porque não há com o que comparar. É literalmente a tela que você vai ver com o MetaDrive.
+Ele imprime o ângulo de cada faixa por quadro e **nenhuma coluna de erro** — porque não há com o que comparar. É a tela que você vai ver com o MetaDrive — onde, com a configuração deste exemplo, as linhas saem todas com `--`.
 
 !!! warning "O que se perde na troca — e é o principal"
     **A verdade.** O MetaDrive sabe onde as faixas estão no mundo dele, mas não entrega os parâmetros delas em coordenadas da sua imagem, e sem isso as colunas `erro angular`, `erro na base` e `espurios` **deixam de poder ser calculadas**. Sobra "parece bom".
 
     Por isso a divisão de trabalho é esta, e ela é deliberada: **a medição fica com a cena sintética; o MetaDrive entra como confirmação visual de que a pipeline sobrevive a uma imagem que você não desenhou.** É o mesmo movimento do mundo mínimo da [Aula 11](../aula11-mundo/index.md) — o simulador atrás de uma interface, e o caminho sem simulador sempre funcionando.
 
-    O gate **G4.5** pede a pipeline sobre a cena do MetaDrive. Este exemplo entrega tudo menos a fonte: quando o MetaDrive entrar, o `faixas.py` roda inalterado, e o `avaliar_faixas.py` continua medindo na cena sintética, que é onde a medição ainda significa alguma coisa.
+    O gate **G4.5** pede a pipeline sobre a cena do MetaDrive. Este exemplo entrega a pipeline e a régua; a fonte e a configuração ajustada estão no [`aula17-metadrive`](../aula17-metadrive/index.md). A função `detectar_faixas()` vai inalterada para o MetaDrive, a **configuração** não — com a daqui ela acha zero —, e o `avaliar_faixas.py` continua medindo na cena sintética, que é onde a medição ainda significa alguma coisa.
 
 ## Conferir antes de confiar
 
