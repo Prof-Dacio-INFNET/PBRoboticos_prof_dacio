@@ -93,7 +93,7 @@ Um `[!]` não é vergonha nem perda de nota — é informação. O que custa not
 | **G4.2** | Rota com **≥3 waypoints** completada, costmaps local e global configurados e explicados | o status da ação que você usou — `/navigate_to_pose`, `/navigate_through_poses` ou `/follow_waypoints` — mais prints dos costmaps | o YAML de parâmetros do Nav2 (`config/nav2*.yaml`) + prints | 09/11 |
 | **G4.3** | Comportamento de obstáculo (<0,5 m) disparando e o robô se recuperando | vídeo do obstáculo entrando na frente do robô | `docs/evidencias/tp4/obstaculo.mp4` (ou link) | 12/11 |
 | **G4.4** | `ros2 bag` gravado e **reproduzível**: dá para rodar a análise sem o robô ligado | `ros2 bag info <bag>` e `ros2 bag play <bag>` alimentando os nós de análise | `bags/` (ou link, se grande) + `docs/evidencias/tp4/bag-info.txt` | 15/11 |
-| **G4.5** | Percepção veicular no MetaDrive: HSV + Canny + Hough sobre a cena, com discussão de falhas | script + prints das três etapas | `docs/evidencias/tp4/veicular/` | 17/11 |
+| **G4.5** | Percepção veicular no MetaDrive: HSV + Canny + Hough sobre a cena, com discussão de falhas; e detecção de formas (Hough Circle e Harris Corner) | script + prints das três etapas e da sobreposição final; figura das formas (círculos e cantos) sobre um quadro do MetaDrive | `docs/evidencias/tp4/veicular/` | 17/11 |
 | **G4.6** | CNN treinada (≥500 frames, 3 classes) com **comparação com/sem augmentation** e matriz de confusão | notebook executado de ponta a ponta | `notebooks/tp4_cnn.ipynb` + `docs/evidencias/tp4/matriz-confusao.png` | 19/11 |
 | **G4.7** | **Entrega**: relatório, branch `entrega-tp4`, tag `tp4`, Moodle **até 12h** | `git tag --list` mostra `tp4` | tag + postagem | 21/11 |
 

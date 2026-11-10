@@ -6,11 +6,15 @@
     ros2 run aula16_arvore vigia --ros-args \\
       -p arvore:=/caminho/do/share/aula16_arvore/arvores/com_espera.xml
 
-ADVERTENCIA: ESTE ARQUIVO NAO FOI EXECUTADO. Nao havia ROS 2 na maquina em
-que ele foi escrito -- nenhum goal foi enviado, nenhum cancelamento foi
-aceito. Os nomes de acao, de campo e de status foram lidos na fonte do Humble
-(URLs no README) e o arquivo passa no `ast.parse` do `testar.py`. Nada alem
-disso.
+O QUE JA FOI EXECUTADO: em 09/11/2026, numa maquina com Humble e o Nav2 da
+Aula 15, com `-p limiar_m:=0.75`, este no cancelou o goal com o /scan a
+0,70 m, esperou 2 s, reenviou o MESMO goal e o Nav2 o cumpriu ("1
+interrupcao(oes) no caminho"). A primeira execucao do dia, ~20 s depois de
+subir o Nav2, terminou em status 6 (ABORTADO) 3,4 s apos o envio; a seguinte
+completou -- causa nao confirmada. O que mudou DEPOIS desse ensaio e nao foi
+executado com ROS 2: a publicacao do /estado_vigia em cada transicao
+(`publicar_estado`) e o filtro do feedback com distancia 0,0. O `testar.py`
+exercita os dois com dubles do rclpy, o que nao e' a mesma coisa.
 
 O QUE ELE E: o CAMINHO DE CLIENTE do item 2 do TP4.
 
@@ -208,11 +212,23 @@ class Vigia(Node):
     def agora(self):
         return self.get_clock().now().nanoseconds * 1e-9
 
-    def ao_publicar(self):
-        """Publica estado e distancia a 10 Hz, para o `ros2 bag record`."""
+    def publicar_estado(self):
+        """Publica o estado AGORA. Chamado a 10 Hz e em cada transicao.
+
+        So' o temporizador de 10 Hz nao basta: no ensaio de 09/11/2026 o
+        `interrompido` durou ~2 ms (do pedido de cancelamento ate a resposta)
+        e o `retomando` dura so' ate o goal novo ser aceito: nenhum dos dois
+        chegou ao bag. Com a
+        publicacao na transicao, o bag guarda os quatro estados, cada um com
+        o carimbo de quando aconteceu.
+        """
         m = String()
         m.data = self.estado
         self.pub_estado.publish(m)
+
+    def ao_publicar(self):
+        """Publica estado e distancia a 10 Hz, para o `ros2 bag record`."""
+        self.publicar_estado()
         d = Float32()
         # Vai o proprio `inf` quando o setor estiver vazio. Um Float32
         # carrega inf sem reclamar, e quem for plotar o /dist_min direto do
@@ -254,14 +270,20 @@ class Vigia(Node):
             # mais -- e o robo ficaria preso em `esperando` para sempre.
             self.punho = None
             self.estado = NAVEGANDO
+            self.publicar_estado()
             return
         self.punho = punho
         self.estado = NAVEGANDO
+        self.publicar_estado()
         punho.get_result_async().add_done_callback(self.ao_resultado)
 
     def ao_feedback(self, msg):
         """So para o log ficar legivel: uma linha por metro que falta."""
         f = msg.feedback
+        # O primeiro feedback chega antes de o Nav2 ter caminho, com
+        # distance_remaining = 0.0: "faltam 0.0 m" logo depois do envio.
+        if f.distance_remaining <= 0.0:
+            return
         if int(f.distance_remaining) != getattr(self, '_marca', None):
             self._marca = int(f.distance_remaining)
             self.get_logger().info(
@@ -294,6 +316,7 @@ class Vigia(Node):
         """O portao disparou: cancela o goal em andamento. Sem bloquear."""
         self.interrupcoes += 1
         self.estado = INTERROMPIDO
+        self.publicar_estado()
         self.get_logger().warn(
             'obstaculo a %.2f m (< %.2f m): cancelando o objetivo'
             % (self.ultima_dist, self.limiar))
@@ -311,6 +334,7 @@ class Vigia(Node):
         resposta = futuro.result()
         quantos = len(getattr(resposta, 'goals_canceling', []))
         self.estado = ESPERANDO
+        self.publicar_estado()
         self.get_logger().info(
             'cancelamento aceito (%d goal em cancelamento); esperando %.1f s'
             % (quantos, self.espera_s))
@@ -326,6 +350,7 @@ class Vigia(Node):
         self.destroy_timer(self.timer_espera)
         self.timer_espera = None
         self.estado = RETOMANDO
+        self.publicar_estado()
         self.t_carencia = self.agora() + self.carencia_s
         self.get_logger().info('espera cumprida; retomando o MESMO objetivo')
         self.enviar_objetivo()

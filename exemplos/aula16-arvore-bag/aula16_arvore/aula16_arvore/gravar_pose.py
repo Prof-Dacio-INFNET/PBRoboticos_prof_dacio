@@ -4,12 +4,10 @@
     ros2 run aula16_arvore gravar_pose --ros-args -p saida:=sessao.csv -p hz:=10.0
     ros2 launch aula16_arvore analise.launch.py saida:=sessao.csv
 
-ADVERTENCIA: ESTE ARQUIVO NAO FOI EXECUTADO. Nao havia ROS 2 na maquina em
-que ele foi escrito -- sem `colcon build`, sem `ros2 run`, sem um bag de
-verdade. Os nomes de tipo, de campo e de QoS foram lidos na fonte do Humble
-(as URLs estao no README), e o arquivo passa no `ast.parse` do `testar.py`.
-Nada alem disso. A secao "O que foi e o que nao foi verificado" do README
-separa, linha a linha, o que o `testar.py` prova do que ninguem viu rodar.
+O QUE JA FOI EXECUTADO: em 09/11/2026, numa maquina com Humble, pelo
+`analise.launch.py` ao lado de um `ros2 bag play --clock`, este no gravou
+1157 linhas a 10 Hz de um bag de 123 s. A secao "O que foi e o que nao foi
+verificado" do README separa o que foi visto rodando do que nao foi.
 
 O QUE ELE E: o caminho garantido do gate G4.4.
 
@@ -45,7 +43,7 @@ AS DUAS DECISOES QUE VALEM LEITURA:
   Temporizador com retencao do ultimo valor, e nao sincronizacao de mensagens.
     Os cinco topicos chegam em taxas diferentes e sem relacao nenhuma entre
     si: o /scan a 5-10 Hz, o /amcl_pose so quando o AMCL atualiza, o /cmd_vel
-    a 20 Hz, o /estado_vigia quando o estado muda. Um
+    a 20 Hz, o /estado_vigia a 10 Hz e em cada transicao. Um
     `message_filters.ApproximateTimeSynchronizer` neles jogaria fora quase
     tudo: ele so emite quando todos chegam perto um do outro, e o
     /estado_vigia pode ficar minutos sem publicar.
@@ -182,6 +180,11 @@ class GravarPose(Node):
         self.cmd = (msg.linear.x, msg.angular.z)
 
     def ao_estado(self, msg):
+        # Retencao de ordem zero aqui tambem: fica o ULTIMO estado ouvido.
+        # Um `interrompido` de 2 ms e' sobrescrito pelo `esperando` antes da
+        # proxima linha, e por isso o CSV de um bag real quase so' tem
+        # `navegando` e `esperando`. O bag guarda os quatro; a regua conta o
+        # evento pelo `esperando`, que dura 2 s (veja `medir_sessao.eventos`).
         self.estado = msg.data
 
     # ------------------------------------------------------ o temporizador

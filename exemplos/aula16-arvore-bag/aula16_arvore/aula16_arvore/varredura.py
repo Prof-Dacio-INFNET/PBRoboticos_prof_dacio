@@ -1,9 +1,10 @@
 """A menor distancia de um /scan -- a conta que o `vigia` e o `gravar_pose` usam.
 
-ADVERTENCIA: NADA DESTE PACOTE FOI EXECUTADO. Nao havia ROS 2 na maquina em
-que ele foi escrito. O que foi conferido esta na secao "O que foi e o que nao
-foi verificado" do README deste exemplo -- leia antes de concluir que o erro
-e seu.
+ADVERTENCIA: em 09/11/2026, numa maquina com Humble, o pacote compilou e o
+`vigia`, o `gravar_pose` e o `analise.launch.py` rodaram. ESTE arquivo nao foi
+exercitado isoladamente com ROS 2: ele segue coberto so pelo `testar.py`. O
+que foi conferido esta na secao "O que foi e o que nao foi verificado" do
+README deste exemplo -- leia antes de concluir que o erro e seu.
 
 POR QUE ISTO E UM MODULO, e nao duas copias de tres linhas:
 

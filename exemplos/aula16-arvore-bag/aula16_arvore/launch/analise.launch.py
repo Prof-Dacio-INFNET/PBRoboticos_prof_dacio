@@ -4,9 +4,10 @@
     ros2 launch aula16_arvore analise.launch.py saida:=sessao.csv hz:=10.0
     ros2 launch aula16_arvore analise.launch.py use_sim_time:=false
 
-ADVERTENCIA: ESTE LAUNCH NAO FOI EXECUTADO. Nao havia ROS 2 na maquina em que
-ele foi escrito. Ele passa no `ast.parse` e no `tools/conferir-launch.py` do
-repositorio, e nada alem disso.
+O QUE JA FOI EXECUTADO: em 09/11/2026, numa maquina com Humble, este launch
+rodou ao lado do `ros2 bag play --clock` e o `gravar_pose` tirou 1157 linhas a
+10 Hz de um bag de 123 s. Ele passa tambem no `ast.parse` e no
+`tools/conferir-launch.py` do repositorio.
 
 POR QUE ELE SOBE UM NO SO, e nao o Nav2 inteiro:
 

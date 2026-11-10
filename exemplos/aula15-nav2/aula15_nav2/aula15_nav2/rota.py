@@ -5,9 +5,9 @@
     ros2 run aula15_nav2 rota --ros-args -p rota:="[2.0, 4.0, 0.0, 9.0, 2.0, 1.57]"
     ros2 run aula15_nav2 rota --ros-args -p arvore:=/caminho/da/sua_arvore.xml
 
-ADVERTENCIA: este arquivo NAO FOI EXECUTADO. Nao havia ROS 2 na maquina em que
-ele foi escrito. Os nomes de action, de campo e de status foram lidos na FONTE
-do Humble (as URLs estao no README-pacote.md), mas nenhum goal foi enviado.
+ONDE JA RODOU: escrito sem ROS 2 (nomes de action, de campo e de status lidos
+na FONTE do Humble; URLs no README-pacote.md) e executado depois no WSL2 do
+professor, com Humble e o Nav2 da Aula 15, na aula de 27/10/2026.
 
 O QUE ELE E, e por que ele e tao pequeno:
 

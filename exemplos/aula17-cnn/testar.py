@@ -7,8 +7,10 @@ Sete grupos, cada um com a resposta sabida de antemao:
 
     1  higiene dos .py: so ASCII, linhas de ate 99 colunas
     2  o gerador sintetico: contagem por classe, CSV, determinismo byte a byte
-    3  o rotular.py: o teclado (funcao pura) e o --so-sugestao sobre a amostra
-       da aula17-metadrive, se ela estiver ao lado
+    3  o rotular.py: o teclado (funcoes puras: codigos do GTK/Qt/Windows e bytes
+       do terminal), a retomada pela coluna `revisado`, o --so-sugestao sobre a
+       amostra da aula17-metadrive e a revisao pelo terminal dirigida por um pty
+       (sem janela: a janela de verdade nao e testada aqui)
     4  a mesma inicializacao: `sem` e `com` comecam com os MESMOS pesos
     5  o treinar.py de ponta a ponta, 1 epoca, 24 imagens em DUAS pastas:
        arquivos, JSON, matriz 3x3 que soma o tamanho da validacao
@@ -20,14 +22,18 @@ Nao prova que a rede aprende -- isso so o treino de 20 epocas mostra, e os
 numeros estao no README. Termina em `todos os testes passaram.` e sai com 0,
 ou com 1 e a lista do que falhou.
 """
+import contextlib
 import csv
 import hashlib
+import io
 import json
 import os
 import pathlib
+import select
 import subprocess
 import sys
 import tempfile
+import time
 
 # o teste importa os modulos daqui: sem __pycache__ deixado para tras
 sys.dont_write_bytecode = True
@@ -105,21 +111,141 @@ def grupo2_sintetico(tmp):
             '--proporcao 54:0:6 com n=20 -> 18 via_livre, 0 obstaculo, 2 cruzamento')
 
 
+def rodar_pty(args, envios, prazo=30):
+    """Roda o rotular.py com stdin/stdout num pty, como num terminal de verdade.
+
+    Espera a linha de teclas aparecer, manda cada `bytes` de `envios` com uma
+    pausa (um Esc sozinho precisa dos ~50 ms de silencio), e devolve
+    (codigo, saida, atributos do terminal antes, atributos depois). Com
+    b'\\x03' o pty gera SIGINT, como o Ctrl+C.
+    """
+    import pty
+    import termios
+    mestre, escravo = pty.openpty()
+    antes = termios.tcgetattr(escravo)
+
+    def controlador():                 # o pty vira o terminal do processo: Ctrl+C funciona
+        os.setsid()
+        import fcntl
+        fcntl.ioctl(0, termios.TIOCSCTTY, 0)
+
+    p = subprocess.Popen([PY, 'rotular.py', *map(str, args)], cwd=AQUI, stdin=escravo,
+                         stdout=escravo, stderr=escravo, preexec_fn=controlador,
+                         env=dict(os.environ, PYTHONDONTWRITEBYTECODE='1'))
+    saida, fim = b'', time.time() + prazo
+
+    def ler(ate):
+        nonlocal saida
+        while time.time() < ate:
+            pronto, _, _ = select.select([mestre], [], [], 0.05)
+            if pronto:
+                try:
+                    saida += os.read(mestre, 4096)
+                except OSError:
+                    return
+            elif p.poll() is not None:
+                return
+    while b'Teclas' not in saida and b'teclas' not in saida and time.time() < fim \
+            and p.poll() is None:
+        ler(time.time() + 0.1)
+    for b in envios:
+        os.write(mestre, b)
+        ler(time.time() + 0.3)
+    try:
+        p.wait(timeout=max(1, fim - time.time()))
+    except subprocess.TimeoutExpired:
+        p.kill()
+        p.wait()
+    ler(time.time() + 0.3)
+    depois = termios.tcgetattr(escravo)
+    os.close(mestre)
+    os.close(escravo)
+    return p.returncode, saida.decode(errors='replace'), antes, depois
+
+
 def grupo3_rotular(tmp):
     print('3. rotular.py')
     import rotular as rt
+    nt = rt.normalizar_tecla
+    casos = [
+        (ord('1'), '1', "'1' em ASCII"), (1048625, '1', "'1' no GTK com NumLock (0x100031)"),
+        (0xFFB1, '1', 'KP_1 do teclado numerico'), (0x10FFB3, '3', 'KP_3 com NumLock'),
+        (65361, 'volta', 'seta esq. GTK'), (65363, 'avanca', 'seta dir. GTK'),
+        (2424832, 'volta', 'seta esq. Windows'), (2555904, 'avanca', 'seta dir. Windows'),
+        (16777234, 'volta', 'seta esq. Qt'), (16777236, 'avanca', 'seta dir. Qt'),
+        (0x10FF51, 'volta', 'seta esq. GTK com NumLock (0x10FF51)'),
+        (0x10FF53, 'avanca', 'seta dir. GTK com NumLock'),
+        (0xFF96, 'volta', 'KP_Left'), (0xFF98, 'avanca', 'KP_Right'),
+        (0xFF8D, 'aceita', 'KP_Enter'), (0xFF0D, 'aceita', 'Return GTK'),
+        (0x10FF0D, 'aceita', 'Return GTK com NumLock'), (13, 'aceita', 'Enter (13)'),
+        (10, 'aceita', 'Enter do terminal (10)'), (32, 'aceita', 'espaco'),
+        (0xFF1B, 'sai', 'Escape GTK'), (27, 'sai', 'Esc (27)'), (ord('q'), 'sai', 'q'),
+        (ord('Q'), 'sai', "'Q' (CapsLock)"), (0x20051, 'sai', "'Q' GTK com o bit do CapsLock"),
+        (0x100071, 'sai', "'q' GTK com NumLock"), (ord('S'), 'grava', "'S'"),
+        (ord('A'), 'volta', "'A'"), (ord('d'), 'avanca', "'d'"),
+        (0xFF52, None, 'seta cima: sem funcao (e nao vira R)'),
+        (0xFFE1, None, 'Shift_L: sem funcao'), (-1, None, '-1 (nenhuma tecla)'),
+    ]
+    erradas = [(c, d, nt(c)) for c, esperado, d in casos if nt(c) != esperado]
+    confere(not erradas, f'normalizar_tecla: {len(casos)} codigos'
+            + (f' -- errados: {erradas}' if erradas else ''))
+    ev, resto = rt.decodificar_terminal(b'1\x1b[C2\x1bOD3\x1b[1;5Cq\n', fim=False)
+    confere([e[0] for e in ev] == ['1', 'avanca', '2', 'volta', '3', 'avanca', 'sai', 'aceita']
+            and resto == b'', 'terminal: 1, ESC[C, 2, ESC O D, 3, Ctrl+seta, q, Enter')
+    ev, resto = rt.decodificar_terminal(b'2\x1b', fim=False)
+    confere([e[0] for e in ev] == ['2'] and resto == b'\x1b',
+            'terminal: ESC no fim fica esperando o resto da seta')
+    ev, resto = rt.decodificar_terminal(b'\x1b', fim=True)
+    confere([e[0] for e in ev] == ['sai'] and resto == b'', 'terminal: Esc sozinho sai')
+    ev, _ = rt.decodificar_terminal(b'\x1b[Ax', fim=True)
+    confere([e[0] for e in ev] == [None, None] and 'ESC[A' in ev[0][1]
+            and '120 (0x78)' in ev[1][1], 'terminal: seta cima e x sem funcao, com o codigo')
+
     rot = {}
-    i, sair, salvar = rt.aplicar_tecla(ord('2'), 0, 5, 'q0.png', 'via_livre', rot)
+    i, sair, salvar = rt.aplicar_tecla('2', 0, 5, 'q0.png', 'via_livre', rot)
     confere((i, sair, rot.get('q0.png')) == (1, False, 'obstaculo'),
             'tecla 2 -> obstaculo e avanca')
-    i, *_ = rt.aplicar_tecla(13, 1, 5, 'q1.png', 'cruzamento', rot)
+    i, *_ = rt.aplicar_tecla(nt(13), 1, 5, 'q1.png', 'cruzamento', rot)
     confere(rot.get('q1.png') == 'cruzamento' and i == 2, 'Enter aceita a sugestao e avanca')
-    i, *_ = rt.aplicar_tecla(65361, 2, 5, 'q2.png', 'via_livre', rot)
+    i, *_ = rt.aplicar_tecla(nt(65361), 2, 5, 'q2.png', 'via_livre', rot)
     confere(i == 1 and 'q2.png' not in rot, 'seta esquerda volta sem rotular')
-    i, *_ = rt.aplicar_tecla(ord('3'), 4, 5, 'q4.png', 'via_livre', rot)
-    confere(i == 4, 'no ultimo quadro, rotular nao passa do fim')
-    _, sair, salvar = rt.aplicar_tecla(ord('q'), 0, 5, 'q0.png', 'via_livre', rot)
+    i, *_ = rt.aplicar_tecla(nt(1048625 + 2), 4, 5, 'q4.png', 'via_livre', rot)
+    confere(i == 4 and rot.get('q4.png') == 'cruzamento',
+            "'3' com NumLock rotula; no ultimo quadro nao passa do fim")
+    _, sair, salvar = rt.aplicar_tecla(nt(ord('q')), 0, 5, 'q0.png', 'via_livre', rot)
     confere(sair and salvar, 'q grava e sai')
+    i, sair, salvar = rt.aplicar_tecla(None, 3, 5, 'q3.png', 'via_livre', rot)
+    confere((i, sair, salvar) == (3, False, False), 'tecla desconhecida nao faz nada')
+
+    # retomada: so volta o que foi revisado
+    estado = [(f'q{k}.png', 'via_livre') for k in range(10)]
+    rot = {'q1.png': 'obstaculo', 'q4.png': 'via_livre', 'q7.png': 'cruzamento'}
+    csv10 = tmp / 'retomada.csv'
+    dif = rt.gravar(csv10, estado, rot)
+    linhas = ler_csv(csv10)
+    confere(list(linhas[0]) == ['arquivo', 'classe', 'sugerido', 'revisado'],
+            'gravar: colunas arquivo,classe,sugerido,revisado')
+    confere(sum(r['revisado'] == '1' for r in linhas) == 3 and dif == 2,
+            'gravar: 3 de 10 com revisado=1, 2 diferentes da sugestao')
+    with contextlib.redirect_stdout(io.StringIO()):
+        relido = rt.ler_rotulos_existentes(csv10)
+    confere(relido == rot, 'reler: os mesmos 3 revisados, nao os 10')
+    antigo = tmp / 'antigo' / 'rotulos.csv'
+    antigo.parent.mkdir()
+    antigo.write_text('arquivo,classe,sugerido\n'
+                      + ''.join(f'q{k}.png,via_livre,via_livre\n' for k in range(10)))
+    with contextlib.redirect_stdout(io.StringIO()) as buf:
+        relido = rt.ler_rotulos_existentes(antigo)
+    confere(relido == {} and 'nao tem a coluna `revisado`' in buf.getvalue(),
+            'rotulos.csv antigo, sem a coluna: 0 revisados e aviso')
+    confere(not (antigo.parent / 'rotulos.antigo.csv').exists(),
+            'antigo igual a sugestao: nao precisa de copia')
+    antigo.write_text('arquivo,classe,sugerido\nq0.png,obstaculo,via_livre\n')
+    with contextlib.redirect_stdout(io.StringIO()) as buf:
+        rt.ler_rotulos_existentes(antigo)
+    confere((antigo.parent / 'rotulos.antigo.csv').exists() and 'copiei' in buf.getvalue(),
+            'antigo com classe corrigida: copia guardada antes de regravar')
+
     if not (AMOSTRA_MD / 'estado.csv').exists():
         print('  [pulado] a aula17-metadrive/amostra nao esta ao lado desta pasta')
         return None
@@ -127,12 +253,63 @@ def grupo3_rotular(tmp):
     cod, out = rodar('rotular.py', '--pasta', AMOSTRA_MD, '--so-sugestao', '--saida', saida)
     confere(cod == 0, 'rotular.py --so-sugestao sobre a amostra sai com 0')
     linhas = ler_csv(saida)
-    confere(list(linhas[0]) == ['arquivo', 'classe', 'sugerido'],
-            'colunas arquivo,classe,sugerido')
+    confere(list(linhas[0]) == ['arquivo', 'classe', 'sugerido', 'revisado'],
+            'colunas arquivo,classe,sugerido,revisado')
     confere(len(linhas) == 12, '12 linhas: so os PNG que existem na amostra')
-    confere(all(r['classe'] == r['sugerido'] for r in linhas), 'sem revisao, classe = sugerido')
+    confere(all(r['classe'] == r['sugerido'] and r['revisado'] == '0' for r in linhas),
+            'sem revisao, classe = sugerido e revisado = 0')
     confere('nenhuma imagem de obstaculo' in out, 'avisa que obstaculo ficou vazio')
+    cod, out = rodar('rotular.py', '--pasta', AMOSTRA_MD, '--so-sugestao', '--saida', saida)
+    confere('ja revisados' not in out and 'revisados a mao: 0' in out,
+            'regravar a sugestao nao inventa revisados (o defeito da 1a versao)')
+    grupo3_pty(tmp)
     return saida
+
+
+def grupo3_pty(tmp):
+    """A revisao pelo terminal (--sem-janela), com bytes de verdade num pty."""
+    import termios
+    saida = tmp / 'rotulos_pty.csv'
+    args = ('--pasta', AMOSTRA_MD, '--saida', saida, '--sem-janela')
+    # 1a: quadro000 <- 1 (igual), seta dir. pula o 005, quadro010 <- 2 (diferente), q
+    cod, out, antes, depois = rodar_pty(args, [b'1', b'\x1b[C', b'2', b'x', b'q'])
+    lin = {r['arquivo']: r for r in ler_csv(saida)} if saida.exists() else {}
+    confere(cod == 0 and 'revisao pelo terminal' in out, 'pty --sem-janela sai com 0'
+            + ('' if cod == 0 else '\n' + out[-600:]))
+    confere(lin and [k for k, r in lin.items() if r['revisado'] == '1']
+            == ['quadro000.png', 'quadro010.png'] and lin['quadro010.png']['classe']
+            == 'obstaculo' and lin['quadro005.png']['classe'] == 'via_livre',
+            'pty: 1, seta dir., 2, q -> 000 e 010 revisados, 010 obstaculo, 005 intocado')
+    confere('revisados a mao: 2; diferentes da sugestao: 1' in out,
+            'pty: "revisados 2; diferentes 1" bate com o CSV')
+    confere('3/12 quadro010.png -> obstaculo (sugerido via_livre)' in out,
+            'pty: linha de progresso do quadro rotulado')
+    confere('tecla sem funcao: codigo 120 (0x78)' in out, "pty: 'x' -> tecla sem funcao")
+    confere(depois == antes, 'pty: terminal restaurado ao sair com q (eco e modo linha)')
+    confere(antes[3] & termios.ECHO and antes[3] & termios.ICANON,
+            'pty: o terminal de partida tinha eco e modo linha')
+    # 2a: continua do primeiro nao revisado (005); 3 -> cruzamento; Esc sozinho
+    cod, out, antes, depois = rodar_pty(args, [b'3', b'\x1b'])
+    lin = {r['arquivo']: r for r in ler_csv(saida)}
+    confere(cod == 0 and 'continuando' in out and '2 quadros ja revisados' in out,
+            'retomada: diz 2 ja revisados')
+    confere(lin['quadro005.png']['classe'] == 'cruzamento'
+            and 'revisados a mao: 3; diferentes da sugestao: 2' in out,
+            'retomada comeca no 005; Esc sozinho grava e sai: 3 revisados, 2 diferentes')
+    confere(depois == antes, 'pty: terminal restaurado ao sair com Esc')
+    # 3a: comeca no 015; ESC O D volta ao 010; 1 -> via_livre; Ctrl+C
+    cod, out, antes, depois = rodar_pty(args, [b'\x1bOD', b'1', b'\x03'])
+    lin = {r['arquivo']: r for r in ler_csv(saida)}
+    dif = sum(r['classe'] != r['sugerido'] for r in lin.values())
+    confere(cod == 0 and 'Ctrl+C: gravando e saindo' in out and 'Traceback' not in out,
+            'Ctrl+C grava e sai limpo, sem Traceback')
+    confere(lin['quadro010.png']['classe'] == 'via_livre' and dif == 1
+            and f'revisados a mao: 3; diferentes da sugestao: {dif}' in out,
+            'ESC O D volta, 1 corrige: "diferentes da sugestao" = o que o CSV mostra')
+    confere(depois == antes, 'pty: terminal restaurado depois do Ctrl+C')
+    cod, out = rodar('rotular.py', '--pasta', AMOSTRA_MD, '--saida', tmp / 'x.csv',
+                     '--sem-janela')
+    confere(cod != 0 and 'nao e um terminal' in out, '--sem-janela sem terminal: para e diz')
 
 
 def grupo4_inicializacao():

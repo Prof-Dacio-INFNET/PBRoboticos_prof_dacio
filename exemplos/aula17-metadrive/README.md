@@ -1,10 +1,10 @@
 # Exemplo — `aula17-metadrive`
 
-**Aula 17 · Etapa 9.** O item 3 do TP4 pede *"detecção de faixas no MetaDrive — máscara HSV, Canny e Hough — sobreposta ao frame da câmera sintética; mais detecção de formas geométricas (placas) com Hough Circle e Harris Corner"*, e o item 4 pede uma CNN treinada em **500 frames rotulados do MetaDrive** em três classes: via livre, obstáculo, cruzamento. As duas coisas começam no mesmo lugar — uma pasta de quadros PNG com uma tabela ao lado dizendo o que havia em cada um — e este exemplo é exatamente isso: o MetaDrive subindo sem janela, um motorista automático, os quadros e o `estado.csv` que vira o rótulo.
+**Aula 17 · Etapa 9.** O item 3 do TP4 pede o pipeline de faixas no MetaDrive — máscara HSV, Canny e Hough, sobreposto ao frame da câmera sintética — e termina assim: *"Implemente também detecção de formas geométricas (sinais de trânsito) com Hough Circle e Harris Corner."* O item 4 começa por *"Colete 500 frames rotulados do MetaDrive em 3 classes (via livre / obstáculo / cruzamento)."* As duas coisas começam no mesmo lugar — uma pasta de quadros PNG com uma tabela ao lado dizendo o que havia em cada um — e este exemplo é exatamente isso: o MetaDrive subindo sem janela, um motorista automático, os quadros e o `estado.csv` que vira o rótulo.
 
 > ## Leia isto antes de qualquer coisa
 >
-> **Esta é a primeira execução do MetaDrive nesta disciplina**, e ela foi feita num container Linux sem GPU, com Python 3.10 instalado pelo `uv` e um servidor X virtual (Xvfb). Tudo o que está escrito aqui como "rodou" rodou **lá**. No seu WSL2, com o Python 3.10 do Ubuntu 22.04 e o WSLg, a receita é a mesma, mas **ninguém a executou ainda** — a seção **"O que foi e o que não foi verificado"**, no fim, separa linha a linha uma coisa da outra.
+> **A primeira execução do MetaDrive nesta disciplina** foi feita num container Linux sem GPU, com Python 3.10 instalado pelo `uv` e um servidor X virtual (Xvfb), e as saídas desta página saíram **de lá**. Em 09/11/2026 a mesma receita rodou também num WSL2 com Ubuntu 22.04 e WSLg (a máquina do professor), **sem Xvfb** e com a GPU: a captura foi umas **20 vezes mais rápida**, o `estado.csv` saiu igual, e as faixas **não** — a seção **"O que foi e o que não foi verificado"**, no fim, separa linha a linha o que foi visto onde.
 >
 > E dois achados que mudam o que o material das aulas anteriores dizia: o detector da Aula 13, **sem mudar nada**, encontra **zero** segmentos nos quadros do MetaDrive; e **não há placa nenhuma** na cena do MetaDrive. As duas coisas estão medidas abaixo.
 
@@ -265,15 +265,17 @@ Esta seção existe porque a diferença importa, e porque material de aula que f
 
 a instalação de `metadrive-simulator==0.4.3` com `uv pip install --python`, em 18 s; o download automático dos *assets* na primeira execução; o `profile_metadrive` (491,9 FPS de física, sem imagem); o `verify_headless_installation --camera rgb` **por baixo do `xvfb-run`**, e a falha literal sem ele; a falha do caminho EGL; o `capturar_frames.py` gravando 60 quadros (240, 320, 3) uint8 BGR em 164 s de parede, a 1,1 passos por segundo com terreno; a captura de 6 quadros a 640×480 (0,9 passos por segundo); o determinismo do `estado.csv` e dos PNG com a mesma semente; o `faixas.py` da Aula 13 dando 0 segmentos e o `medir_faixas.py` dando as duas faixas em 51 de 60; o `formas.py` com 0 círculos e 30 a 180 cantos por quadro; o `testar.py` com os sete grupos, inclusive a captura de verdade do grupo 7 (36 s); e os três conferidores do repositório.
 
+**Rodou num WSL2, em 09/11/2026** — Ubuntu 22.04, WSLg, a GPU do Windows, **sem Xvfb**, a receita desta página:
+
+- a **velocidade**: 20 quadros a 6,88 quadros/s (o processo inteiro, com a carga do MetaDrive, em 23 s) e 60 quadros a 8,83 quadros/s. Contra 0,37 quadros/s no container, 500 quadros passam de uns 23 minutos para 1 a 1,5 minuto. A diferença é a renderização: GPU contra Mesa `llvmpipe` (software) por baixo do Xvfb. **O seu número depende de qual dos dois você tem** — meça com os 20 primeiros quadros antes de planejar os 500;
+- o **`estado.csv` da semente 7**, colunas 1 a 9, saiu **idêntico** ao da `amostra/` (o `diff` não acusou nada): o determinismo do estado entre duas máquinas foi visto uma vez;
+- as **faixas**, e aqui a máquina mudou o resultado. Sobre a `amostra/` (quadros do container), o `faixas.py` e o `medir_faixas.py` deram o mesmo que aqui. Sobre os 60 quadros capturados **com GPU**, o mesmo código deu `PADRAO: esq 0, dir 51, ambas 0` (mediana de 4 segmentos) e `AJUSTADA: esq 52, dir 57, ambas 52` (mediana de 20). Com GPU a tracejada branca da direita passa no limiar da Aula 13 em 51 de 60 quadros, e a amarela dupla da esquerda em nenhum. É o caso "funciona na minha máquina" com números: o limiar é da fonte de imagem, e a renderização faz parte da fonte. **Meça os seus quadros**, não confie nos daqui.
+
 **Não rodou em lugar nenhum, e é o que você vai encontrar:**
 
-o MetaDrive **no WSL2**. A expectativa é que o WSLg forneça o `DISPLAY=:0` e o `glxGraphicsPipe` funcione **sem** Xvfb, renderizando pela GPU do Windows (o Mesa `d3d12`) — mas isso é leitura, não experimento. Se o `verify_headless_installation` falhar com o `set_shader`, o `xvfb-run` deste README é o plano B, e ele roda em CPU.
+o MetaDrive **no WSL2 de outra máquina**, sem GPU utilizável pelo WSLg, ou com o WSLg desligado. Se o `verify_headless_installation` falhar com o `set_shader`, o `xvfb-run` deste README é o plano B, e ele roda em CPU — a velocidade passa a ser a do container.
 
-a **velocidade** no seu notebook. Aqui foram 0,37 quadros por segundo com `--passo 3`, então 500 quadros levariam uns 23 minutos. Com GPU deve ser bem mais rápido; não sei quanto.
-
-o **Python 3.10 do Ubuntu** com `--system-site-packages`. Aqui o 3.10 era do `uv` e não tinha pacote de sistema nenhum para herdar. No seu, o venv enxerga o NumPy 1.21 e o OpenCV 4.5 do apt, e o `uv` instala o NumPy 2.2 e o OpenCV 5.0 **por cima, dentro do venv**. Deve funcionar — o venv tem precedência —, mas não foi visto.
-
-a **aparência** dos quadros com GPU. O brilho máximo da tinta (V = 149) foi medido com renderização por software; com GPU o *tone mapping* deveria ser o mesmo shader, mas se a sua tinta sair mais clara, a configuração padrão da Aula 13 pode voltar a achar alguma coisa — e a ajustada continua valendo.
+o **Python 3.10 do Ubuntu** com `--system-site-packages`. Aqui o 3.10 era do `uv` e não tinha pacote de sistema nenhum para herdar. No seu, o venv enxerga o NumPy 1.21 e o OpenCV 4.5 do apt, e o `uv` instala o NumPy 2.2 e o OpenCV 5.0 **por cima, dentro do venv**. Deve funcionar — o venv tem precedência. No WSL2 de 09/11 a receita funcionou, mas não se anotou se o `uv` usou o 3.10 do Ubuntu ou baixou o dele.
 
 o **clone do GitHub** (`git clone https://github.com/metadriverse/metadrive.git && pip install -e .`), que a documentação recomenda. O pin `0.4.3` do PyPI funcionou de primeira, e por isso o clone não foi tentado.
 
@@ -293,7 +295,7 @@ o **clone do GitHub** (`git clone https://github.com/metadriverse/metadrive.git 
 | `faixas.py --pasta` dá 0 segmentos em tudo | é o esperado com a configuração da Aula 13 — use o `medir_faixas.py` e leia a seção das faixas |
 | `nao achei .../aula13-veicular/faixas.py` | a pasta da Aula 13 não está ao lado desta: refaça o bloco de download, ou passe `--faixas CAMINHO` |
 | o episódio termina antes dos N quadros | o carro bateu ou saiu da pista (`crash_vehicle`, `out_of_road`); o script avisa e grava o que tinha. Troque a `--semente` |
-| a captura é lentíssima | renderização por software (Xvfb + llvmpipe): ~1 passo por segundo. Reduza `--largura/--altura` só se não for medir faixa |
+| a captura é lentíssima | renderização por software (Xvfb + llvmpipe): ~1 passo por segundo, 0,37 quadros/s; com a GPU pelo WSLg foram 7 a 9 quadros/s. Reduza `--largura/--altura` só se não for medir faixa |
 | `You are using too large buffer!` | aviso para RL com milhões de quadros; ignore |
 
 ## Como adequar ao seu projeto

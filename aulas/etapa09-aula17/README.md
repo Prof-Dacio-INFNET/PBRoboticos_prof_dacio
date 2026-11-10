@@ -85,7 +85,7 @@ O item 2 usa o `aula16-arvore-bag`, baixado na semana passada. Se ele não estiv
     Ela confere que as variáveis existem **neste** terminal. Um bloco que começa com ela supõe que o mesmo terminal já rodou um bloco que define as variáveis; um terminal novo começa sempre pelas três variáveis — e, se for chamar `ros2`, pelas duas linhas de `source` —, como no [passo 1](#passo-1-preparar-os-terminais-e-o-pacote-da-arvore) da tarefa.
 
 !!! warning "O que rodou onde — leia antes de confiar em qualquer número"
-    **Na nuvem** (um servidor Linux sem placa de vídeo, em 09/11): o MetaDrive inteiro, a captura, as faixas, as formas, a CNN nas quatro configurações. Todos os números desta página saíram de lá. **Na minha máquina**, no ensaio da véspera: a mesma receita, mais a camada ROS 2 do item 2 — o `vigia.py`, o `gravar_pose` e o `analise.launch.py` rodaram ali **pela primeira vez**. **No WSL2 de vocês**: ninguém viu ainda. A expectativa é que o WSLg dispense o Xvfb e que a GPU do Windows acelere a captura — é expectativa, não experimento. Os READMEs dos exemplos separam, linha a linha, o que foi visto do que não foi.
+    **Na nuvem** (um servidor Linux sem placa de vídeo, em 09/11): o MetaDrive inteiro, a captura, as faixas, as formas, a CNN nas quatro configurações. **Na minha máquina** (WSL2 com Ubuntu 22.04, no ensaio da véspera): a mesma receita, mais a camada ROS 2 do item 2 — o `vigia.py`, o `gravar_pose` e o `analise.launch.py` rodaram ali **pela primeira vez**. O MetaDrive rodou pelo WSLg, **sem Xvfb**, com a GPU, e umas vinte vezes mais rápido que na nuvem. **E as duas máquinas não deram os mesmos números**: as faixas mudaram com a renderização, e a rede, com a mesma semente, deu outra tabela. Onde a diferença importa, esta página dá os dois. **No WSL2 de vocês**: ninguém viu ainda — o número que vale é o da sua tela. Os READMEs dos exemplos separam, linha a linha, o que foi visto do que não foi.
 
 ---
 
@@ -101,13 +101,13 @@ Foi dito em sala, e repito aqui: **o `vigia.py` nunca tinha rodado** antes do me
 
 Duas coisas do exemplo que custam caro se ninguém avisar:
 
-**O objetivo padrão do `vigia` cai dentro de um obstáculo.** O `(9,0; 5,5)` que ele usa sem argumento — o mesmo ponto da rota padrão da Aula 15 — está dentro do retângulo da sala 2 (de 8,6 a 9,6 m em x, de 5,2 a 5,8 m em y). Passe sempre o seu objetivo com `-p objetivo:=`, escolhido sobre o costmap global do **seu** mapa. Em sala foi `[9.0, 2.2, -1.57]`.
+**Passe sempre o seu objetivo.** O padrão do `vigia` era `(9,0; 5,5)` até 09/11 — o mesmo ponto da rota padrão da Aula 15, dentro do retângulo da sala 2 (de 8,6 a 9,6 m em x, de 5,2 a 5,8 m em y) — e foi corrigido para `[10.5, 6.5, 1.57]`. Mesmo assim, passe o seu com `-p objetivo:=`, escolhido sobre o costmap global do **seu** mapa. Em sala foi `[9.0, 2.2, -1.57]`.
 
-**No mundo mínimo da Aula 11, nada entra na frente do robô.** Ele é uma grade fixa: numa rota normal, nada chega a 0,5 m do leque frontal do laser — o batente da porta passa a uns 70 cm. Para o portão disparar em sala, **subi o limiar para 0,75 m** (`-p limiar_m:=0.75`) e mandei o robô pela porta. O log do `vigia` mostra a sequência inteira — as frases abaixo vêm do código dele; a distância exata depende da sua sessão:
+**No mundo mínimo da Aula 11, nada entra na frente do robô.** Ele é uma grade fixa: numa rota normal, nada chega a 0,5 m do leque frontal do laser — o batente da porta passa a uns 70 cm. Para o portão disparar em sala, **subi o limiar para 0,75 m** (`-p limiar_m:=0.75`) e mandei o robô pela porta. Isso é recurso da **demonstração**: a entrega do item 2 pede um disparo abaixo de 0,5 m, e o [passo 2](#passo-2-o-seu-bag-gravar-tocar-com-clock-e-a-regua-sobre-ele) diz como provocá-lo. O log do `vigia` mostra a sequência inteira — as linhas abaixo são as do meu ensaio; a distância exata depende da sua sessão:
 
 ```text
 enviando objetivo (9.00, 2.20, -1.57)
-obstaculo a 0.7x m (< 0.75 m): cancelando o objetivo
+obstaculo a 0.70 m (< 0.75 m): cancelando o objetivo
 cancelamento aceito (1 goal em cancelamento); esperando 2.0 s
 espera cumprida; retomando o MESMO objetivo
 objetivo cumprido. 1 interrupcao(oes) no caminho.
@@ -129,15 +129,18 @@ O `/estado_vigia` é o que registra **por que** o robô parou — sem ele, a fig
 
 Com o sistema e o `vigia` derrubados, o **Terminal A** subiu o `analise.launch.py` — ele sobe **só** o `gravar_pose`, com `use_sim_time:=true` — e o **Terminal C** tocou o bag com `--clock`. Do lado de quem assina, o bag é indistinguível do robô: o `gravar_pose` não sabe que o sistema está desligado, e o CSV vai nascendo, uma linha por 0,1 s.
 
-Depois, a mesma régua da sessão sintética, sem mudar uma linha, sobre o CSV do bag. E uma sessão como essa — um disparo só, com o laser acima de 0,5 m — ela não aprova. As frases do veredito estão no código do `medir_sessao.py`:
+Depois, a mesma régua da sessão sintética sobre o CSV do bag, medindo com o limiar com que o `vigia` rodou (`--limiar 0.75`). E uma sessão como essa — um disparo só, com o laser acima de 0,5 m — ela não aprova. As frases do veredito estão no código do `medir_sessao.py`:
 
 ```text
 VEREDITO
   1 evento(s) -- a sessao de referencia tem 2. Nao e erro, so nao e a mesma sessao.
-  ATENCAO: houve interrupcao, mas o /scan nunca ficou abaixo de 0.50 m. O que disparou nao foi o portao.
+  todas as esperas dentro de 2.00 s +- 0.25 s.
+  olhe: o TP4 pede 0.50 m; esta sessao foi medida com --limiar 0.75 m, e o relatorio tem de dizer isso.
 ```
 
-O limiar do enunciado está declarado no topo do `medir_sessao.py` — 0,50 m —, e o portão disparou a uns 0,7 m. **A régua não sabe quem está medindo, e é por isso que ela serve.** Se o seu bag sair com essa frase, o item 2 não está perdido: está pedindo uma declaração. O que não passa é mudar o limiar da régua para o veredito ficar bonito.
+Sem o `--limiar`, ela mede com os 0,50 m do enunciado, declarados no topo do arquivo, e escreve `ATENCAO: em 1 evento(s) o /scan nao ficou abaixo de 0.50 m`. Nos dois casos, o portão disparou a 0,70 m, e a régua diz. **A régua não sabe quem está medindo, e é por isso que ela serve.** O `--limiar` existe para medir com o limiar que o `vigia` usou, e ele mesmo escreve a linha `olhe:`; o que não passa é mudar o `LIMIAR_OBSTACULO_M` do topo da régua para o veredito ficar bonito. Para a entrega, o caminho é outro: um disparo de verdade abaixo de 0,5 m.
+
+E a régua também é código: no primeiro contato com o bag de verdade, a versão anterior contou **0** interrupções numa sessão que teve 1, porque o estado `interrompido` dura milissegundos e não chega ao CSV de 10 Hz. Foi corrigida antes desta aula — o [exemplo](../../exemplos/aula16-arvore-bag/index.md#o-que-e-um-evento-e-por-que-a-regua-errou-no-primeiro-ensaio) conta como. Se o seu material é anterior a 10/11, recopie.
 
 !!! note "O que a sessão sintética já tinha ensinado, e vale para o seu bag"
     A régua roda sobre o CSV sintético sem ROS 2 nenhum (`simular_sessao.py` e `medir_sessao.py`, no [exemplo](../../exemplos/aula16-arvore-bag/index.md#medir-sem-ros-2-sem-nav2-e-sem-bag)), e a tabela dela tem três leituras que valem para qualquer bag. **Três distâncias:** 25,52 m mandados andar, 26,29 m somando o `/odom` (+3%, a deriva de escala) e **49,03 m** somando o `/amcl_pose` — o tremor virando caminho; não cite distância a partir do `/amcl_pose`. **O vão de 0,75 m** entre as duas trajetórias não é "erro do AMCL": é exatamente o que a transformada `map → odom` corrige. **As esperas de 2,00 s e 2,10 s** são diferentes de propósito, e a tolerância de ±0,25 s está declarada antes de medir.
@@ -146,7 +149,7 @@ O limiar do enunciado está declarado no topo do `medir_sessao.py` — 0,50 m �
 
 Contra uma caixa parada, o `vigia` vira um laço — cancelar, esperar 2 s, retomar, cancelar de novo depois da carência de 1,5 s — e a régua escreve `REINCIDENCIA`. No mundo mínimo nada entra e sai da frente do robô; no Gazebo Fortress dá para criar e remover um modelo com a sessão rodando. Os dois mundos passam. O que conta é o relatório dizer **qual** foi usado e o que a régua leu.
 
-**O item 2 no relatório, em cinco declarações:** em que mundo a sessão foi gravada (o mínimo da Aula 11 ou o Fortress); onde mora a decisão de interromper (num nó seu, ou num nó de árvore em C++); o limiar que disparou **de verdade**, lido na régua; os tópicos gravados e o que ficou de fora; e a tabela e a figura saídas do **seu** bag, com a distância citada pela conta certa.
+**O item 2 no relatório, em cinco declarações:** em que mundo a sessão foi gravada (o mínimo da Aula 11 ou o Fortress); a árvore que você entrega e onde mora a decisão de interromper (num nó seu, ou num nó de árvore em C++); o limiar que disparou **de verdade**, lido na régua — e, na entrega, abaixo de 0,5 m; os tópicos gravados e o que ficou de fora; e a tabela e a figura saídas do **seu** bag, com a distância citada pela conta certa.
 
 ---
 
@@ -164,7 +167,7 @@ A conferência que o próprio pacote oferece, `verify_headless_installation --ca
 
 O `capturar_frames.py` sobe o MetaDrive sem janela, deixa o piloto **IDM** do próprio simulador dirigir, e grava `quadroNNN.png` com um `estado.csv` ao lado. Duas coisas que o material da Aula 13 dizia errado, corrigidas: a imagem **já sai BGR**, a mesma ordem do OpenCV — não inverta nada —, e a observação tem **quatro** eixos, `(altura, largura, 3, pilha)`, porque o MetaDrive empilha quadros para aprendizado por reforço.
 
-É **lento**: na nuvem, sem placa de vídeo, foram **0,37 quadros por segundo** — 500 quadros, uns **23 minutos**. Com GPU deve ser mais rápido; ninguém mediu quanto. É por isso que a captura entra na tarefa, e não na aula: dispare e vá fazer outra coisa.
+A velocidade depende de quem desenha. Na nuvem, sem placa de vídeo, com renderização por software, foram **0,37 quadros por segundo** — 500 quadros, uns **23 minutos**. Na minha máquina, com a GPU pelo WSLg, foram **7 a 9 quadros por segundo** — 500 quadros em 1 a 1,5 minuto. O seu número é um desses dois, ou outro: a primeira captura curta diz qual. A captura entra na tarefa, e não na aula, porque o que vale são os **seus** quadros.
 
 **O MetaDrive não tem placa de trânsito**, e o mapa procedural não tem semáforo. O que há na cena são cones, um triângulo de advertência, uma barreira e veículos de cinco tamanhos. O enunciado do item 3 fala em "placas": a resposta honesta é trocar por **cone e veículo** e escrever no relatório que o MetaDrive não tem placa. E o piloto IDM mantém distância de quem está na frente — os 60 quadros da semente 7 saíram **54 via livre, 0 obstáculo, 6 cruzamento**. Esse número abre o bloco 3.
 
@@ -182,12 +185,14 @@ etapa 3 reta:   0 segmentos -> 0 esq + 0 dir, 0 recusados por inclinacao
 
 **Zero pixels na máscara de cor.** Não é o Hough nem o Canny: é a primeira etapa, e as outras são eco dela. A tinta do MetaDrive chega no máximo a V = 149 no HSV, e o limiar branco da Aula 13 é 150 — um ponto de diferença. A faixa amarela tem 1 pixel de largura a 320×240, e a limpeza morfológica 3×3 a apaga. Nos 60 quadros completos, o detector da Aula 13 acha **zero** segmentos.
 
-Depois, o `medir_faixas.py`: as **mesmas** funções do `faixas.py`, sem mudar uma linha, chamadas duas vezes — com a configuração da Aula 13 e com a **ajustada**, declarada no topo do arquivo antes de medir: ampliar o quadro 3×, branco a partir de V = 130, amarelo a partir de 70, Canny (20, 60). Nos 12 quadros da amostra, a ajustada acha as duas faixas em 11; nos 60, em **51**. Os quadros sem faixa são os do cruzamento: lá dentro não há tinta, e "não achei" é a resposta certa.
+Depois, o `medir_faixas.py`: as **mesmas** funções do `faixas.py`, sem mudar uma linha, chamadas duas vezes — com a configuração da Aula 13 e com a **ajustada**, declarada no topo do arquivo antes de medir: ampliar o quadro 3×, branco a partir de V = 130, amarelo a partir de 70, Canny (20, 60). Nos 12 quadros da amostra, a ajustada acha as duas faixas em 11; nos 60 da nuvem, em **51**. Os quadros sem faixa são os do cruzamento: lá dentro não há tinta, e "não achei" é a resposta certa.
+
+**Esses números dependem da renderização.** Nos 60 quadros que eu capturei com GPU, o mesmo código deu outra coisa: a configuração da Aula 13 achou a tracejada branca da direita em 51 quadros e a amarela da esquerda em nenhum, e a ajustada achou as duas em 52. A sua tabela é a dos **seus** quadros — meça antes de afirmar.
 
 !!! danger "Limiar é da fonte de imagem, e se declara"
     O detector da Aula 13 não está errado: ele foi afinado numa cena, e nada viaja sozinho para outra. O relatório diz **qual configuração, para qual câmera e por quê**. E continua valendo o que a Aula 13 disse: sem verdade não há erro a medir — a tabela conta quantas vezes cada faixa foi achada, não se ela foi achada no lugar certo.
 
-    A configuração ajustada foi escolhida a 320×240 com renderização por software. Se você capturar em outra resolução, ou com GPU, a sua tinta pode sair mais clara: rode a configuração da Aula 13 primeiro, olhe a máscara de cor, e só então mexa.
+    A configuração ajustada foi escolhida a 320×240 com renderização por software. Com GPU a tinta sai mais clara — foi o que aconteceu na minha máquina —, e em outra resolução também pode mudar: rode a configuração da Aula 13 primeiro, olhe a máscara de cor, e só então mexa.
 
 ### Círculos e cantos
 
@@ -217,7 +222,7 @@ Em toda a disciplina o venv nasce com `--system-site-packages`, para enxergar o 
 
 ### As duas rodadas, e a tabela medida
 
-A mesma rede — três blocos `Conv2D → BatchNormalization → ReLU → MaxPooling`, `Dropout(0.5)`, três saídas —, treinada duas vezes, 20 épocas cada: **sem** e **com** augmentation (rotação de ±15°, zoom de 0,2, espelho horizontal). Mesma divisão, mesmos pesos iniciais, mesma ordem dos lotes; a única diferença são as três camadas de augmentation. Uns 45 segundos por rodada numa CPU de dois núcleos.
+A mesma rede — três blocos `Conv2D → BatchNormalization → ReLU → MaxPooling`, `Dropout(0.5)`, três saídas —, treinada duas vezes, 20 épocas cada: **sem** e **com** augmentation (rotação de ±15°, zoom de 0,2, espelho horizontal). Mesma divisão, mesmos pesos iniciais, mesma ordem dos lotes; a única diferença são as três camadas de augmentation. Uns 45 segundos por rodada na CPU de dois núcleos da nuvem; uns 23 na minha. A tabela abaixo é a da nuvem:
 
 ```text
 linha de base: responder SEMPRE "via_livre" acerta 0.330 da validacao
@@ -227,9 +232,20 @@ sem       0.980      0.046       0.913       0.990 (10)     obstaculo   0.941   
 com       0.930      0.387       0.678       1.000 (19)     via_livre   0.788         0.940
 ```
 
-**O augmentation piorou a validação em cinco pontos**, e isso não é defeito: a validação não tem imagem girada nem espelhada, e a tarefa sintética é fácil. A coluna `acc_val_pert` é a **mesma** validação passada uma vez por rotação, zoom e espelho — o tipo de variação que só a rodada `com` viu no treino —, e ali a ordem se inverte: **0,910 contra 0,940**. São **três imagens em cem**. É a direção que a teoria prevê, e três imagens não sustentam uma conclusão: escreve-se a direção e escreve-se que ela não basta. E a última época sozinha é frágil — a rodada `com` fez 1,000 na época 19 e 0,930 na 20.
+**A mesma semente não deu a mesma tabela na minha máquina.** O mesmo código, os mesmos dados e a semente 7, em outra CPU e com o mesmo TensorFlow:
 
-A matriz diz o que a acurácia esconde. A rodada `sem` chama **dois obstáculos de via livre** — o erro perigoso. A `com` chama **sete vias livres de obstáculo** — o carro que freia à toa. Mesma ordem de grandeza na acurácia, comportamentos opostos no carro.
+| | nuvem | minha máquina |
+|---|---|---|
+| `acc_val` sem / com | 0,980 / 0,930 | 0,980 / 0,850 |
+| `acc_val_pert` sem / com | 0,910 / 0,940 | 0,880 / 0,940 |
+| diferença (com − sem) na limpa | −0,050 | −0,130 |
+| diferença (com − sem) na perturbada | +0,030 | +0,060 |
+
+O número na sua tela é o seu. O que se sustenta nas duas máquinas é o **sinal** da diferença, não a terceira casa.
+
+**O augmentation piorou a validação limpa** — cinco pontos numa máquina, treze na outra —, e isso não é defeito: a validação não tem imagem girada nem espelhada, e a tarefa sintética é fácil. A coluna `acc_val_pert` é a **mesma** validação passada uma vez por rotação, zoom e espelho — o tipo de variação que só a rodada `com` viu no treino —, e ali a ordem se inverte nas duas máquinas. É a direção que a teoria prevê, e são **três a seis imagens em cem**: escreve-se a direção e escreve-se que ela não basta. É também a resposta honesta ao "relate a melhoria de generalização" do enunciado: **a melhoria aparece na validação perturbada, não na limpa**. E a última época sozinha é frágil — a rodada `com` fez 1,000 na época 19 e 0,930 na 20 na nuvem; 0,960 na 19 e 0,850 na 20 na minha.
+
+A matriz diz o que a acurácia esconde. Na nuvem, a rodada `sem` chama **dois obstáculos de via livre** — o erro perigoso. A `com` chama **sete vias livres de obstáculo** — o carro que freia à toa. Mesma ordem de grandeza na acurácia, comportamentos opostos no carro.
 
 ### Caso 2 — a BatchNormalization com o padrão do Keras
 
@@ -245,7 +261,7 @@ matriz sem (linha = verdade, coluna = previsto, via_livre / obstaculo / cruzamen
   cruzamento     33     0     0
 ```
 
-O treino chega a 0,913 — **idêntico** ao da rodada sadia, época a época — e a validação fica em 0,330, respondendo *via livre* para tudo. A causa: no treino, a normalização usa a média e a variância **do lote**; na inferência, as **médias móveis**. Com 400 imagens em lotes de 32 são 260 passos em 20 épocas, e 0,99²⁶⁰ ≈ 0,07: 7% da variância móvel ainda é o valor inicial. Com `momentum=0.9`, 0,9²⁶⁰ ≈ 10⁻¹², e a validação vai a 0,98. **Se a sua curva de validação ficar colada em 1/3 — ou na fração da classe mais comum — enquanto a de treino sobe, é isto.** O `treinar.py` usa 0,9 por padrão.
+O treino chega a 0,913 — **idêntico** ao da rodada sadia da mesma máquina, época a época — e a validação fica em 0,330, respondendo *via livre* para tudo (na nuvem e na minha máquina). A causa: no treino, a normalização usa a média e a variância **do lote**; na inferência, as **médias móveis**. Com 400 imagens em lotes de 32 são 260 passos em 20 épocas, e 0,99²⁶⁰ ≈ 0,07: 7% da variância móvel ainda é o valor inicial. Com `momentum=0.9`, 0,9²⁶⁰ ≈ 10⁻¹², e a validação vai a 0,98. **Se a sua curva de validação ficar colada em 1/3 — ou na fração da classe mais comum — enquanto a de treino sobe, é isto.** O `treinar.py` usa 0,9 por padrão.
 
 ### Caso 3 — 54 : 0 : 6, e a rede que nunca diz cruzamento
 
@@ -279,9 +295,9 @@ Cada uma destas frases saiu de um bloco de hoje, e cada uma é o que separa um r
 | Item | O que se declara |
 |---|---|
 | 1 | o mundo em que você navegou — o mínimo da Aula 11 ou o Gazebo Fortress — e por quê |
-| 2 | **onde mora a decisão** de interromper (num nó seu, ou num nó de árvore em C++); o limiar que **a régua leu no seu bag**; os tópicos gravados e o que ficou de fora |
+| 2 | a **árvore** que você entrega (o XML, com a espera de 2 s) e o **nó que mede a distância** (o `vigia` ou um nó de condição em C++) — e por que, no Humble, a decisão ficou dividida entre os dois; um disparo **abaixo de 0,5 m**, lido pela régua no seu bag; os tópicos gravados e o que ficou de fora |
 | 3 | a troca de "placa" por **cone e veículo**, com a frase de que o MetaDrive não tem placa; a configuração do detector **por fonte de imagem**, declarada antes de medir |
-| 4 | quantos rótulos você **corrigiu**; a contagem por classe antes de treinar, e o que você fez para a classe rara aparecer; as duas rodadas **com a mesma semente**, a linha de base e a matriz |
+| 4 | quantos rótulos você **corrigiu**; a contagem por classe antes de treinar, e o que você fez para a classe rara aparecer; as duas rodadas **com a mesma semente**, a linha de base e a matriz; a comparação sem × com em `acc_val` **e** em `acc_val_pert`, e a frase sobre generalização — inclusive quando não houve melhoria |
 | todos | o que rodou onde — e o que você não conseguiu rodar, dito como tal |
 
 ### A ordem da entrega
@@ -307,7 +323,7 @@ O TP5 valida o projeto por um de dois caminhos: **A, hardware** — o robô de v
 
 São cinco terminais, sempre com o mesmo nome: **A — o sistema** (o launch ocupa o terminal), **B — o vigia** (depois, a régua), **C — o bag**, **D — o MetaDrive e as faixas**, e **E — a rede**. A, B e C chamam `ros2`: todo terminal novo desses começa pelas três variáveis e pelas duas linhas de `source`. D e E não chamam `ros2`: começam só pelas variáveis.
 
-**Comece pelo passo 3.** A captura dos 500 quadros leva uns vinte minutos ou mais, e roda sozinha: dispare-a no Terminal D e faça o passo 2 enquanto ela anda.
+**Comece pelo passo 3.** A captura dos 500 quadros leva de um a dois minutos com GPU até uns 23 minutos com renderização por software, e roda sozinha: dispare-a no Terminal D e faça o passo 2 enquanto ela anda.
 
 ### Passo 1 — Preparar os terminais, e o pacote da árvore
 
@@ -346,6 +362,8 @@ Se a primeira deu `0`, é o pacote da Aula 15 — o passo 1 da [tarefa da Aula 1
 
 Escolha o objetivo **no seu mapa**, olhando o costmap global no RViz2: `[x, y, rumo]`. O padrão do `vigia` era `[9.0, 5.5, 1.57]` até 09/11 — um ponto **dentro** de um obstáculo do mundo da Aula 11, que o Nav2 recusa sem explicar; foi corrigido para `[10.5, 6.5, 1.57]`, e o mesmo ponto errado era o terceiro da rota padrão do `rota.py`. Se o seu material é anterior a 10/11, recopie.
 
+**O que se entrega no item 2 é a árvore e o nó que mede a distância.** A árvore é o XML com a espera de 2 s — o `com_espera.xml` do exemplo é o ponto de partida, que você adapta —, e a sessão gravada para a entrega roda com ela: o parâmetro `arvore` do `vigia` recebe o caminho **instalado**. <!-- ARVORE-NAO-VERIFICADA -->Aviso honesto: esta árvore ainda não foi carregada num `bt_navigator` de verdade; se o Terminal A acusar erro ao receber o goal, poste no fórum as linhas do `bt_navigator` e grave sem o `-p arvore:=` enquanto isso.<!-- /ARVORE-NAO-VERIFICADA -->
+
 **Terminal A — o sistema.** O launch ocupa o terminal até o `Ctrl+C`:
 
 ```bash
@@ -376,12 +394,15 @@ export PB_DIR="$HOME/projeto-pb-$PB_USER"
 export PB_WS="$PB_DIR/ros2_ws"
 source /opt/ros/humble/setup.bash
 source "$PB_WS/install/setup.bash"
-ros2 run aula16_arvore vigia --ros-args -p objetivo:="[9.0, 2.2, -1.57]"
+ros2 run aula16_arvore vigia --ros-args -p objetivo:="[9.0, 2.2, -1.57]" \
+  -p arvore:="$PB_WS/install/aula16_arvore/share/aula16_arvore/arvores/com_espera.xml"
 ```
 
 **O que você tem de ver:** `enviando objetivo`, as linhas `faltam N m`, e — se algo passar a menos de 0,5 m do leque frontal — `obstaculo a ... m: cancelando o objetivo`, `esperando 2.0 s`, `retomando o MESMO objetivo`. No fim, `objetivo cumprido. N interrupcao(oes) no caminho.` Aí, `Ctrl+C` no Terminal C, para fechar o bag.
 
-**Se o portão nunca disparar:** no mundo mínimo, é o esperado — nada entra na frente do robô. Você pode passar o objetivo perto de um obstáculo do seu mapa, ou subir o limiar como eu fiz em sala (`-p limiar_m:=0.75`). Qualquer das duas vai declarada no relatório, e a régua vai dizer o que aconteceu de verdade. **Se ele disparar em laço no mesmo lugar:** é a reincidência — obstáculo que não sai —, e a régua também vai acusar. **Se aparecer `goal RECUSADO`:** o objetivo está em célula ocupada ou inflada; escolha outro sobre o costmap global.
+**Se o primeiro goal terminar abortado** segundos depois do envio, logo depois de subir o sistema: aconteceu no meu ensaio, sem causa confirmada. Espere o Nav2 assentar (meio minuto depois de `Managed nodes are active`) e mande de novo.
+
+**Se o portão nunca disparar:** no mundo mínimo, com um objetivo comum, é o esperado — nada entra na frente do robô. Subir o limiar, como eu fiz em sala, serve para **ver** o comportamento; a entrega pede um disparo **abaixo de 0,5 m**. Há dois jeitos: um objetivo rente a um obstáculo do seu mapa, que obrigue o robô a passar a menos de 0,5 m dele, ou um obstáculo posto na rota — no Gazebo Fortress, criado e removido com a sessão rodando, como na seção [Esperar só resolve obstáculo que sai sozinho](#esperar-so-resolve-obstaculo-que-sai-sozinho). O que você usou vai declarado no relatório, e a régua vai dizer o que aconteceu de verdade. **Se ele disparar em laço no mesmo lugar:** é a reincidência — obstáculo que não sai —, e a régua também vai acusar. **Se aparecer `goal RECUSADO`:** o objetivo está em célula ocupada ou inflada; escolha outro sobre o costmap global.
 
 Com o bag fechado, a conferência. No Terminal C:
 
@@ -464,7 +485,7 @@ xvfb-run -a -s "-screen 0 1280x1024x24" "$PB_DIR/.venv-metadrive/bin/python" -m 
 
 Se você precisou do Xvfb, ponha `xvfb-run -a -s "-screen 0 1280x1024x24"` na frente de todo comando com o Python do `.venv-metadrive` daqui em diante. **Se aparecer `panda3d==1.10.13 has no wheels`:** o venv nasceu com outro Python; apague `$PB_DIR/.venv-metadrive` e recrie com o bloco acima.
 
-**A captura.** Cinco sementes de cem quadros, cada uma na sua pasta. É **demorado** — na nuvem foram 0,37 quadros por segundo, uns 23 minutos para os 500 —; dispare e vá fazer o passo 2. No Terminal D:
+**A captura.** Cinco sementes de cem quadros, cada uma na sua pasta. O tempo depende de quem desenha: na nuvem, com renderização por software, 0,37 quadros por segundo, uns 23 minutos para os 500; na minha máquina, com GPU pelo WSLg, 7 a 9 quadros por segundo, de um a dois minutos. Dispare e vá fazer o passo 2. No Terminal D:
 
 ```bash
 # ── Terminal D ──
@@ -508,7 +529,7 @@ cd "$PB_DIR/aula17-metadrive"
 python3 medir_faixas.py --pasta quadros-s7 --sobreposicao faixas-s7.png --quadro 20
 ```
 
-**O que você tem de ver:** a coluna PADRAO (a da Aula 13) com zero segmentos, e a AJUSTADA com `E D` na maioria dos quadros fora do cruzamento. **Se a PADRAO achou alguma coisa**, a sua tinta saiu mais clara que a da nuvem — com GPU isso pode acontecer. Não é problema: é informação, e vai para o relatório.
+**O que você tem de ver:** a coluna PADRAO (a da Aula 13) com zero segmentos, e a AJUSTADA com `E D` na maioria dos quadros fora do cruzamento. **Se a PADRAO achou alguma coisa**, a sua tinta saiu mais clara que a da nuvem — com GPU isso acontece: na minha máquina ela achou a faixa da direita em 51 de 60 quadros, e a da esquerda em nenhum. Não é problema: é informação, e vai para o relatório.
 
 **As três etapas, que a evidência do item 3 pede.** O `faixas.py --etapas` grava a cor, a borda e a reta de um quadro — mas com a configuração da Aula 13, que no MetaDrive dá as três pretas. O caminho é uma cópia do `faixas.py` **no seu projeto**, com os três números ajustados, rodando sobre um quadro ampliado 3×. Os números abaixo são os do `medir_faixas.py`; troque-os pelos que a **sua** captura pedir. No Terminal D:
 
@@ -542,9 +563,9 @@ python3 formas.py --pasta quadros-s7 --param2 15 | tail -2
 
 ### Passo 5 — Rotular com revisão, contando as correções
 
-**Pressupõe:** o passo 3. **Observe:** a última linha do `rotular.py`, com quantos você revisou e quantos diferem da sugestão.
+**Pressupõe:** o passo 3. **Observe:** a linha de progresso a cada tecla, e a última linha do `rotular.py`, com quantos você revisou e quantos diferem da sugestão.
 
-O `rotular.py` roda com o `python3` **do sistema**, porque a janela precisa do OpenCV do apt. Uma pasta de cada vez; feche com `q` e ele grava — se reabrir na mesma pasta, continua de onde parou. No Terminal D:
+O `rotular.py` roda com o `python3` **do sistema**, porque a janela precisa do OpenCV do apt. Uma pasta de cada vez; feche com `q` e ele grava — se reabrir na mesma pasta, continua do primeiro quadro que você ainda não revisou. No Terminal D:
 
 ```bash
 # ── Terminal D ──
@@ -553,7 +574,7 @@ cd "$PB_DIR/aula17-cnn"
 python3 rotular.py --pasta ../aula17-metadrive/quadros-s7
 ```
 
-As teclas: **1 / 2 / 3** escolhem `via_livre` / `obstaculo` / `cruzamento` e avançam; **Enter** aceita o que está na tela; **a** e **d** andam sem mudar; **q** grava e sai. Repita para `quadros-s8` a `quadros-s11` (e as `quadros-t*`, se você as capturou).
+As teclas: **1 / 2 / 3** escolhem `via_livre` / `obstaculo` / `cruzamento` e avançam; **Enter** aceita o que está na tela; **setas** (ou **a** e **d**) andam sem mudar; **q** grava e sai. Elas valem **na janela ou no terminal** de onde você chamou o script, e cada rótulo imprime uma linha de progresso no terminal. Se uma tecla não fizer nada, o terminal imprime `tecla sem funcao: codigo N (0xHEX)` — anote o código e poste no fórum. Repita para `quadros-s8` a `quadros-s11` (e as `quadros-t*`, se você as capturou).
 
 Depois, as correções de cada pasta. No Terminal D:
 
@@ -561,10 +582,17 @@ Depois, as correções de cada pasta. No Terminal D:
 # ── Terminal D, com as pastas revisadas ──
 : "${PB_WS:?defina PB_USER, PB_DIR e PB_WS — o bloco está no topo desta página}"
 cd "$PB_DIR/aula17-metadrive"
-for p in quadros-*/; do echo "$p $(awk -F, 'NR>1 && $2!=$3' "$p/rotulos.csv" | wc -l) corrigidos de $(($(wc -l < "$p/rotulos.csv") - 1))"; done
+for p in quadros-*/; do echo "$p $(awk -F, 'NR>1 && $2!=$3' "$p/rotulos.csv" | wc -l) corrigidos de $(awk -F, 'NR>1 && $4==1' "$p/rotulos.csv" | wc -l) revisados"; done
 ```
 
-Esse número vai para o relatório. **Se a janela não abrir** (WSLg desligado, `echo $DISPLAY` vazio), há o `--so-sugestao`, que grava a sugestão sem janela e diz, na saída, que ninguém olhou — aí a revisão é olhando os PNG num visualizador e editando a coluna `classe` do `rotulos.csv`. **Não deixe a rede rotular os quadros**: o rótulo é a resposta contra a qual ela será medida.
+Esse número vai para o relatório. A coluna `revisado` do `rotulos.csv` vale 1 só nos quadros em que você apertou 1/2/3 ou Enter: "de N revisados" conta o que você olhou, não o que a pasta tem. **Se a janela não abrir ou não responder** (WSLg desligado, `echo $DISPLAY` vazio), o `--sem-janela` faz a mesma revisão só pelo terminal, com as mesmas teclas — abra o PNG num visualizador ao lado. No Terminal D:
+
+```bash
+# ── Terminal D, só se a janela não abriu ou não respondeu ──
+: "${PB_WS:?defina PB_USER, PB_DIR e PB_WS — o bloco está no topo desta página}"
+cd "$PB_DIR/aula17-cnn"
+python3 rotular.py --pasta ../aula17-metadrive/quadros-s7 --sem-janela
+``` **Não deixe a rede rotular os quadros**: o rótulo é a resposta contra a qual ela será medida.
 
 ### Passo 6 — A rede: as duas rodadas com a mesma semente, as curvas e a matriz
 
@@ -586,7 +614,7 @@ uv pip install --python .venv-cnn/bin/python tensorflow-cpu opencv-python-headle
 
 **O que você tem de ver**, depois de umas linhas de `oneDNN` (informação, não erro): `2.21.0 3.12.4 2.2.6 5.0.0`, ou versões vizinhas. **Se a instalação parar no download do `tensorflow-cpu`** (são 261 MB), interrompa com `Ctrl+C` e repita a linha: o `uv` aproveita o que já baixou.
 
-**Primeiro, o sintético, para conferir o caminho.** Se a sua tabela bater com a da aula — 0,980 e 0,930 —, o ambiente está certo; em outra CPU a terceira casa pode mudar. Uns três minutos. No Terminal E:
+**Primeiro, o sintético, para conferir o caminho.** A sua tabela **não** vai sair igual à da aula: com a mesma semente, a nuvem deu 0,980 / 0,930 na validação limpa e a minha máquina, 0,980 / 0,850. O que confere o caminho é o sinal: a rodada `com` abaixo da `sem` na `acc_val`, e acima na `acc_val_pert`. Anote os seus números. Uns três minutos. No Terminal E:
 
 ```bash
 # ── Terminal E ──
@@ -606,9 +634,12 @@ cd "$PB_DIR/aula17-cnn"
 "$PB_DIR/.venv-cnn/bin/python" treinar.py --pasta ../aula17-metadrive/quadros-s7 ../aula17-metadrive/quadros-s8 ../aula17-metadrive/quadros-s9 ../aula17-metadrive/quadros-s10 ../aula17-metadrive/quadros-s11 --saida resultado-metadrive
 "$PB_DIR/.venv-cnn/bin/python" curvas.py --pasta resultado-metadrive --saida resultado-metadrive/curvas.png
 cp resultado-metadrive/matriz_sem.png "$PB_DIR/docs/evidencias/tp4/matriz-confusao.png"
+cp resultado-metadrive/curvas.png "$PB_DIR/docs/evidencias/tp4/curvas-augmentation.png"
 ```
 
 **Leia o `resultado-metadrive/tabela.txt` na ordem certa:** a contagem por classe, a linha de base, a acurácia das duas rodadas, o pior recall e a matriz. Nenhum número da aula vale para os seus quadros — o MetaDrive tem céu, terreno e faixas finas, e o seu relatório é o primeiro lugar em que essa rede vai ser medida.
+
+**A comparação que o enunciado pede** ("relate a melhoria de generalização") vai para o relatório com os seus números: a `acc_val` sem × com, a `acc_val_pert` sem × com, a diferença em imagens, e uma frase sobre generalização — **inclusive quando não houve melhoria**. "Na validação limpa o augmentation perdeu N pontos; na perturbada ganhou M; são K imagens em 100, a direção e não uma conclusão" é uma resposta completa. "Não melhorou" também é, se vier com os números.
 
 **O que fazer quando o observado não bater:**
 
@@ -697,7 +728,7 @@ cd "$PB_DIR/aula17-cnn"
 "$PB_DIR/.venv-cnn/bin/python" curvas.py --pasta resultado-bn099 --saida resultado-bn099/curvas.png
 ```
 
-Ou rode as duas rodadas com outra semente (`--semente 11`, com `--saida resultado-s11`) e veja se a ordem da validação perturbada — 0,910 contra 0,940 — se mantém. A pergunta é a mesma da semana passada: **qual coluna da tabela denuncia a mudança, e qual fica igual?**
+Ou rode as duas rodadas com outra semente (`--semente 11`, com `--saida resultado-s11`) e veja se a ordem da validação perturbada — `sem` abaixo de `com` — se mantém. A pergunta é a mesma da semana passada: **qual coluna da tabela denuncia a mudança, e qual fica igual?**
 
 A resposta cabe numa frase, e vale mais no relatório do que mais uma época de treino — é ela que mostra que você sabe ler a sua própria tabela.
 

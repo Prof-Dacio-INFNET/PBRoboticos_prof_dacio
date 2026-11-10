@@ -10,7 +10,8 @@ mesmo contrato que o rotular.py escreve para os quadros do MetaDrive. Quem le
 um, le o outro: o treinar.py nao sabe de onde vieram as imagens.
 
 POR QUE SINTETICO. O enunciado pede 500 quadros do MetaDrive, e capturar 500
-quadros leva uns 23 minutos com renderizacao por software -- e, com o piloto
+quadros leva uns 23 minutos com renderizacao por software (com GPU, um a
+dois minutos) -- e, com o piloto
 IDM dirigindo, a classe `obstaculo` sai VAZIA (0 em 60 na amostra da semente
 7). Para a aula ter numeros medidos hoje, e para a comparacao sem x com
 augmentation ser feita sobre classes que EXISTEM, as imagens sao desenhadas. O

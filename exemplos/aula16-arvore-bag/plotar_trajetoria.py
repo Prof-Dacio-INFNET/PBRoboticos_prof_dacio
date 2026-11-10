@@ -4,6 +4,12 @@
     python3 plotar_trajetoria.py                       # le sessao.csv
     python3 plotar_trajetoria.py sessao.csv --saida trajetoria.png
     python3 plotar_trajetoria.py --so-trajetoria       # so' o painel de cima
+    python3 plotar_trajetoria.py ensaio.csv --limiar 0.75   # vigia com 0,75 m
+
+Precisa do `medir_sessao.py` AO LADO: as interrupcoes marcadas na figura sao
+os eventos da regua, pela mesma funcao. Duas contagens de evento escritas em
+dois arquivos ja divergiram uma vez (09/11/2026), e a figura dizia 0 onde o
+robo tinha parado 1.
 
 FERRAMENTA DE DESENHO: **matplotlib**, com o backend `Agg` (sem tela). Foi a
 escolha porque ela esta no apt do Ubuntu 22.04 (`python3-matplotlib`), nao
@@ -38,6 +44,8 @@ import csv
 import math
 import sys
 
+import medir_sessao
+
 # Backend sem tela ANTES de importar o pyplot: no WSL2 sem servidor X o
 # backend padrao tenta abrir janela e estoura. `Agg` escreve arquivo e pronto.
 try:
@@ -50,7 +58,7 @@ except ImportError:
              'pacote do apt, nunca pip -- pip reescreve o numpy do ROS 2.')
 
 SALA = (12.0, 8.0)        # m, so' para desenhar a caixa de referencia
-LIMIAR_OBSTACULO = 0.5    # m, o limiar do enunciado, desenhado como linha
+LIMIAR_OBSTACULO = medir_sessao.LIMIAR_OBSTACULO_M   # m, o do enunciado
 COSTURA_S = 6.0           # s entre os tracinhos que ligam as duas curvas
 TETO_SCAN = 3.0           # m: o /scan e' saturado aqui so' PARA DESENHAR. A
 #                           figura existe para mostrar o portao de 0,5 m; com
@@ -72,7 +80,7 @@ def ler_csv(caminho):
     if not linhas:
         sys.exit('o CSV %s nao tem nenhuma linha de dados' % caminho)
     faltando = [c for c in ('t', 'odom_x', 'odom_y', 'amcl_x', 'amcl_y',
-                            'dist_min_scan', 'cmd_v', 'estado')
+                            'dist_min_scan', 'cmd_v', 'cmd_w', 'estado')
                 if c not in linhas[0]]
     if faltando:
         sys.exit('o CSV %s nao tem as colunas %s -- ele foi gerado pelo '
@@ -89,24 +97,23 @@ def ler_csv(caminho):
 
 
 def interrupcoes(linhas):
-    """Os indices em que o estado VIRA `interrompido`.
+    """Os indices em que cada evento da regua comeca.
 
-    So' a transicao conta, nao cada amostra do estado: o evento e' o instante
-    em que o portao disparou, e ele dura varias amostras. Contar amostras
-    daria "6 interrupcoes" onde houve 2 -- e' o mesmo erro de quem conta
-    mensagem em vez de contar evento.
+    E' o `medir_sessao.eventos`, e nao uma segunda contagem: um evento e' um
+    bloco fora de `navegando` com `interrompido` ou `esperando` (no bag real
+    so' aparece o `esperando` -- o docstring de la' explica por que). Contar
+    amostras daria "20 interrupcoes" onde houve 1.
     """
-    marcos = []
-    anterior = None
-    for i, r in enumerate(linhas):
-        if r['estado'] == 'interrompido' and anterior != 'interrompido':
-            marcos.append(i)
-        anterior = r['estado']
-    return marcos
+    return [e['i'] for e in medir_sessao.eventos(linhas)]
 
 
-def desenhar(linhas, caminho, so_trajetoria=False, titulo=None):
-    """Monta a figura e grava. Devolve o caminho gravado."""
+def desenhar(linhas, caminho, so_trajetoria=False, titulo=None,
+             limiar=LIMIAR_OBSTACULO):
+    """Monta a figura e grava. Devolve o caminho gravado.
+
+    `limiar` e' o `limiar_m` com que o vigia rodou; a linha do painel de
+    baixo sai nele, e a legenda avisa se nao for o do TP4.
+    """
     t = [r['t'] for r in linhas]
     marcos = interrupcoes(linhas)
 
@@ -148,8 +155,8 @@ def desenhar(linhas, caminho, so_trajetoria=False, titulo=None):
         r = linhas[i]
         ax.plot([r['amcl_x']], [r['amcl_y']], marker='X', markersize=12,
                 color=COR_EVENTO, zorder=6,
-                label='obstaculo < %.1f m: cancela, espera, retoma'
-                      % LIMIAR_OBSTACULO if k == 1 else None)
+                label='obstaculo < %.2f m: cancela, espera, retoma'
+                      % limiar if k == 1 else None)
         ax.annotate(' %d ' % k, xy=(r['amcl_x'], r['amcl_y']),
                     xytext=(9, 9), textcoords='offset points',
                     fontsize=11, color=COR_EVENTO, weight='bold')
@@ -171,9 +178,13 @@ def desenhar(linhas, caminho, so_trajetoria=False, titulo=None):
                  color='#2a7f5f', linewidth=1.4,
                  label='menor distancia do /scan (m, saturada em %.0f m)'
                        % TETO_SCAN)
-        ax2.axhline(LIMIAR_OBSTACULO, color=COR_EVENTO, linewidth=1.2,
-                    linestyle=':', label='limiar do TP4: %.1f m'
-                                         % LIMIAR_OBSTACULO)
+        if abs(limiar - LIMIAR_OBSTACULO) < 1e-9:
+            rotulo = 'limiar do TP4: %.1f m' % LIMIAR_OBSTACULO
+        else:
+            rotulo = 'limiar usado: %.2f m (o TP4 pede %.1f m)' % (
+                limiar, LIMIAR_OBSTACULO)
+        ax2.axhline(limiar, color=COR_EVENTO, linewidth=1.2,
+                    linestyle=':', label=rotulo)
         ax2.plot(t, [r['cmd_v'] for r in linhas], color='#5a4fcf',
                  linewidth=1.4, label='cmd_v do /cmd_vel (m/s)')
         # `cmd_w` esta aqui para que ninguem confunda CURVA com PARADA: nos
@@ -217,10 +228,14 @@ def main():
     ap.add_argument('--so-trajetoria', action='store_true', dest='so_trajetoria',
                     help='apenas o painel da trajetoria, sem o painel do tempo')
     ap.add_argument('--titulo', default=None, help='titulo do painel de cima')
+    ap.add_argument('--limiar', type=float, default=LIMIAR_OBSTACULO,
+                    metavar='M',
+                    help='o limiar_m com que o vigia rodou, em m (padrao %.2f)'
+                         % LIMIAR_OBSTACULO)
     a = ap.parse_args()
 
     linhas = ler_csv(a.csv)
-    saida = desenhar(linhas, a.saida, a.so_trajetoria, a.titulo)
+    saida = desenhar(linhas, a.saida, a.so_trajetoria, a.titulo, a.limiar)
     marcos = interrupcoes(linhas)
     print('csv     : %s  (%d amostras, %.1f s)'
           % (a.csv, len(linhas), linhas[-1]['t']))

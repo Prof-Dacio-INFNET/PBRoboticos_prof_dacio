@@ -236,12 +236,18 @@ python3 plotar_trajetoria.py --saida trajetoria.png
 DISTANCIA PERCORRIDA -- tres contas, tres numeros
   integral de |cmd_v| dt      :  25.52 m   <- o que foi mandado andar
   soma dos passos do /odom    :  26.29 m   <- +3.0% (a deriva de escala)
-  soma dos passos do /amcl    :  49.03 m   <- +92.1%: o tremor virou caminho
+  soma dos passos do /amcl    :  49.03 m   <- +92.1%: o tremor do AMCL virou caminho
+  cite a PRIMEIRA ou a segunda. A terceira e armadilha de conta, nao distancia.
 
-INTERRUPCOES -- 2 evento(s); o portao viu no minimo 0.402 m
-  #  t disp (s)  /scan (m)  parado (s)  espera (s)  2 s cumpridos
-  1      12.30      0.402        2.00        2.00            sim
-  2      51.80      0.406        2.10        2.10            sim
+MENOR DISTANCIA DO /scan (setor frontal) -- dois numeros
+  na sessao inteira       : 0.402 m, em t = 12.6 s (estado esperando, robo parado)
+  com o portao armado     : 0.504 m, em t = 51.7 s
+
+INTERRUPCOES -- 2 evento(s)
+  #  t disp (s)  /scan (m)  parado (s)  espera (s)  evento (s)  2 s cumpridos  onde (x, y)
+  1      12.30      0.402        2.00        2.00        3.10            sim  (6.32, 3.99)
+  2      51.80      0.406        2.10        2.10        3.20            sim  (10.53, 3.03)
+  tempo parado na sessao inteira: 4.10 s
 ```
 
 Três leituras, e a primeira é a que mais vale:

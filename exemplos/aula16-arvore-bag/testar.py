@@ -3,12 +3,14 @@
 
     python3 testar.py
 
-Oito grupos, todos com a resposta sabida de antemao. O que eles provam e o
+Dez grupos, todos com a resposta sabida de antemao. O que eles provam e o
 que eles NAO provam esta separado no README, na secao "O que foi e o que nao
-foi verificado" -- e a separacao e o ponto. Nada da camada ROS 2 deste
-exemplo foi executado: o grupo 8 confere o que da para conferir sem ROS 2
-(sintaxe, XML bem formado, nomes de no de arvore contra a fonte do Humble) e
-para por ai, de proposito.
+foi verificado" -- e a separacao e o ponto. Aqui nao ha ROS 2: o grupo 8
+confere o que da para conferir sem ele (sintaxe, XML bem formado, nomes de
+no de arvore contra a fonte do Humble), o grupo 9 mede sessoes gravadas
+"como o vigia real grava" (o defeito do ensaio de 09/11/2026) e o grupo 10
+roda a maquina de estados do `vigia.py` com DUBLES do rclpy -- o que prova a
+logica do no, nao que ele conversa com o Nav2.
 
 O grupo 5 e o coracao: ele PROVA, com a verdade que o simulador guarda e nao
 grava, que o erro da odometria cresce e o do AMCL nao. E a frase que o
@@ -19,10 +21,12 @@ import ast
 import filecmp
 import math
 import pathlib
+import shutil
 import subprocess
 import sys
 import tempfile
 import time
+import types
 import xml.etree.ElementTree as ET
 
 import medir_sessao
@@ -377,11 +381,360 @@ if conferidor.is_file():
 else:
     print('  (pulado) tools/conferir-launch.py nao esta ao lado')
 
+# ---------------------------------------------------------------------- 9
+print('9. a sessao como o vigia REAL grava: so navegando e esperando')
+# No ensaio de 09/11/2026 o `interrompido` durou ~2 ms e nao caiu em nenhuma
+# linha do CSV; a regua de entao contava evento so por ele e deu ZERO para
+# uma sessao com uma interrupcao de verdade. Estes testes sao esse caso.
+real, res_real = simular_sessao.simular(como_vigia_real=True)
+f_real = tmp / 'real.csv'
+simular_sessao.gravar_csv(f_real, real)
+lin_real = medir_sessao.ler_csv(f_real)
+m_real = medir_sessao.medir(lin_real)
+conferir('o CSV nao tem nenhuma linha `interrompido` nem `retomando`',
+         set(m_real['estados']) == {'navegando', 'esperando'},
+         ', '.join(m_real['estados']))
+conferir('e a regua conta os eventos mesmo assim',
+         len(m_real['eventos']) == res_real['eventos'] == 2,
+         '%d evento(s), o simulador disparou %d'
+         % (len(m_real['eventos']), res_real['eventos']))
+conferir('a espera medida cai na tolerancia, e o parado e MENOR que ela',
+         not m_real['fora_da_espera']
+         and all(e['parado_s'] < e['espera_s'] for e in m_real['eventos']),
+         'espera %s; parado %s (o robo freia dentro da espera)'
+         % ('/'.join('%.2f' % e['espera_s'] for e in m_real['eventos']),
+            '/'.join('%.2f' % e['parado_s'] for e in m_real['eventos'])))
+conferir('o plotador marca os mesmos eventos (a mesma funcao)',
+         plotar_trajetoria.interrupcoes(plotar_trajetoria.ler_csv(str(f_real)))
+         == [e['i'] for e in m_real['eventos']],
+         '%d marca(s)' % len(m_real['eventos']))
+
+# O ensaio de 09/11 em miniatura: 25 s de `navegando` parado antes (o
+# gravar_pose poe `navegando` enquanto nao ouve o vigia, e o vigia comeca em
+# `navegando` sem goal), UM evento so de `esperando`, e o robo parado no
+# destino depois do sucesso, com o /scan MAIS perto que o limiar -- como os
+# 0,480 m do ensaio, que o vigia de 0,75 m nunca comparou com nada.
+# corta a sessao 3 s antes do segundo disparo, antes de a pessoa aparecer
+um = [dict(r) for r in lin_real[:m_real['eventos'][1]['i'] - 30]]
+dt = medir_sessao.passo_mediano(um)
+antes = []
+for k in range(250):
+    r = dict(um[0])
+    r.update(t=k * dt, cmd_v=0.0, cmd_w=0.0, estado='navegando')
+    antes.append(r)
+for r in um:
+    r['t'] += 250 * dt
+depois = []
+for k in range(1, 51):
+    r = dict(um[-1])
+    r.update(t=um[-1]['t'] + k * dt, cmd_v=0.0, cmd_w=0.0,
+             dist_min_scan=0.35, estado='navegando')
+    depois.append(r)
+ensaio = antes + um + depois
+f_ens = tmp / 'ensaio.csv'
+simular_sessao.gravar_csv(f_ens, ensaio)
+m_ens = medir_sessao.medir(medir_sessao.ler_csv(f_ens))
+conferir('o ensaio de 09/11 em miniatura da 1 evento, nao 0',
+         len(m_ens['eventos']) == 1 and not m_ens['fora_da_espera'],
+         'espera %.2f s' % m_ens['eventos'][0]['espera_s'])
+conferir('25 s de `navegando` parado no comeco nao viram evento',
+         m_ens['eventos'][0]['t'] > 250 * dt and m_ens['truncado'] is None,
+         'evento em t = %.1f s' % m_ens['eventos'][0]['t'])
+r_min = ensaio[m_ens['i_scan_min']]
+conferir('0,35 m parado no destino e o minimo da sessao, mas nao do portao',
+         abs(r_min['dist_min_scan'] - 0.35) < 1e-9 and not m_ens['furos']
+         and ensaio[m_ens['i_scan_armado']]['dist_min_scan']
+         >= medir_sessao.LIMIAR_OBSTACULO_M,
+         'armado: %.3f m; nenhuma frase "olhe: ... portao armado"'
+         % ensaio[m_ens['i_scan_armado']]['dist_min_scan'])
+conferir('a figura do ensaio marca 1 interrupcao',
+         len(plotar_trajetoria.interrupcoes(
+             plotar_trajetoria.ler_csv(str(f_ens)))) == 1)
+
+cortado = [dict(r) for r in ensaio[:5]]
+for r in cortado:
+    r['estado'] = 'esperando'          # o bag comecou no meio de uma espera
+cortado += ensaio[5:]
+m_cort = medir_sessao.medir(cortado)
+conferir('um CSV que JA comeca em `esperando` nao ganha evento falso',
+         len(m_cort['eventos']) == 1 and m_cort['truncado'] == (0, 5)
+         and not m_cort['fora_da_espera'],
+         'o bloco cortado e avisado, nao contado')
+
+furo = [dict(r) for r in ensaio]
+k_furo = 250 + 300
+furo[k_furo]['dist_min_scan'] = 0.30   # portao armado, robo andando, sem evento
+m_furo = medir_sessao.medir(furo)
+conferir('/scan abaixo do limiar com o portao armado e sem evento: "olhe:"',
+         m_furo['furos'] == [k_furo]
+         and any(s.startswith('olhe: o /scan') for s in
+                 medir_sessao.veredito(m_furo)),
+         't = %.1f s' % furo[k_furo]['t'])
+
+r75, res75 = simular_sessao.simular(como_vigia_real=True, limiar=0.75)
+f75 = tmp / 'real75.csv'
+simular_sessao.gravar_csv(f75, r75)
+lin75 = medir_sessao.ler_csv(f75)
+m75 = medir_sessao.medir(lin75, limiar=0.75)
+v75 = medir_sessao.veredito(m75)
+conferir('sessao com limiar_m 0,75 medida com --limiar 0.75: eventos certos',
+         len(m75['eventos']) == res75['eventos'] > 0
+         and all(e['scan'] < 0.75 for e in m75['eventos'])
+         and not any(s.startswith('ATENCAO') for s in v75),
+         '/scan nos eventos: %s' % '; '.join('%.3f' % e['scan']
+                                             for e in m75['eventos']))
+conferir('e o veredito diz em uma linha que o TP4 pede 0,50 m',
+         sum('o TP4 pede 0.50 m' in s for s in v75) == 1
+         and not any('sustenta o item 2' in s for s in v75),
+         [s for s in v75 if 'TP4 pede' in s][0][:60])
+v75_50 = medir_sessao.veredito(medir_sessao.medir(lin75))
+conferir('medida com o limiar padrao, a regua aponta o --limiar',
+         any(s.startswith('ATENCAO') and '--limiar' in s for s in v75_50))
+conferir('e com o limiar padrao nao ha a linha do "TP4 pede"',
+         not any('TP4 pede 0.50' in s for s in medir_sessao.veredito(m)))
+cli = subprocess.run([sys.executable, str(AQUI / 'medir_sessao.py'), str(f75),
+                      '--limiar', '0.75'], capture_output=True, text=True)
+conferir('`medir_sessao.py --limiar 0.75` imprime o limiar em LIMIARES',
+         cli.returncode == 0 and 'obstaculo   : 0.75 m' in cli.stdout,
+         [s.strip() for s in cli.stdout.splitlines() if 'obstaculo   :' in s][0]
+         if 'obstaculo   :' in cli.stdout else cli.stderr[-80:])
+
+# --------------------------------------------------------------------- 10
+print('10. a maquina de estados do vigia.py, com dubles do rclpy')
+
+
+class _Futuro:
+    def __init__(self):
+        self.cbs, self.valor = [], None
+
+    def add_done_callback(self, cb):
+        self.cbs.append(cb)
+
+    def resolver(self, valor):
+        self.valor = valor
+        for cb in self.cbs:
+            cb(self)
+
+    def result(self):
+        return self.valor
+
+
+class _Msg:
+    def __init__(self, **kw):
+        self.__dict__.update(kw)
+
+
+class _Pub:
+    def __init__(self, topico):
+        self.topico, self.msgs = topico, []
+
+    def publish(self, m):
+        self.msgs.append(m.data)
+
+
+class _Timer:
+    def __init__(self, periodo, cb):
+        self.periodo, self.cb, self.ativo = periodo, cb, True
+
+    def cancel(self):
+        self.ativo = False
+
+
+class _Log:
+    def __init__(self):
+        self.linhas = []
+
+    def info(self, s):
+        self.linhas.append(s)
+
+    warn = error = info
+
+
+class _Relogio:
+    agora_ns = 0
+
+    def now(self):
+        return _Msg(nanoseconds=_Relogio.agora_ns, to_msg=lambda: None)
+
+
+class _Node:
+    parametros = {}
+
+    def __init__(self, nome):
+        self.pubs, self.timers, self.log = {}, [], _Log()
+        self._par = {}
+
+    def declare_parameter(self, nome, valor):
+        self._par[nome] = _Node.parametros.get(nome, valor)
+
+    def get_parameter(self, nome):
+        return _Msg(value=self._par[nome])
+
+    def create_subscription(self, *a):
+        return None
+
+    def create_publisher(self, tipo, topico, qos):
+        self.pubs[topico] = _Pub(topico)
+        return self.pubs[topico]
+
+    def create_timer(self, periodo, cb):
+        self.timers.append(_Timer(periodo, cb))
+        return self.timers[-1]
+
+    def destroy_timer(self, t):
+        self.timers.remove(t)
+
+    def get_logger(self):
+        return self.log
+
+    def get_clock(self):
+        return _Relogio()
+
+
+class _Punho:
+    accepted = True
+
+    def __init__(self):
+        self.res, self.canc = _Futuro(), _Futuro()
+
+    def get_result_async(self):
+        return self.res
+
+    def cancel_goal_async(self):
+        return self.canc
+
+
+class _Cliente:
+    def __init__(self, *a):
+        self.envios = []
+
+    def send_goal_async(self, meta, feedback_callback=None):
+        self.envios.append((meta, _Futuro()))
+        return self.envios[-1][1]
+
+
+def _modulo(nome, **attrs):
+    mod = types.ModuleType(nome)
+    mod.__dict__.update(attrs)
+    return mod
+
+
+class _Goal:
+    def __init__(self):
+        self.pose, self.behavior_tree = None, ''
+
+
+class _Pose:
+    def __init__(self):
+        self.header = _Msg(frame_id='', stamp=None)
+        self.pose = _Msg(position=_Msg(x=0.0, y=0.0),
+                         orientation=_Msg(z=0.0, w=1.0))
+
+
+dubles = {
+    'rclpy': _modulo('rclpy', init=lambda: None, ok=lambda: False,
+                     shutdown=lambda: None, spin=lambda n: None),
+    'rclpy.node': _modulo('rclpy.node', Node=_Node),
+    'rclpy.action': _modulo('rclpy.action', ActionClient=_Cliente),
+    'rclpy.qos': _modulo('rclpy.qos', qos_profile_sensor_data=None),
+    'action_msgs': _modulo('action_msgs'),
+    'action_msgs.msg': _modulo('action_msgs.msg', GoalStatus=_Msg(
+        STATUS_SUCCEEDED=4, STATUS_CANCELED=5)),
+    'geometry_msgs': _modulo('geometry_msgs'),
+    'geometry_msgs.msg': _modulo('geometry_msgs.msg', PoseStamped=_Pose),
+    'nav2_msgs': _modulo('nav2_msgs'),
+    'nav2_msgs.action': _modulo('nav2_msgs.action', NavigateToPose=_Msg(
+        Goal=_Goal)),
+    'sensor_msgs': _modulo('sensor_msgs'),
+    'sensor_msgs.msg': _modulo('sensor_msgs.msg', LaserScan=object),
+    'std_msgs': _modulo('std_msgs'),
+    'std_msgs.msg': _modulo('std_msgs.msg', Float32=lambda: _Msg(data=0.0),
+                            String=lambda: _Msg(data='')),
+}
+reais = {k: sys.modules.get(k) for k in dubles}
+sys.modules.update(dubles)
+sys.path.insert(0, str(PACOTE))
+try:
+    import aula16_arvore.vigia as vigia_mod
+finally:
+    sys.path.remove(str(PACOTE))
+    for k, v in reais.items():
+        if v is None:
+            sys.modules.pop(k, None)
+        else:
+            sys.modules[k] = v
+shutil.rmtree(PACOTE / 'aula16_arvore' / '__pycache__', ignore_errors=True)
+
+
+def _scan(d):
+    return _Msg(ranges=[d], angle_min=0.0, angle_increment=0.0,
+                range_min=0.05, range_max=10.0)
+
+
+_Node.parametros = {'limiar_m': 0.75}
+no = vigia_mod.Vigia()
+estados = no.pubs['estado_vigia'].msgs
+no.enviar_objetivo()
+punho1 = _Punho()
+no.cliente.envios[-1][1].resolver(punho1)
+conferir('goal aceito publica `navegando` na hora',
+         estados == ['navegando'], ' -> '.join(estados))
+_Relogio.agora_ns = int(10e9)
+no.ao_scan(_scan(0.80))
+conferir('/scan a 0,80 m com limiar 0,75 nao interrompe',
+         no.estado == 'navegando' and len(estados) == 1)
+no.ao_scan(_scan(0.70))
+conferir('/scan a 0,70 m: `interrompido` publicado ANTES do cancelamento voltar',
+         estados[-1] == 'interrompido' and no.interrupcoes == 1)
+punho1.canc.resolver(_Msg(goals_canceling=[1]))
+espera = [t for t in no.timers if t.periodo == 2.0]
+conferir('cancelamento aceito: `esperando` publicado e temporizador de 2 s',
+         estados[-1] == 'esperando' and len(espera) == 1)
+punho1.res.resolver(_Msg(status=5))
+espera[0].cb()
+conferir('fim da espera: `retomando` publicado, temporizador destruido, '
+         'MESMO goal reenviado',
+         estados[-1] == 'retomando' and espera[0] not in no.timers
+         and not espera[0].ativo and len(no.cliente.envios) == 2
+         and no.cliente.envios[0][0].pose.pose.position.x
+         == no.cliente.envios[1][0].pose.pose.position.x)
+punho2 = _Punho()
+no.cliente.envios[-1][1].resolver(punho2)
+conferir('a sequencia publicada e a do enunciado, sem depender dos 10 Hz',
+         estados == ['navegando', 'interrompido', 'esperando', 'retomando',
+                     'navegando'], ' -> '.join(estados))
+_Relogio.agora_ns = int(10.5e9)
+no.ao_scan(_scan(0.30))
+conferir('dentro da carencia o portao nao dispara',
+         no.estado == 'navegando' and no.interrupcoes == 1)
+no.ao_publicar()
+conferir('o temporizador de 10 Hz continua publicando estado e distancia',
+         estados[-1] == 'navegando'
+         and abs(no.pubs['dist_min'].msgs[-1] - 0.30) < 1e-9)
+n_log = len(no.log.linhas)
+no.ao_feedback(_Msg(feedback=_Msg(distance_remaining=0.0,
+                                  number_of_recoveries=0)))
+conferir('feedback com distancia 0,0 (antes do caminho) nao vai para o log',
+         len(no.log.linhas) == n_log)
+no.ao_feedback(_Msg(feedback=_Msg(distance_remaining=7.3,
+                                  number_of_recoveries=0)))
+conferir('e o feedback de verdade vai',
+         len(no.log.linhas) == n_log + 1 and '7.3' in no.log.linhas[-1])
+punho2.res.resolver(_Msg(status=4))
+conferir('sucesso: 1 interrupcao no log, e o portao desarma',
+         '1 interrupcao' in no.log.linhas[-1] and no.punho is None)
+_Relogio.agora_ns = int(30e9)
+no.ao_scan(_scan(0.30))
+conferir('parado no destino, /scan a 0,30 m nao interrompe (sem goal)',
+         no.estado == 'navegando' and no.interrupcoes == 1,
+         'e por isso que o minimo do CSV pode cair abaixo do limiar ali')
+
 print()
 print('tempo total: %.1f s' % (time.perf_counter() - t_inicio))
-print('NAO testado aqui: tudo o que precisa de ROS 2 -- o vigia cancelando um')
-print('goal de verdade, o gravar_pose lendo um bag, a arvore carregando no')
-print('bt_navigator. Veja "O que foi e o que nao foi verificado" no README.')
+print('NAO testado aqui: tudo o que precisa de ROS 2 -- o vigia contra um Nav2')
+print('de verdade (o grupo 10 usa dubles), o gravar_pose lendo um bag, a arvore')
+print('carregando no bt_navigator. Veja "O que foi e o que nao foi verificado"')
+print('no README.')
 if falhas:
     print('%d FALHA(S): %s' % (len(falhas), '; '.join(falhas)))
     raise SystemExit(1)

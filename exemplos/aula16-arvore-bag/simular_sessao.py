@@ -5,6 +5,7 @@
     python3 simular_sessao.py --saida sessao.csv
     python3 simular_sessao.py --sem-eventos --saida limpa.csv
     python3 simular_sessao.py --espera 1.2 --saida espera-curta.csv
+    python3 simular_sessao.py --como-vigia-real --saida real.csv
 
 O QUE ELE E:
 
@@ -42,6 +43,15 @@ A HISTORIA QUE A SESSAO CONTA, em quatro estados:
                   robo freia (3 amostras, e a desaceleracao aparece em cmd_v)
     esperando     os 2 s de espera, com cmd_v e cmd_w em ZERO
     retomando     o MESMO objetivo foi reenviado, o robo acelera de volta
+
+    COMO O VIGIA REAL GRAVA (`--como-vigia-real`): no robo, `interrompido`
+    dura so' o tempo de o servidor aceitar o cancelamento (~2 ms no ensaio de
+    09/11/2026) e `retomando` o de o goal novo ser aceito. A 10 Hz nenhum dos
+    dois cai numa linha do CSV, e o temporizador de 2 s do vigia comeca no
+    cancelamento: o robo FREIA dentro do `esperando`. Com a opcao, o CSV sai
+    assim -- so' `navegando` e `esperando`, a frenagem dentro da espera e a
+    aceleracao dentro do `navegando` --, que e' a sessao que a regua tem de
+    acertar e que, ate 09/11, ela errava contando zero.
 
     Sao dois eventos, nos dois lugares declarados em ARCOS_EVENTO. O obstaculo
     e' uma PESSOA que entra na frente do robo e sai alguns segundos depois --
@@ -231,7 +241,7 @@ def distancia_minima(pose, pessoa):
 
 def simular(semente=SEMENTE, dt=DT, deriva_pct=DERIVA_PCT, espera_s=ESPERA_S,
             limiar=LIMIAR_OBSTACULO, com_eventos=True, atraso_tick=ATRASO_TICK_S,
-            ruido_scan=RUIDO_SCAN, ruido_amcl=RUIDO_AMCL):
+            ruido_scan=RUIDO_SCAN, ruido_amcl=RUIDO_AMCL, como_vigia_real=False):
     """Roda a sessao inteira. Devolve (registros, resumo).
 
     Cada registro tem as 11 colunas do CSV **mais** tres que nao vao para o
@@ -239,6 +249,11 @@ def simular(semente=SEMENTE, dt=DT, deriva_pct=DERIVA_PCT, espera_s=ESPERA_S,
     `testar.py` poder provar o que o CSV nao permite provar -- que o erro da
     odometria cresce e o do AMCL nao. No bag do seu robo elas nao existem, e e'
     por isso que elas param aqui.
+
+    `como_vigia_real` muda so' o que vai para a coluna `estado` e quando a
+    espera comeca a contar (veja o docstring do modulo): `interrompido` vira
+    `esperando`, a espera total continua sendo a pedida, `retomando` vira
+    `navegando`, e a carencia conta a partir da retomada, como no vigia.
     """
     rng = np.random.default_rng(semente)
     pessoas = posicoes_das_pessoas() if com_eventos else []
@@ -313,11 +328,15 @@ def simular(semente=SEMENTE, dt=DT, deriva_pct=DERIVA_PCT, espera_s=ESPERA_S,
                 verdade[1] + float(rng.normal(0.0, ruido_amcl)),
                 normalizar(verdade[2] + float(rng.normal(0.0, RUIDO_AMCL_ANG))))
 
+        rotulo = estado
+        if como_vigia_real:
+            rotulo = {'interrompido': 'esperando',
+                      'retomando': 'navegando'}.get(estado, estado)
         registros.append({
             't': round(t, 4),
             'odom_x': odom[0], 'odom_y': odom[1], 'odom_yaw': odom[2],
             'amcl_x': amcl[0], 'amcl_y': amcl[1], 'amcl_yaw': amcl[2],
-            'dist_min_scan': dist, 'cmd_v': v, 'cmd_w': w, 'estado': estado,
+            'dist_min_scan': dist, 'cmd_v': v, 'cmd_w': w, 'estado': rotulo,
             'x_verdade': verdade[0], 'y_verdade': verdade[1],
             'th_verdade': verdade[2]})
 
@@ -337,12 +356,19 @@ def simular(semente=SEMENTE, dt=DT, deriva_pct=DERIVA_PCT, espera_s=ESPERA_S,
                 if estado == 'interrompido':
                     estado = 'esperando'
                     passos_no_estado = int(round(eventos[-1][2] / dt))
+                    if como_vigia_real:
+                        # o temporizador do vigia comecou no cancelamento:
+                        # a frenagem ja comeu parte da espera
+                        passos_no_estado -= int(round(FREIO_S / dt))
                 elif estado == 'esperando':
                     estado = 'retomando'
                     passos_no_estado = int(round(RETOMADA_S / dt))
                 else:
                     estado = 'navegando'
                     rearme = int(round(REARME_S / dt))
+                    if como_vigia_real:
+                        # no vigia a carencia comeca no reenvio do goal
+                        rearme -= int(round(RETOMADA_S / dt))
 
     final = registros[-1]
     erro_odom = math.hypot(final['odom_x'] - final['x_verdade'],
@@ -353,6 +379,7 @@ def simular(semente=SEMENTE, dt=DT, deriva_pct=DERIVA_PCT, espera_s=ESPERA_S,
         'semente': semente, 'dt': dt, 'linhas': len(registros),
         'duracao': final['t'], 'deriva_pct': deriva_pct, 'limiar': limiar,
         'espera_s': espera_s, 'eventos': len(eventos),
+        'como_vigia_real': como_vigia_real,
         'arco': arco, 'erro_odom_final': erro_odom,
         'erro_amcl_final': erro_amcl,
         'folga_minima': min(folga_de_parede(r['x_verdade'], r['y_verdade'])
@@ -412,11 +439,16 @@ def main():
                          % LIMIAR_OBSTACULO)
     ap.add_argument('--sem-eventos', action='store_true', dest='sem_eventos',
                     help='sessao sem nenhum obstaculo, para conferir a regua')
+    ap.add_argument('--como-vigia-real', action='store_true',
+                    dest='como_vigia_real',
+                    help='coluna estado como o vigia real grava: so navegando '
+                         'e esperando (interrompido e retomando duram ms)')
     a = ap.parse_args()
 
     registros, resumo = simular(
         semente=a.semente, deriva_pct=a.deriva, espera_s=a.espera,
-        limiar=a.limiar, com_eventos=not a.sem_eventos)
+        limiar=a.limiar, com_eventos=not a.sem_eventos,
+        como_vigia_real=a.como_vigia_real)
     imprimir_resumo(resumo)
     print('csv           : %s  (%d linhas, %d colunas)'
           % (gravar_csv(a.saida, registros), len(registros), len(CAMPOS_CSV)))

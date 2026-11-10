@@ -1,6 +1,6 @@
 # Exemplo — `aula17-cnn`
 
-**Aula 17 · Etapa 9.** O item 4 do TP4 pede, numa frase só: *"CNN em TensorFlow/Keras com 500 frames rotulados do MetaDrive em 3 classes (via livre / obstáculo / cruzamento), com augmentation (rotação ±15°, zoom 0,2, flip horizontal), BatchNormalization e Dropout(0,5), plotando curvas de acurácia e perda com e sem augmentation"* — e o gate **G4.6** acrescenta a **matriz de confusão**. Este exemplo é essa frase inteira, de ponta a ponta: um ambiente Python que roda TensorFlow ao lado do ROS 2 sem quebrá-lo, a rotulagem dos quadros do MetaDrive, a mesma rede treinada duas vezes, as curvas no mesmo eixo e a matriz.
+**Aula 17 · Etapa 9.** O item 4 do TP4 diz, no enunciado: *"Colete 500 frames rotulados do MetaDrive em 3 classes (via livre / obstáculo / cruzamento). Treine uma CNN com TensorFlow/Keras usando data augmentation (rotação ±15°, zoom 0,2, flip horizontal), BatchNormalization e Dropout(0,5). Plote as curvas de accuracy e loss com e sem augmentation e relate a melhoria de generalização."* O gate **G4.6** acrescenta a **matriz de confusão**. Este exemplo percorre esse enunciado de ponta a ponta: um ambiente Python que roda TensorFlow ao lado do ROS 2 sem quebrá-lo, a rotulagem dos quadros do MetaDrive, a mesma rede treinada duas vezes, as curvas no mesmo eixo e a matriz.
 
 > ## Leia isto antes de qualquer coisa
 >
@@ -108,7 +108,7 @@ cd "$PB_DIR/aula17-cnn"
 "$PB_DIR/.venv-cnn/bin/python" testar.py
 ```
 
-Sete grupos, 94 conferências, uns 26 s — quase todo o tempo é o TensorFlow subindo três vezes. O teste não prova que a rede aprende; prova que as peças estão no lugar: o sintético é determinístico byte a byte, o CSV tem as colunas, as duas rodadas começam com **os mesmos pesos** (os 19 tensores do núcleo, um a um), o `treinar.py --epocas 1` gera todos os arquivos com a matriz 3×3, ele não quebra nos 12 quadros reais da amostra do MetaDrive (onde uma classe tem um exemplo só e outra não tem nenhum), e o `curvas.py` grava um PNG de verdade. Termina em `todos os testes passaram.`
+Sete grupos, 121 conferências, uns 65 s neste container — quase todo o tempo é o TensorFlow subindo três vezes, e uns segundos são as três revisões do `rotular.py` dirigidas por um pseudoterminal. O teste não prova que a rede aprende; prova que as peças estão no lugar: o sintético é determinístico byte a byte, o CSV tem as colunas, o `rotular.py` traduz os códigos de tecla do GTK, do Qt e do Windows, retoma só o que foi revisado e revisa pelo terminal (sem janela: a janela não é testada aqui), as duas rodadas começam com **os mesmos pesos** (os 19 tensores do núcleo, um a um), o `treinar.py --epocas 1` gera todos os arquivos com a matriz 3×3, ele não quebra nos 12 quadros reais da amostra do MetaDrive (onde uma classe tem um exemplo só e outra não tem nenhum), e o `curvas.py` grava um PNG de verdade. Termina em `todos os testes passaram.`
 
 ## Medir no sintético
 
@@ -154,7 +154,7 @@ matriz com (linha = verdade, coluna = previsto, via_livre / obstaculo / cruzamen
   cruzamento      0     0    33
 ```
 
-Rodei duas vezes, em processos separados: os mesmos números, casa por casa. É o `enable_op_determinism()` do TensorFlow mais a semente em tudo. Em outra CPU, a terceira casa pode mudar.
+Rodei duas vezes, em processos separados: os mesmos números, casa por casa. É o `enable_op_determinism()` do TensorFlow mais a semente em tudo — **na mesma máquina**. Em outra CPU muda mais que a terceira casa: no WSL2 do professor, em 09/11/2026, a mesma semente deu `sem` 0,980 e `com` **0,850** na validação limpa (aqui, 0,930), e 0,880 contra 0,940 na perturbada. O sinal das duas diferenças é o mesmo nas duas máquinas — o augmentation perde na validação limpa e ganha na perturbada —; o tamanho, não. Leia o sinal, e relate os **seus** números.
 
 A figura das curvas é a `amostra/curvas.png` desta pasta: acurácia e perda, treino tracejado e validação cheia, a rodada `sem` em azul e a `com` em laranja, no mesmo eixo.
 
@@ -233,7 +233,7 @@ cd "$PB_DIR/aula17-metadrive"
 for s in 7 8 9 10 11; do "$PB_DIR/.venv-metadrive/bin/python" capturar_frames.py --frames 100 --semente "$s" --saida "quadros-s$s"; done
 ```
 
-**Terminal B — rotular.** Com o `python3` **do sistema**, porque a janela precisa do OpenCV do apt. Uma pasta de cada vez; feche com `q` e ele grava, e se reabrir na mesma pasta continua de onde parou:
+**Terminal B — rotular.** Com o `python3` **do sistema**, porque a janela precisa do OpenCV do apt. Uma pasta de cada vez; feche com `q` e ele grava, e se reabrir na mesma pasta continua do primeiro quadro que você ainda não revisou:
 
 ```bash
 # ── herda as variáveis do bloco de download ──
@@ -242,7 +242,20 @@ cd "$PB_DIR/aula17-cnn"
 python3 rotular.py --pasta ../aula17-metadrive/quadros-s7
 ```
 
-A janela mostra o quadro ampliado 2×, a sugestão do `estado.csv` e o rótulo atual (verde se igual à sugestão, laranja se você mudou). **1 / 2 / 3** escolhem `via_livre` / `obstaculo` / `cruzamento` e avançam; **Enter** aceita o que está mostrado; **setas** (ou **a** / **d**) andam sem mudar; **s** grava; **q** grava e sai. O `rotulos.csv` sai com três colunas, `arquivo,classe,sugerido`, e no fim o script imprime quantos quadros você revisou e **quantos diferem da sugestão** — esse é o número que vai para o relatório.
+A janela mostra o quadro ampliado 2×, a sugestão do `estado.csv` e o rótulo atual (verde se igual à sugestão, laranja se você mudou). **1 / 2 / 3** escolhem `via_livre` / `obstaculo` / `cruzamento` e avançam; **Enter** (ou espaço) aceita o que está mostrado; **setas** (ou **a** / **d**) andam sem mudar; **s** grava; **q**, **Esc** ou **Ctrl+C** gravam e saem. Maiúsculas (CapsLock) e o teclado numérico também valem.
+
+**As teclas valem na janela ou no terminal** de onde você chamou o script — a primeira linha impressa diz isso. Clicar na janela não é obrigatório: se o foco ficou no terminal, é ali que as teclas são lidas, e nada é ecoado nem sobra para o shell depois. A cada passo o terminal mostra uma linha como `  7/20 quadro018.png -> obstaculo (sugerido via_livre)`, e assim há retorno mesmo com a janela escondida atrás de outra. Se uma tecla não fizer nada, o terminal imprime `tecla sem funcao: codigo N (0xHEX)`: anote esse código e mande junto com a descrição do problema — é o que diz qual tecla o seu OpenCV está entregando.
+
+O `rotulos.csv` sai com quatro colunas, `arquivo,classe,sugerido,revisado`. `revisado` é 1 só nos quadros em que você apertou 1/2/3 ou Enter; nos outros, a `classe` é a sugestão que ninguém olhou. Na volta, só as linhas com `revisado=1` contam como revisadas; um `rotulos.csv` gravado pela versão anterior do script, sem essa coluna, é lido como "nada revisado", com aviso (e, se ele tiver alguma `classe` diferente da sugestão, é copiado antes para `rotulos.antigo.csv`). No fim o script imprime quantos quadros você revisou e **quantos diferem da sugestão** — esse é o número que vai para o relatório. O `treinar.py` lê só `arquivo` e `classe`.
+
+Se a janela não abrir ou não responder (o WSLg falhou em sala, por exemplo), o `--sem-janela` faz a mesma revisão só pelo terminal, sem `imshow`: a cada passo imprime o arquivo, a sugestão e o rótulo atual. Abra o PNG num visualizador ao lado, se precisar ver o quadro:
+
+```bash
+# ── herda as variáveis do bloco de download ──
+: "${PB_WS:?defina PB_USER, PB_DIR e PB_WS — o bloco está no topo desta página}"
+cd "$PB_DIR/aula17-cnn"
+python3 rotular.py --pasta ../aula17-metadrive/quadros-s7 --sem-janela
+```
 
 Sem tela (num servidor, ou se o WSLg estiver desligado), há o `--so-sugestao`, que grava a sugestão sem abrir janela — e diz, na saída, que ninguém olhou:
 
@@ -271,7 +284,7 @@ Os quadros de 320×240 são reduzidos para 128×96 na leitura (`--tamanho` muda 
 
 **Rodou neste container** — Linux sem GPU, 2 núcleos, Python 3.10.20 instalado pelo `uv`, as versões da tabela do ambiente:
 
-a criação do venv **sem** `--system-site-packages` e a instalação com `uv pip install --python` (11 s na segunda tentativa; a primeira travou no download e foi interrompida aos 10 min); o `gerar_sintetico.py` com 500 imagens equilibradas e com `54:0:6`, e o determinismo byte a byte; o `treinar.py` em quatro configurações de 20 épocas — equilibrado e `54:0:6`, cada um com momentum 0,9 e 0,99 —, uns 90 s de parede cada; a reprodução, em outro processo, da mesma tabela equilibrada; o modelo da rodada quebrada avaliado com `training=True` e `False`; a avaliação dos modelos do `54:0:6` sobre os 167 obstáculos; o `curvas.py`; o `rotular.py --so-sugestao` sobre os 12 quadros reais da `aula17-metadrive/amostra`, e o `treinar.py --epocas 1` sobre eles; o laço da janela do `rotular.py` sob Xvfb, com o OpenCV 5.0 (backend Qt) do Python do container e as teclas injetadas no lugar do `waitKeyEx` — 2, Enter, seta esquerda, 3, seta direita (código Qt), 1, q —, gravando exatamente o CSV esperado; o `testar.py` (94 conferências, 26 s); e os conferidores `conferir-caminhos.py` e `conferir-comandos.py` do repositório.
+a criação do venv **sem** `--system-site-packages` e a instalação com `uv pip install --python` (11 s na segunda tentativa; a primeira travou no download e foi interrompida aos 10 min); o `gerar_sintetico.py` com 500 imagens equilibradas e com `54:0:6`, e o determinismo byte a byte; o `treinar.py` em quatro configurações de 20 épocas — equilibrado e `54:0:6`, cada um com momentum 0,9 e 0,99 —, uns 90 s de parede cada; a reprodução, em outro processo, da mesma tabela equilibrada; o modelo da rodada quebrada avaliado com `training=True` e `False`; a avaliação dos modelos do `54:0:6` sobre os 167 obstáculos; o `curvas.py`; o `rotular.py --so-sugestao` sobre os 12 quadros reais da `aula17-metadrive/amostra`, e o `treinar.py --epocas 1` sobre eles; o laço da janela do `rotular.py` sob Xvfb, com o OpenCV 5.0 (backend Qt) do Python do container, recebendo teclas de verdade por XTest na janela (2, seta direita, Enter, q) e, ao mesmo tempo, pelo terminal (3, seta esquerda), gravando exatamente o CSV esperado; a tradução dos códigos de tecla do GTK, do Qt e do Windows (com NumLock, CapsLock e teclado numérico) como função pura; a revisão pelo terminal (`--sem-janela`) dirigida por um pseudoterminal, com 1, setas, 2, 3, Esc e Ctrl+C, conferindo o `rotulos.csv`, a retomada pela coluna `revisado` e que o terminal volta ao estado de antes; o `testar.py` (121 conferências, uns 65 s); e os conferidores `conferir-caminhos.py` e `conferir-comandos.py` do repositório.
 
 **Não rodou, e é o que você vai encontrar:**
 
@@ -281,7 +294,7 @@ o venv **no WSL2 com Ubuntu 22.04**. Aqui o 3.10 era do `uv`; no seu, o `uv venv
 
 o **`_ARRAY_API not found`** descrito na seção do ambiente. O container não tinha `python3-opencv` do apt para Python 3.10, e o erro não foi reproduzido aqui; o argumento é o mesmo que a disciplina já mediu com o `cv_bridge`.
 
-o `rotular.py` com **o OpenCV do apt (4.5.4, backend GTK) e o WSLg**, com uma pessoa apertando as teclas. Os códigos de seta GTK (65361 e 65363) estão no script por documentação, não por teste; se as setas não responderem, **a** e **d** fazem o mesmo.
+o `rotular.py` com **o OpenCV do apt (4.5.4, backend GTK) e o WSLg**. No primeiro ensaio no WSL2, as teclas apertadas na janela não chegaram ao programa; a hipótese é que o GTK entrega o código com os bits dos modificadores (NumLock soma 0x100000: a tecla `1` chega como 1048625), e o script agora descarta esses bits — mas isso não foi conferido numa janela GTK. Também não foi conferido se esse OpenCV diz quando a janela é fechada no X (se não disser, o script avisa e você sai com **q**). Se alguma tecla não responder na janela, ela continua valendo no terminal, e a linha `tecla sem funcao: codigo N` diz o código que chegou.
 
 a velocidade do treino **no seu notebook**. Aqui foram 38–45 s por rodada de 20 épocas em 2 núcleos.
 
@@ -296,7 +309,10 @@ a velocidade do treino **no seu notebook**. Aqui foram 38–45 s por rodada de 2
 | `triggered tf.function retracing` | aviso do Keras ao chamar `predict` em arrays de tamanhos diferentes no fim do treino; ignore |
 | `No module named cv2` ou `No module named tensorflow` | rodou com `python3` em vez de `"$PB_DIR/.venv-cnn/bin/python"`, ou faltou o pacote na linha do `uv pip install` |
 | `este OpenCV nao abre janela (e o headless do venv?)` | rodou o `rotular.py` com o Python do venv; é com o `python3` do sistema. Sem tela, use `--so-sugestao` |
-| a janela do `rotular.py` não abre no WSL2 | o WSLg está desligado (`echo $DISPLAY` vazio); use `--so-sugestao` e revise olhando os PNG num visualizador, editando a coluna `classe` |
+| a janela do `rotular.py` não abre no WSL2 | o WSLg está desligado (`echo $DISPLAY` vazio); use `--sem-janela` e revise pelo terminal, olhando os PNG num visualizador |
+| as teclas aparecem no terminal (`^[[C`, `1`) e o `rotular.py` não reage | versão antiga do script, que só lia a janela: atualize. A atual lê as teclas também no terminal |
+| `tecla sem funcao: codigo N (0xHEX)` | a tecla chegou, mas com um código que o script não conhece; ela segue valendo no terminal. Mande o código |
+| ``aviso: ... nao tem a coluna `revisado` `` | `rotulos.csv` da versão anterior: nada conta como revisado e a revisão recomeça do primeiro quadro |
 | `nao achei .../aula13-veicular/cena_estrada.py` | a pasta da Aula 13 não está ao lado desta: refaça o bloco de download |
 | validação colada em 0,33 (ou na fração da classe mais comum) com treino subindo | BatchNormalization com momentum alto para o tamanho do conjunto: a armadilha 4. O padrão do `treinar.py` é 0,9 |
 | `aviso: alguma classe tem 1 exemplo so -- divisao sem estratificar` | uma classe tem um único quadro; a validação pode sair sem ela. Capture mais |
@@ -319,7 +335,7 @@ a velocidade do treino **no seu notebook**. Aqui foram 38–45 s por rodada de 2
 | Arquivo | Papel | Roda com |
 |---|---|---|
 | `gerar_sintetico.py` | desenha N imagens das três classes sobre a estrada do `cena_estrada.py` (importado pelo caminho) e grava `imgNNNN.png` + `rotulos.csv`. `--n`, `--proporcao`, `--saida`, `--semente`, `--tamanho` | venv da CNN (ou qualquer Python com OpenCV) |
-| `rotular.py` | lê o `estado.csv` do `capturar_frames.py`, propõe o `rotulo_sugerido` e abre a revisão por teclado; grava `arquivo,classe,sugerido`. `--pasta`, `--saida`, `--so-sugestao` | `python3` do sistema |
+| `rotular.py` | lê o `estado.csv` do `capturar_frames.py`, propõe o `rotulo_sugerido` e abre a revisão por teclado (na janela ou no terminal); grava `arquivo,classe,sugerido,revisado`. `--pasta`, `--saida`, `--sem-janela`, `--so-sugestao` | `python3` do sistema |
 | `treinar.py` | divide uma vez, treina o mesmo núcleo sem e com `RandomRotation`/`RandomZoom`/`RandomFlip`, e grava históricos, modelos, matrizes, `divisao.csv`, `tabela.txt` e `exemplos_augmentation.png`. `--pasta` (uma ou várias), `--rotulos`, `--saida`, `--epocas`, `--semente`, `--tamanho`, `--lote`, `--bn-momento` | venv da CNN |
 | `curvas.py` | acurácia e perda, treino (tracejado) e validação (cheio), sem (azul) e com (laranja) augmentation, no mesmo eixo. `--pasta`, `--saida`, `--titulo` | venv da CNN |
 | `testar.py` | 7 grupos: higiene dos `.py`, o sintético, o `rotular.py`, a mesma inicialização, o treino de 1 época em duas pastas, o treino sobre a amostra real, as curvas. Sai com 0 ou 1 | venv da CNN |
