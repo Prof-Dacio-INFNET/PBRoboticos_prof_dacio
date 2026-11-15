@@ -1,0 +1,8 @@
+# mesmas 50 sementes (1000-1049), deterministic=True, highway-fast-v0; treino semente 7
+checkpoint  episodios  concluiu  colidiu  vel_media_kmh  recompensa
+     20000         50       78%      22%           80.1       20.80
+     60000         50       84%      16%           81.5       22.04
+    120000         50       74%      26%           83.2       20.79
+    180000         50       80%      20%           80.9       22.21
+    240000         50       78%      22%           82.6       21.62
+    300288         50       68%      32%           83.8       20.14

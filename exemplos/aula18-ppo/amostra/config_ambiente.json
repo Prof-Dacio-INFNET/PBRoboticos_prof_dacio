@@ -1,0 +1,44 @@
+{
+ "ambiente": "highway-fast-v0",
+ "config": {
+  "action": {
+   "type": "DiscreteMetaAction"
+  },
+  "centering_position": [
+   0.3,
+   0.5
+  ],
+  "collision_reward": -1,
+  "controlled_vehicles": 1,
+  "duration": 30,
+  "ego_spacing": 1.5,
+  "high_speed_reward": 0.4,
+  "initial_lane_id": null,
+  "lane_change_reward": 0,
+  "lanes_count": 3,
+  "manual_control": false,
+  "neighbour_vehicles_connected_lanes": false,
+  "normalize_reward": true,
+  "observation": {
+   "type": "Kinematics"
+  },
+  "offroad_terminal": false,
+  "offscreen_rendering": true,
+  "other_vehicles_type": "highway_env.vehicle.behavior.IDMVehicle",
+  "policy_frequency": 1,
+  "real_time_rendering": false,
+  "render_agent": true,
+  "reward_speed_range": [
+   20,
+   30
+  ],
+  "right_lane_reward": 0.1,
+  "scaling": 5.5,
+  "screen_height": 150,
+  "screen_width": 600,
+  "show_trajectories": false,
+  "simulation_frequency": 5,
+  "vehicles_count": 20,
+  "vehicles_density": 1
+ }
+}

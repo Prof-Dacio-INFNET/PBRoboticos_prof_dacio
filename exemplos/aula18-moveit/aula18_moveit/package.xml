@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>aula18_moveit</name>
+  <version>0.1.0</version>
+  <description>MoveIt 2 pelo rclpy: Collision Object, tres poses do efetuador e um roteiro de pick-and-place no Panda -- Aula 18, item 1 do TP5.</description>
+  <maintainer email="dacioms@gmail.com">Dacio Moreira de Souza</maintainer>
+  <license>MIT</license>
+
+  <!-- O robo: o Panda dos pacotes de recurso do MoveIt. O demo.launch.py
+       dele sobe move_group, RViz2 e ros2_control com hardware falso
+       (mock_components). Este pacote nao sobe nada disso: ele conversa com
+       o move_group pela acao /move_action e pelo servico /apply_planning_scene.
+       ATENCAO: o package.xml do panda_moveit_config tem as dependencias do
+       move_group COMENTADAS (para evitar dependencia circular), por isso o
+       apt dele sozinho NAO traz o MoveIt: o README instala os dois. -->
+  <exec_depend>moveit_resources_panda_moveit_config</exec_depend>
+  <exec_depend>moveit_ros_move_group</exec_depend>
+
+  <!-- Os tres nos deste pacote. -->
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>moveit_msgs</exec_depend>
+  <exec_depend>shape_msgs</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+  <!-- So o pegar_e_soltar: a garra e a acao control_msgs/action/GripperCommand
+       do panda_hand_controller (gripper_controllers, do ros2_controllers). -->
+  <exec_depend>control_msgs</exec_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>

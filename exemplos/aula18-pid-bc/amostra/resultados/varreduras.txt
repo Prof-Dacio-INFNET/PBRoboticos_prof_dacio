@@ -1,0 +1,81 @@
+# Varreduras do pid.py -- sementes 100 a 109, 10 episodios por linha, mapa SCSCS, sem trafego.
+# Ganhos do topo: kp 0.5, ki 0, kd 0, olhar 5 m, alvo 40 km/h. var dir = media de |direcao(t) - direcao(t-1)|.
+
+$ pid.py --kp 0.05 0.2 0.5 1 3 6
+controlador                          concluiu   saiu  bateu      vel km/h         rota     erro lat m  var dir
+kp=0.05 ki=0 kd=0 olhar=5 v=40         10/10    0/10   0/10  38.1 +-  0.3 0.989+-0.003  0.559+- 0.053    0.003
+kp=0.2 ki=0 kd=0 olhar=5 v=40          10/10    0/10   0/10  38.1 +-  0.3 0.990+-0.002  0.080+- 0.008    0.002
+kp=0.5 ki=0 kd=0 olhar=5 v=40          10/10    0/10   0/10  38.0 +-  0.3 0.990+-0.002  0.021+- 0.004    0.010
+kp=1 ki=0 kd=0 olhar=5 v=40            10/10    0/10   0/10  34.0 +-  0.4 0.990+-0.003  0.097+- 0.009    0.167
+kp=3 ki=0 kd=0 olhar=5 v=40             0/10    0/10   0/10  10.9 +-  0.3 0.656+-0.119  0.107+- 0.011    0.339
+kp=6 ki=0 kd=0 olhar=5 v=40             0/10    0/10   0/10   8.9 +-  0.8 0.534+-0.127  0.128+- 0.009    0.301
+
+$ pid.py --kd 0 0.05 0.1 0.3
+controlador                          concluiu   saiu  bateu      vel km/h         rota     erro lat m  var dir
+kp=0.5 ki=0 kd=0 olhar=5 v=40          10/10    0/10   0/10  38.0 +-  0.3 0.990+-0.002  0.021+- 0.004    0.010
+kp=0.5 ki=0 kd=0.05 olhar=5 v=40       10/10    0/10   0/10  38.0 +-  0.4 0.990+-0.003  0.021+- 0.004    0.015
+kp=0.5 ki=0 kd=0.1 olhar=5 v=40        10/10    0/10   0/10  37.0 +-  0.2 0.990+-0.002  0.046+- 0.007    0.123
+kp=0.5 ki=0 kd=0.3 olhar=5 v=40        10/10    0/10   0/10  33.5 +-  0.3 0.990+-0.003  0.151+- 0.012    0.398
+
+$ pid.py --kp 0.05 0.2 0.5 1 3 --olhar 0   (sem o termo de rumo: P sobre o desvio de agora)
+controlador                          concluiu   saiu  bateu      vel km/h         rota     erro lat m  var dir
+kp=0.05 ki=0 kd=0 olhar=0 v=40          0/10   10/10   0/10  36.1 +-  1.7 0.519+-0.176  0.739+- 0.396    0.004
+kp=0.2 ki=0 kd=0 olhar=0 v=40           0/10   10/10   0/10  35.5 +-  0.6 0.455+-0.067  0.524+- 0.055    0.020
+kp=0.5 ki=0 kd=0 olhar=0 v=40           0/10   10/10   0/10  34.3 +-  0.6 0.391+-0.055  0.376+- 0.107    0.034
+kp=1 ki=0 kd=0 olhar=0 v=40             0/10   10/10   0/10  32.9 +-  0.5 0.372+-0.056  0.432+- 0.059    0.042
+kp=3 ki=0 kd=0 olhar=0 v=40             0/10   10/10   0/10  30.2 +-  1.0 0.275+-0.056  0.488+- 0.088    0.057
+
+$ pid.py --vel 30 40 50 60 70 80 100
+controlador                          concluiu   saiu  bateu      vel km/h         rota     erro lat m  var dir
+kp=0.5 ki=0 kd=0 olhar=5 v=30          10/10    0/10   0/10  29.1 +-  0.1 0.990+-0.002  0.013+- 0.001    0.004
+kp=0.5 ki=0 kd=0 olhar=5 v=40          10/10    0/10   0/10  38.0 +-  0.3 0.990+-0.002  0.021+- 0.004    0.010
+kp=0.5 ki=0 kd=0 olhar=5 v=50          10/10    0/10   0/10  45.6 +-  1.1 0.990+-0.003  0.098+- 0.073    0.045
+kp=0.5 ki=0 kd=0 olhar=5 v=60           4/10    6/10   0/10  50.3 +-  4.1 0.771+-0.251  0.196+- 0.039    0.048
+kp=0.5 ki=0 kd=0 olhar=5 v=70           1/10    9/10   0/10  53.1 +-  6.4 0.601+-0.265  0.210+- 0.053    0.036
+kp=0.5 ki=0 kd=0 olhar=5 v=80           1/10    9/10   0/10  52.7 +-  6.6 0.512+-0.272  0.361+- 0.201    0.029
+kp=0.5 ki=0 kd=0 olhar=5 v=100          0/10   10/10   0/10  49.3 +-  2.3 0.303+-0.034  0.259+- 0.115    0.010
+
+$ pid.py --sem-dt   (o PID chamado sem dt=: relogio de parede)
+**pid kp=0.5 ki=0 kd=0 olhar=5, alvo 40 km/h** -- 10 episodios, sementes 100 a 109
+
+| medida | valor |
+|---|---|
+| concluiu | 1 de 10 |
+| colidiu | 0 de 10 |
+| saiu_da_pista | 9 de 10 |
+| vel_media | 30.7 +- 2.0 |
+| passos | 293 +- 126 |
+| recompensa | 243.2 +- 93.4 |
+| fracao_rota | 0.543 +- 0.268 |
+| erro_lat_medio_m | 0.602 +- 0.227 |
+| erro_lat_max_m | 3.315 +- 0.223 |
+| var_direcao | 0.072 +- 0.029 |
+
+$ avaliar.py --controlador pid --trafego 0.1   (o acelerador nao freia para o carro da frente)
+  ep  0 semente 100: crash_vehicle passos  298  rota 0.639  vel  37.2 km/h  erro lat medio 0.02 m  (2.4 s)
+  ep  1 semente 101: crash_vehicle passos  257  rota 0.536  vel  37.0 km/h  erro lat medio 0.02 m  (1.8 s)
+  ep  2 semente 102: crash_vehicle passos  317  rota 0.695  vel  37.4 km/h  erro lat medio 0.02 m  (2.3 s)
+  ep  3 semente 103: crash_vehicle passos  437  rota 0.705  vel  38.0 km/h  erro lat medio 0.02 m  (5.3 s)
+  ep  4 semente 104: crash_vehicle passos  150  rota 0.285  vel  34.8 km/h  erro lat medio 0.02 m  (0.8 s)
+  ep  5 semente 105: crash_vehicle passos  264  rota 0.758  vel  36.7 km/h  erro lat medio 0.03 m  (1.1 s)
+  ep  6 semente 106: crash_vehicle passos  184  rota 0.372  vel  35.5 km/h  erro lat medio 0.01 m  (1.6 s)
+  ep  7 semente 107: crash_vehicle passos  286  rota 0.741  vel  37.2 km/h  erro lat medio 0.02 m  (1.8 s)
+  ep  8 semente 108: crash_vehicle passos  155  rota 0.432  vel  34.9 km/h  erro lat medio 0.03 m  (0.6 s)
+  ep  9 semente 109: crash_vehicle passos  352  rota 0.791  vel  37.5 km/h  erro lat medio 0.02 m  (2.9 s)
+
+**pid kp=0.5 ki=0 kd=0 olhar=5, alvo 40 km/h, trafego 0.1** -- 10 episodios, sementes 100 a 109
+
+| medida | valor |
+|---|---|
+| concluiu | 0 de 10 |
+| colidiu | 10 de 10 |
+| saiu_da_pista | 0 de 10 |
+| vel_media | 36.6 +- 1.1 |
+| passos | 270 +- 90 |
+| recompensa | 282.6 +- 104.0 |
+| fracao_rota | 0.595 +- 0.178 |
+| erro_lat_medio_m | 0.021 +- 0.006 |
+| erro_lat_max_m | 0.166 +- 0.109 |
+| var_direcao | 0.008 +- 0.006 |
+
+media +- desvio-padrao amostral (n-1) sobre os episodios

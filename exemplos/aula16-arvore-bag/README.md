@@ -4,7 +4,7 @@
 
 > ## Leia isto antes de qualquer coisa
 >
-> **A camada ROS 2 deste exemplo rodou pela primeira vez em 09/11/2026**, numa máquina com Humble e o Nav2 da Aula 15: `colcon build`, o `vigia` cancelando e retomando um goal, `ros2 bag record`/`play` e o `gravar_pose` tirando o CSV do bag. **As árvores XML continuam sem ter sido carregadas num `bt_navigator`.** E o ensaio achou um defeito na régua, já corrigido: ela contava **0** interrupções numa sessão que teve **1**. A seção **"O que foi e o que não foi verificado"**, no fim desta página, separa o que foi visto rodando do que não foi — inclusive o que mudou **depois** do ensaio.
+> **A camada ROS 2 deste exemplo rodou pela primeira vez em 09/11/2026**, numa máquina com Humble e o Nav2 da Aula 15: `colcon build`, o `vigia` cancelando e retomando um goal, `ros2 bag record`/`play` e o `gravar_pose` tirando o CSV do bag. **A árvore `com_espera.xml` carregou num `bt_navigator` de verdade em 10/11/2026**, no WSL2 do professor; a `padrao_comentada.xml` não foi carregada. E o ensaio achou um defeito na régua, já corrigido: ela contava **0** interrupções numa sessão que teve **1**. A seção **"O que foi e o que não foi verificado"**, no fim desta página, separa o que foi visto rodando do que não foi — inclusive o que mudou **depois** do ensaio.
 >
 > **A camada offline roda aqui, sem ROS 2.** O `testar.py` tem 10 grupos e 68 conferências, leva cerca de 1 s e passa. Os números citados aqui saíram dele e do `medir_sessao.py`.
 
@@ -353,7 +353,7 @@ Os três conferidores do repositório — `conferir-caminhos.py`, `conferir-coma
 
 **Continua NÃO verificado, e ninguém viu rodar:**
 
-as duas árvores **nunca foram carregadas num `bt_navigator`**. O ensaio usou a árvore padrão (o parâmetro `arvore` vazio). Elas são XML bem formado e os nomes de nó foram conferidos contra a fonte, mas o BehaviorTree.CPP tem validações próprias (portas obrigatórias, tipos, o `main_tree_to_execute`) que só acontecem em tempo de carga. Em particular, **não foi observado** que a espera de 2 s como primeira entrada do `RoundRobin` produza o comportamento descrito — o raciocínio sobre o `RecoveryNode` retentar o ramo de navegação é leitura de código, não experimento. Também **não sabemos** se o `behavior_tree` de um goal reenviado é respeitado do mesmo jeito que o do primeiro.
+a `padrao_comentada.xml` **nunca foi carregada num `bt_navigator`**; a `com_espera.xml` foi, no WSL2 do professor em 10/11/2026, e carregou — o que passa pelas validações do BehaviorTree.CPP em tempo de carga (portas, tipos, o `main_tree_to_execute`). Carregar não é o mesmo que ver o comportamento: **não foi observado** que a espera de 2 s como primeira entrada do `RoundRobin` produza o comportamento descrito — o raciocínio sobre o `RecoveryNode` retentar o ramo de navegação é leitura de código, não experimento. Também **não sabemos** se o `behavior_tree` de um goal reenviado é respeitado do mesmo jeito que o do primeiro.
 
 o portão com o limiar do enunciado, **0,5 m, disparando**. Numa execução anterior com o limiar padrão, a rota não passou a menos de 0,5 m de nada com o portão armado e o `vigia` terminou com "0 interrupcao(oes)" — por isso o ensaio usou 0,75 m. Uma interrupção a menos de 0,5 m pede um obstáculo posto na rota.
 

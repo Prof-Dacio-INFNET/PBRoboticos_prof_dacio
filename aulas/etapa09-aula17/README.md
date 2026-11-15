@@ -362,7 +362,7 @@ Se a primeira deu `0`, é o pacote da Aula 15 — o passo 1 da [tarefa da Aula 1
 
 Escolha o objetivo **no seu mapa**, olhando o costmap global no RViz2: `[x, y, rumo]`. O padrão do `vigia` era `[9.0, 5.5, 1.57]` até 09/11 — um ponto **dentro** de um obstáculo do mundo da Aula 11, que o Nav2 recusa sem explicar; foi corrigido para `[10.5, 6.5, 1.57]`, e o mesmo ponto errado era o terceiro da rota padrão do `rota.py`. Se o seu material é anterior a 10/11, recopie.
 
-**O que se entrega no item 2 é a árvore e o nó que mede a distância.** A árvore é o XML com a espera de 2 s — o `com_espera.xml` do exemplo é o ponto de partida, que você adapta —, e a sessão gravada para a entrega roda com ela: o parâmetro `arvore` do `vigia` recebe o caminho **instalado**. <!-- ARVORE-NAO-VERIFICADA -->Aviso honesto: esta árvore ainda não foi carregada num `bt_navigator` de verdade; se o Terminal A acusar erro ao receber o goal, poste no fórum as linhas do `bt_navigator` e grave sem o `-p arvore:=` enquanto isso.<!-- /ARVORE-NAO-VERIFICADA -->
+**O que se entrega no item 2 é a árvore e o nó que mede a distância.** A árvore é o XML com a espera de 2 s — o `com_espera.xml` do exemplo é o ponto de partida, que você adapta —, e a sessão gravada para a entrega roda com ela: o parâmetro `arvore` do `vigia` recebe o caminho **instalado**. Esta árvore foi verificada: o `com_espera.xml` carregou num `bt_navigator` de verdade no meu WSL2, em 10/11/2026.
 
 **Terminal A — o sistema.** O launch ocupa o terminal até o `Ctrl+C`:
 
@@ -592,7 +592,9 @@ Esse número vai para o relatório. A coluna `revisado` do `rotulos.csv` vale 1 
 : "${PB_WS:?defina PB_USER, PB_DIR e PB_WS — o bloco está no topo desta página}"
 cd "$PB_DIR/aula17-cnn"
 python3 rotular.py --pasta ../aula17-metadrive/quadros-s7 --sem-janela
-``` **Não deixe a rede rotular os quadros**: o rótulo é a resposta contra a qual ela será medida.
+```
+
+**Não deixe a rede rotular os quadros**: o rótulo é a resposta contra a qual ela será medida.
 
 ### Passo 6 — A rede: as duas rodadas com a mesma semente, as curvas e a matriz
 
@@ -734,4 +736,4 @@ A resposta cabe numa frase, e vale mais no relatório do que mais uma época de 
 
 ## Para a próxima aula
 
-**A Aula 18 é a aterrissagem do TP4**: o enunciado lido item por item, com os repositórios de vocês do lado — o que cada item pede, o que a evidência precisa mostrar, e o que costuma faltar. Tragam o **bag medido**, os **quadros rotulados**, a **tabela das duas rodadas** e a **decisão do TP5** escrita. As datas estão na [tabela](#o-que-foi-demonstrado-onde-esta-na-tarefa-e-quando-vence) e em [Gates de cada TP](../../recursos/gates-tps.md).
+**A [Aula 18](../etapa09-aula18/index.md) abre o TP5**, nas suas quatro frentes — o TP4 segue na tarefa e fecha no sábado, 21/11. Tragam o **bag medido**, os **quadros rotulados**, a **tabela das duas rodadas** e a **decisão do TP5** escrita. As datas estão na [tabela](#o-que-foi-demonstrado-onde-esta-na-tarefa-e-quando-vence) e em [Gates de cada TP](../../recursos/gates-tps.md).

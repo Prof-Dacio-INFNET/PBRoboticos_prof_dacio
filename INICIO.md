@@ -54,16 +54,17 @@ Aulas às **terças, 07h00–09h30, sala SJ205** · Prof. Dácio Moreira de Souz
 
 ## Aula mais recente
 
-**Aula 17 — terça, 10/11/2026 — Fechar o item 2, a câmera que não é a sua, e a rede que decora** <span class="pb-tag next">atual</span>
+**Aula 18 — terça, 17/11/2026 — O TP5 de uma vez: quatro frentes e a linha de base de cada uma** <span class="pb-tag next">atual</span>
 
-**Acertar 90% respondendo sempre a mesma coisa não é aprender.** A aula fecha o item 2 do TP4 com uma sessão gravada de verdade — o `vigia` interrompendo, o bag tocado sem o robô e a régua lendo o que aconteceu —, sobe o MetaDrive para o item 3 (e mostra que ele não tem placa, e que o detector da Aula 13 acha zero ali até ser ajustado), e treina a mesma rede duas vezes para o item 4, com os três números que denunciam a rede que decora. O que é para rodar no seu ambiente está na **tarefa da semana**, em nove passos.
+**O número só vale com linha de base.** A aula abre o TP5 inteiro, em visão geral: o PPO no highway-env (o treino de 300 mil passos leva **horas**, não 30 minutos — e a política é avaliada contra quem não decide nada), o PID e o Behavioral Cloning medidos na mesma régua do MetaDrive (e o empurrão que mostra o que a validação não mostra), o MoveIt 2 com o Panda planejando com e sem uma caixa no caminho, e o que dá e o que não dá para comparar entre dois simuladores. O que é para rodar no seu ambiente está na **tarefa da semana**, em sete passos, na ordem do que demora.
 
-[Conteúdo e slides da aula](aulas/etapa09-aula17/index.md){ .md-button .md-button--primary }
-[MetaDrive](exemplos/aula17-metadrive/index.md){ .md-button }
-[A CNN e a matriz](exemplos/aula17-cnn/index.md){ .md-button }
+[Conteúdo e slides da aula](aulas/etapa09-aula18/index.md){ .md-button .md-button--primary }
+[PPO](exemplos/aula18-ppo/index.md){ .md-button }
+[PID × BC](exemplos/aula18-pid-bc/index.md){ .md-button }
+[MoveIt 2](exemplos/aula18-moveit/index.md){ .md-button }
 
-!!! danger "A decisão do TP5 vence antes da entrega do TP4"
-    O registro da opção do TP5 — **A, hardware**, ou **B, drone PX4 simulado**, com plano B — vai para o `docs/decisoes.md` e vence em **14/11**, uma semana antes do TP4 (21/11, **até 12h**). E a captura dos 500 quadros do MetaDrive leva uns 20 minutos ou mais: dispare-a primeiro. As datas de cada item estão em [Gates de cada TP](recursos/gates-tps.md).
+!!! danger "Dispare o treino do PPO hoje"
+    Os 300 mil passos do PPO levaram quase **três horas** na máquina em que foram medidos — o "≈30 min" do enunciado não valeu. O treino roda sozinho, em segundo plano: é o passo 1 da tarefa. E o **TP4 vence sábado, 21/11, até o meio-dia**. As datas de cada item estão em [Gates de cada TP](recursos/gates-tps.md).
 
 ## Calendário de entregas
 

@@ -294,7 +294,7 @@ o venv **no WSL2 com Ubuntu 22.04**. Aqui o 3.10 era do `uv`; no seu, o `uv venv
 
 o **`_ARRAY_API not found`** descrito na seção do ambiente. O container não tinha `python3-opencv` do apt para Python 3.10, e o erro não foi reproduzido aqui; o argumento é o mesmo que a disciplina já mediu com o `cv_bridge`.
 
-o `rotular.py` com **o OpenCV do apt (4.5.4, backend GTK) e o WSLg**. No primeiro ensaio no WSL2, as teclas apertadas na janela não chegaram ao programa; a hipótese é que o GTK entrega o código com os bits dos modificadores (NumLock soma 0x100000: a tecla `1` chega como 1048625), e o script agora descarta esses bits — mas isso não foi conferido numa janela GTK. Também não foi conferido se esse OpenCV diz quando a janela é fechada no X (se não disser, o script avisa e você sai com **q**). Se alguma tecla não responder na janela, ela continua valendo no terminal, e a linha `tecla sem funcao: codigo N` diz o código que chegou.
+o `rotular.py` com **o OpenCV do apt (4.5.4, backend GTK) e o WSLg** foi verificado no WSL2 do professor em 10/11/2026: o teclado funcionou. No primeiro ensaio, com a versão anterior, as teclas apertadas na janela não chegavam ao programa; a hipótese é que o GTK entrega o código com os bits dos modificadores (NumLock soma 0x100000: a tecla `1` chega como 1048625), e o script agora descarta esses bits. Não foi conferido se esse OpenCV diz quando a janela é fechada no X (se não disser, o script avisa e você sai com **q**). Se alguma tecla não responder na janela, ela continua valendo no terminal, e a linha `tecla sem funcao: codigo N` diz o código que chegou.
 
 a velocidade do treino **no seu notebook**. Aqui foram 38–45 s por rodada de 20 épocas em 2 núcleos.
 

@@ -1,0 +1,183 @@
+treino PPO: highway-fast-v0, alvo 300000 passos (faltam 300000), semente 7, torch com 1 thread(s)
+hiperparametros: lr 0.0005, n_steps 768, lote 64, epocas 10, gamma 0.8, rede [256, 256]
+a primeira linha de progresso sai em 60 s; Ctrl+C interrompe e o ultimo checkpoint fica em rodada/checkpoints
+passos    1670/300000   27.8 passos/s  decorrido 1min 00s  falta ~2h58min  ultimos 20 ep: recompensa 8.72, bateu 85%
+passos    3362/300000   28.0 passos/s  decorrido 2min 00s  falta ~2h56min  ultimos 20 ep: recompensa 13.67, bateu 70%
+passos    5108/300000   28.4 passos/s  decorrido 3min 00s  falta ~2h53min  ultimos 20 ep: recompensa 14.90, bateu 50%
+passos    6374/300000   26.5 passos/s  decorrido 4min 00s  falta ~3h04min  ultimos 20 ep: recompensa 18.97, bateu 25%
+passos    7438/300000   24.8 passos/s  decorrido 5min 00s  falta ~3h16min  ultimos 20 ep: recompensa 18.66, bateu 30%
+passos    8913/300000   24.7 passos/s  decorrido 6min 00s  falta ~3h16min  ultimos 20 ep: recompensa 19.71, bateu 35%
+passos   10449/300000   24.9 passos/s  decorrido 7min 00s  falta ~3h14min  ultimos 20 ep: recompensa 18.11, bateu 30%
+passos   12076/300000   25.1 passos/s  decorrido 8min 00s  falta ~3h10min  ultimos 20 ep: recompensa 17.46, bateu 50%
+passos   13314/300000   24.6 passos/s  decorrido 9min 00s  falta ~3h13min  ultimos 20 ep: recompensa 15.86, bateu 65%
+passos   14510/300000   24.2 passos/s  decorrido 10min 00s  falta ~3h16min  ultimos 20 ep: recompensa 17.83, bateu 45%
+passos   15670/300000   23.7 passos/s  decorrido 11min 00s  falta ~3h19min  ultimos 20 ep: recompensa 19.70, bateu 30%
+passos   16729/300000   23.2 passos/s  decorrido 12min 00s  falta ~3h23min  ultimos 20 ep: recompensa 16.81, bateu 45%
+passos   17786/300000   22.8 passos/s  decorrido 13min 00s  falta ~3h26min  ultimos 20 ep: recompensa 18.68, bateu 40%
+passos   18742/300000   22.3 passos/s  decorrido 14min 00s  falta ~3h30min  ultimos 20 ep: recompensa 18.98, bateu 45%
+passos   19855/300000   22.0 passos/s  decorrido 15min 00s  falta ~3h31min  ultimos 20 ep: recompensa 19.81, bateu 35%
+passos   20945/300000   21.8 passos/s  decorrido 16min 01s  falta ~3h33min  ultimos 20 ep: recompensa 17.16, bateu 55%
+passos   21850/300000   21.4 passos/s  decorrido 17min 01s  falta ~3h36min  ultimos 20 ep: recompensa 15.28, bateu 65%
+passos   22578/300000   20.9 passos/s  decorrido 18min 01s  falta ~3h41min  ultimos 20 ep: recompensa 20.48, bateu 30%
+passos   23394/300000   20.5 passos/s  decorrido 19min 01s  falta ~3h44min  ultimos 20 ep: recompensa 16.49, bateu 70%
+passos   24726/300000   20.6 passos/s  decorrido 20min 01s  falta ~3h42min  ultimos 20 ep: recompensa 18.79, bateu 40%
+passos   26395/300000   20.9 passos/s  decorrido 21min 01s  falta ~3h37min  ultimos 20 ep: recompensa 13.64, bateu 65%
+passos   27711/300000   21.0 passos/s  decorrido 22min 01s  falta ~3h36min  ultimos 20 ep: recompensa 17.44, bateu 55%
+passos   29384/300000   21.3 passos/s  decorrido 23min 01s  falta ~3h31min  ultimos 20 ep: recompensa 18.28, bateu 50%
+passos   31102/300000   21.6 passos/s  decorrido 24min 01s  falta ~3h27min  ultimos 20 ep: recompensa 19.87, bateu 25%
+passos   32917/300000   21.9 passos/s  decorrido 25min 01s  falta ~3h22min  ultimos 20 ep: recompensa 17.35, bateu 50%
+passos   34498/300000   22.1 passos/s  decorrido 26min 01s  falta ~3h20min  ultimos 20 ep: recompensa 16.70, bateu 50%
+passos   36097/300000   22.3 passos/s  decorrido 27min 01s  falta ~3h17min  ultimos 20 ep: recompensa 19.21, bateu 40%
+passos   37825/300000   22.5 passos/s  decorrido 28min 01s  falta ~3h14min  ultimos 20 ep: recompensa 20.68, bateu 35%
+passos   39629/300000   22.8 passos/s  decorrido 29min 01s  falta ~3h10min  ultimos 20 ep: recompensa 16.03, bateu 50%
+passos   41312/300000   22.9 passos/s  decorrido 30min 01s  falta ~3h07min  ultimos 20 ep: recompensa 17.02, bateu 50%
+passos   43043/300000   23.1 passos/s  decorrido 31min 01s  falta ~3h05min  ultimos 20 ep: recompensa 19.41, bateu 45%
+passos   44727/300000   23.3 passos/s  decorrido 32min 01s  falta ~3h02min  ultimos 20 ep: recompensa 18.17, bateu 50%
+passos   46156/300000   23.3 passos/s  decorrido 33min 01s  falta ~3h01min  ultimos 20 ep: recompensa 21.19, bateu 35%
+passos   47590/300000   23.3 passos/s  decorrido 34min 01s  falta ~3h00min  ultimos 20 ep: recompensa 19.94, bateu 40%
+passos   49351/300000   23.5 passos/s  decorrido 35min 01s  falta ~2h57min  ultimos 20 ep: recompensa 17.60, bateu 45%
+passos   51162/300000   23.7 passos/s  decorrido 36min 01s  falta ~2h55min  ultimos 20 ep: recompensa 18.95, bateu 45%
+passos   53038/300000   23.9 passos/s  decorrido 37min 01s  falta ~2h52min  ultimos 20 ep: recompensa 18.59, bateu 60%
+passos   54881/300000   24.1 passos/s  decorrido 38min 01s  falta ~2h49min  ultimos 20 ep: recompensa 17.84, bateu 45%
+passos   56674/300000   24.2 passos/s  decorrido 39min 01s  falta ~2h47min  ultimos 20 ep: recompensa 16.65, bateu 55%
+passos   58360/300000   24.3 passos/s  decorrido 40min 01s  falta ~2h45min  ultimos 20 ep: recompensa 16.87, bateu 50%
+passos   59749/300000   24.3 passos/s  decorrido 41min 01s  falta ~2h44min  ultimos 20 ep: recompensa 18.52, bateu 40%
+passos   60952/300000   24.2 passos/s  decorrido 42min 01s  falta ~2h44min  ultimos 20 ep: recompensa 17.64, bateu 55%
+passos   62579/300000   24.2 passos/s  decorrido 43min 01s  falta ~2h43min  ultimos 20 ep: recompensa 17.73, bateu 45%
+passos   64356/300000   24.4 passos/s  decorrido 44min 01s  falta ~2h41min  ultimos 20 ep: recompensa 19.65, bateu 30%
+passos   66089/300000   24.5 passos/s  decorrido 45min 02s  falta ~2h39min  ultimos 20 ep: recompensa 19.26, bateu 50%
+passos   67744/300000   24.5 passos/s  decorrido 46min 02s  falta ~2h37min  ultimos 20 ep: recompensa 15.63, bateu 60%
+passos   69416/300000   24.6 passos/s  decorrido 47min 02s  falta ~2h36min  ultimos 20 ep: recompensa 17.20, bateu 50%
+passos   71143/300000   24.7 passos/s  decorrido 48min 02s  falta ~2h34min  ultimos 20 ep: recompensa 19.61, bateu 30%
+passos   72740/300000   24.7 passos/s  decorrido 49min 02s  falta ~2h33min  ultimos 20 ep: recompensa 19.83, bateu 45%
+passos   74400/300000   24.8 passos/s  decorrido 50min 02s  falta ~2h31min  ultimos 20 ep: recompensa 19.43, bateu 35%
+passos   76229/300000   24.9 passos/s  decorrido 51min 02s  falta ~2h29min  ultimos 20 ep: recompensa 17.98, bateu 40%
+passos   77996/300000   25.0 passos/s  decorrido 52min 02s  falta ~2h28min  ultimos 20 ep: recompensa 19.19, bateu 35%
+passos   79740/300000   25.1 passos/s  decorrido 53min 02s  falta ~2h26min  ultimos 20 ep: recompensa 19.88, bateu 45%
+passos   81517/300000   25.1 passos/s  decorrido 54min 02s  falta ~2h24min  ultimos 20 ep: recompensa 19.64, bateu 35%
+passos   83047/300000   25.2 passos/s  decorrido 55min 02s  falta ~2h23min  ultimos 20 ep: recompensa 19.07, bateu 45%
+passos   84557/300000   25.2 passos/s  decorrido 56min 02s  falta ~2h22min  ultimos 20 ep: recompensa 18.04, bateu 45%
+passos   86201/300000   25.2 passos/s  decorrido 57min 02s  falta ~2h21min  ultimos 20 ep: recompensa 18.65, bateu 40%
+passos   87825/300000   25.2 passos/s  decorrido 58min 02s  falta ~2h20min  ultimos 20 ep: recompensa 18.81, bateu 40%
+passos   89079/300000   25.2 passos/s  decorrido 59min 02s  falta ~2h19min  ultimos 20 ep: recompensa 19.57, bateu 25%
+passos   90310/300000   25.1 passos/s  decorrido 1h00min  falta ~2h19min  ultimos 20 ep: recompensa 18.29, bateu 45%
+passos   91403/300000   25.0 passos/s  decorrido 1h01min  falta ~2h19min  ultimos 20 ep: recompensa 17.20, bateu 50%
+passos   92630/300000   24.9 passos/s  decorrido 1h02min  falta ~2h18min  ultimos 20 ep: recompensa 16.10, bateu 60%
+passos   94249/300000   24.9 passos/s  decorrido 1h03min  falta ~2h17min  ultimos 20 ep: recompensa 16.42, bateu 65%
+passos   96034/300000   25.0 passos/s  decorrido 1h04min  falta ~2h16min  ultimos 20 ep: recompensa 18.31, bateu 40%
+passos   97624/300000   25.0 passos/s  decorrido 1h05min  falta ~2h14min  ultimos 20 ep: recompensa 17.15, bateu 50%
+passos   99543/300000   25.1 passos/s  decorrido 1h06min  falta ~2h12min  ultimos 20 ep: recompensa 18.24, bateu 55%
+passos  101333/300000   25.2 passos/s  decorrido 1h07min  falta ~2h11min  ultimos 20 ep: recompensa 18.36, bateu 45%
+passos  103161/300000   25.3 passos/s  decorrido 1h08min  falta ~2h09min  ultimos 20 ep: recompensa 23.71, bateu 0%
+passos  105015/300000   25.4 passos/s  decorrido 1h09min  falta ~2h08min  ultimos 20 ep: recompensa 19.30, bateu 40%
+passos  106281/300000   25.3 passos/s  decorrido 1h10min  falta ~2h07min  ultimos 20 ep: recompensa 16.82, bateu 50%
+passos  107464/300000   25.2 passos/s  decorrido 1h11min  falta ~2h07min  ultimos 20 ep: recompensa 18.00, bateu 40%
+passos  108958/300000   25.2 passos/s  decorrido 1h12min  falta ~2h06min  ultimos 20 ep: recompensa 18.26, bateu 50%
+passos  110587/300000   25.2 passos/s  decorrido 1h13min  falta ~2h05min  ultimos 20 ep: recompensa 14.32, bateu 65%
+passos  112423/300000   25.3 passos/s  decorrido 1h14min  falta ~2h03min  ultimos 20 ep: recompensa 19.78, bateu 30%
+passos  113590/300000   25.2 passos/s  decorrido 1h15min  falta ~2h03min  ultimos 20 ep: recompensa 17.20, bateu 55%
+passos  114953/300000   25.2 passos/s  decorrido 1h16min  falta ~2h02min  ultimos 20 ep: recompensa 18.66, bateu 50%
+passos  116839/300000   25.3 passos/s  decorrido 1h17min  falta ~2h00min  ultimos 20 ep: recompensa 18.98, bateu 45%
+passos  118767/300000   25.4 passos/s  decorrido 1h18min  falta ~1h59min  ultimos 20 ep: recompensa 16.39, bateu 55%
+passos  120704/300000   25.5 passos/s  decorrido 1h19min  falta ~1h57min  ultimos 20 ep: recompensa 16.71, bateu 55%
+passos  122406/300000   25.5 passos/s  decorrido 1h20min  falta ~1h56min  ultimos 20 ep: recompensa 18.80, bateu 40%
+passos  124261/300000   25.6 passos/s  decorrido 1h21min  falta ~1h54min  ultimos 20 ep: recompensa 15.22, bateu 65%
+passos  126146/300000   25.6 passos/s  decorrido 1h22min  falta ~1h53min  ultimos 20 ep: recompensa 15.78, bateu 55%
+passos  127960/300000   25.7 passos/s  decorrido 1h23min  falta ~1h51min  ultimos 20 ep: recompensa 16.83, bateu 55%
+passos  129828/300000   25.7 passos/s  decorrido 1h24min  falta ~1h50min  ultimos 20 ep: recompensa 15.16, bateu 55%
+passos  131678/300000   25.8 passos/s  decorrido 1h25min  falta ~1h48min  ultimos 20 ep: recompensa 17.25, bateu 55%
+passos  133522/300000   25.9 passos/s  decorrido 1h26min  falta ~1h47min  ultimos 20 ep: recompensa 15.08, bateu 60%
+passos  135104/300000   25.9 passos/s  decorrido 1h27min  falta ~1h46min  ultimos 20 ep: recompensa 20.45, bateu 25%
+passos  136003/300000   25.7 passos/s  decorrido 1h28min  falta ~1h46min  ultimos 20 ep: recompensa 18.49, bateu 40%
+passos  137842/300000   25.8 passos/s  decorrido 1h29min  falta ~1h44min  ultimos 20 ep: recompensa 19.42, bateu 35%
+passos  139758/300000   25.9 passos/s  decorrido 1h30min  falta ~1h43min  ultimos 20 ep: recompensa 22.04, bateu 15%
+passos  141507/300000   25.9 passos/s  decorrido 1h31min  falta ~1h41min  ultimos 20 ep: recompensa 20.57, bateu 45%
+passos  143251/300000   25.9 passos/s  decorrido 1h32min  falta ~1h40min  ultimos 20 ep: recompensa 20.16, bateu 35%
+passos  144848/300000   25.9 passos/s  decorrido 1h33min  falta ~1h39min  ultimos 20 ep: recompensa 16.97, bateu 60%
+passos  146732/300000   26.0 passos/s  decorrido 1h34min  falta ~1h38min  ultimos 20 ep: recompensa 22.19, bateu 25%
+passos  148582/300000   26.1 passos/s  decorrido 1h35min  falta ~1h36min  ultimos 20 ep: recompensa 21.31, bateu 30%
+passos  150497/300000   26.1 passos/s  decorrido 1h36min  falta ~1h35min  ultimos 20 ep: recompensa 20.33, bateu 30%
+passos  152446/300000   26.2 passos/s  decorrido 1h37min  falta ~1h33min  ultimos 20 ep: recompensa 17.70, bateu 45%
+passos  154441/300000   26.3 passos/s  decorrido 1h38min  falta ~1h32min  ultimos 20 ep: recompensa 15.30, bateu 60%
+passos  156400/300000   26.3 passos/s  decorrido 1h39min  falta ~1h30min  ultimos 20 ep: recompensa 20.22, bateu 40%
+passos  157993/300000   26.3 passos/s  decorrido 1h40min  falta ~1h29min  ultimos 20 ep: recompensa 17.29, bateu 45%
+passos  159321/300000   26.3 passos/s  decorrido 1h41min  falta ~1h29min  ultimos 20 ep: recompensa 18.24, bateu 40%
+passos  161062/300000   26.3 passos/s  decorrido 1h42min  falta ~1h28min  ultimos 20 ep: recompensa 21.74, bateu 25%
+passos  162985/300000   26.4 passos/s  decorrido 1h43min  falta ~1h26min  ultimos 20 ep: recompensa 19.03, bateu 35%
+passos  164887/300000   26.4 passos/s  decorrido 1h44min  falta ~1h25min  ultimos 20 ep: recompensa 17.34, bateu 55%
+passos  166870/300000   26.5 passos/s  decorrido 1h45min  falta ~1h23min  ultimos 20 ep: recompensa 19.62, bateu 45%
+passos  168820/300000   26.5 passos/s  decorrido 1h46min  falta ~1h22min  ultimos 20 ep: recompensa 15.39, bateu 55%
+passos  170777/300000   26.6 passos/s  decorrido 1h47min  falta ~1h21min  ultimos 20 ep: recompensa 17.26, bateu 60%
+passos  172779/300000   26.7 passos/s  decorrido 1h48min  falta ~1h19min  ultimos 20 ep: recompensa 18.56, bateu 45%
+passos  174666/300000   26.7 passos/s  decorrido 1h49min  falta ~1h18min  ultimos 20 ep: recompensa 18.50, bateu 45%
+passos  176535/300000   26.7 passos/s  decorrido 1h50min  falta ~1h16min  ultimos 20 ep: recompensa 17.03, bateu 45%
+passos  178418/300000   26.8 passos/s  decorrido 1h51min  falta ~1h15min  ultimos 20 ep: recompensa 19.15, bateu 30%
+passos  180428/300000   26.8 passos/s  decorrido 1h52min  falta ~1h14min  ultimos 20 ep: recompensa 22.93, bateu 10%
+passos  182346/300000   26.9 passos/s  decorrido 1h53min  falta ~1h12min  ultimos 20 ep: recompensa 19.66, bateu 35%
+passos  184263/300000   26.9 passos/s  decorrido 1h54min  falta ~1h11min  ultimos 20 ep: recompensa 19.69, bateu 45%
+passos  186222/300000   27.0 passos/s  decorrido 1h55min  falta ~1h10min  ultimos 20 ep: recompensa 17.90, bateu 40%
+passos  188128/300000   27.0 passos/s  decorrido 1h56min  falta ~1h09min  ultimos 20 ep: recompensa 20.93, bateu 30%
+passos  189987/300000   27.1 passos/s  decorrido 1h57min  falta ~1h07min  ultimos 20 ep: recompensa 19.49, bateu 30%
+passos  191762/300000   27.1 passos/s  decorrido 1h58min  falta ~1h06min  ultimos 20 ep: recompensa 21.61, bateu 25%
+passos  193578/300000   27.1 passos/s  decorrido 1h59min  falta ~1h05min  ultimos 20 ep: recompensa 17.57, bateu 45%
+passos  195423/300000   27.1 passos/s  decorrido 2h00min  falta ~1h04min  ultimos 20 ep: recompensa 17.73, bateu 50%
+passos  197029/300000   27.1 passos/s  decorrido 2h01min  falta ~1h03min  ultimos 20 ep: recompensa 19.61, bateu 35%
+passos  198789/300000   27.1 passos/s  decorrido 2h02min  falta ~1h02min  ultimos 20 ep: recompensa 19.94, bateu 35%
+passos  200654/300000   27.2 passos/s  decorrido 2h03min  falta ~1h00min  ultimos 20 ep: recompensa 18.96, bateu 35%
+passos  202555/300000   27.2 passos/s  decorrido 2h04min  falta ~59min 41s  ultimos 20 ep: recompensa 20.19, bateu 30%
+passos  204466/300000   27.3 passos/s  decorrido 2h05min  falta ~58min 26s  ultimos 20 ep: recompensa 17.49, bateu 50%
+passos  206415/300000   27.3 passos/s  decorrido 2h06min  falta ~57min 09s  ultimos 20 ep: recompensa 18.82, bateu 45%
+passos  208191/300000   27.3 passos/s  decorrido 2h07min  falta ~56min 02s  ultimos 20 ep: recompensa 19.10, bateu 35%
+passos  209966/300000   27.3 passos/s  decorrido 2h08min  falta ~54min 55s  ultimos 20 ep: recompensa 19.65, bateu 35%
+passos  211787/300000   27.4 passos/s  decorrido 2h09min  falta ~53min 45s  ultimos 20 ep: recompensa 17.31, bateu 45%
+passos  213528/300000   27.4 passos/s  decorrido 2h10min  falta ~52min 40s  ultimos 20 ep: recompensa 18.92, bateu 45%
+passos  215355/300000   27.4 passos/s  decorrido 2h11min  falta ~51min 31s  ultimos 20 ep: recompensa 20.48, bateu 35%
+passos  217231/300000   27.4 passos/s  decorrido 2h12min  falta ~50min 19s  ultimos 20 ep: recompensa 19.18, bateu 45%
+passos  218966/300000   27.4 passos/s  decorrido 2h13min  falta ~49min 14s  ultimos 20 ep: recompensa 17.32, bateu 50%
+passos  220819/300000   27.5 passos/s  decorrido 2h14min  falta ~48min 04s  ultimos 20 ep: recompensa 20.08, bateu 35%
+passos  222620/300000   27.5 passos/s  decorrido 2h15min  falta ~46min 57s  ultimos 20 ep: recompensa 20.85, bateu 25%
+passos  224525/300000   27.5 passos/s  decorrido 2h16min  falta ~45min 44s  ultimos 20 ep: recompensa 15.69, bateu 60%
+passos  226442/300000   27.5 passos/s  decorrido 2h17min  falta ~44min 31s  ultimos 20 ep: recompensa 19.51, bateu 45%
+passos  228306/300000   27.6 passos/s  decorrido 2h18min  falta ~43min 21s  ultimos 20 ep: recompensa 19.15, bateu 35%
+passos  230163/300000   27.6 passos/s  decorrido 2h19min  falta ~42min 12s  ultimos 20 ep: recompensa 17.62, bateu 50%
+passos  231988/300000   27.6 passos/s  decorrido 2h20min  falta ~41min 04s  ultimos 20 ep: recompensa 18.32, bateu 40%
+passos  233886/300000   27.6 passos/s  decorrido 2h21min  falta ~39min 52s  ultimos 20 ep: recompensa 15.07, bateu 70%
+passos  235777/300000   27.7 passos/s  decorrido 2h22min  falta ~38min 42s  ultimos 20 ep: recompensa 19.00, bateu 40%
+passos  237664/300000   27.7 passos/s  decorrido 2h23min  falta ~37min 31s  ultimos 20 ep: recompensa 19.59, bateu 45%
+passos  239454/300000   27.7 passos/s  decorrido 2h24min  falta ~36min 26s  ultimos 20 ep: recompensa 20.03, bateu 40%
+passos  241352/300000   27.7 passos/s  decorrido 2h25min  falta ~35min 15s  ultimos 20 ep: recompensa 17.60, bateu 45%
+passos  243223/300000   27.8 passos/s  decorrido 2h26min  falta ~34min 06s  ultimos 20 ep: recompensa 18.00, bateu 65%
+passos  245094/300000   27.8 passos/s  decorrido 2h27min  falta ~32min 57s  ultimos 20 ep: recompensa 14.44, bateu 70%
+passos  246985/300000   27.8 passos/s  decorrido 2h28min  falta ~31min 47s  ultimos 20 ep: recompensa 15.11, bateu 70%
+passos  248918/300000   27.8 passos/s  decorrido 2h29min  falta ~30min 35s  ultimos 20 ep: recompensa 16.75, bateu 65%
+passos  250671/300000   27.8 passos/s  decorrido 2h30min  falta ~29min 32s  ultimos 20 ep: recompensa 19.76, bateu 40%
+passos  252397/300000   27.8 passos/s  decorrido 2h31min  falta ~28min 29s  ultimos 20 ep: recompensa 18.68, bateu 50%
+passos  254109/300000   27.9 passos/s  decorrido 2h32min  falta ~27min 28s  ultimos 20 ep: recompensa 19.28, bateu 45%
+passos  255839/300000   27.9 passos/s  decorrido 2h33min  falta ~26min 25s  ultimos 20 ep: recompensa 19.61, bateu 35%
+passos  257687/300000   27.9 passos/s  decorrido 2h34min  falta ~25min 18s  ultimos 20 ep: recompensa 21.34, bateu 35%
+passos  259576/300000   27.9 passos/s  decorrido 2h35min  falta ~24min 09s  ultimos 20 ep: recompensa 21.29, bateu 20%
+passos  261448/300000   27.9 passos/s  decorrido 2h36min  falta ~23min 01s  ultimos 20 ep: recompensa 18.57, bateu 50%
+passos  263248/300000   27.9 passos/s  decorrido 2h37min  falta ~21min 56s  ultimos 20 ep: recompensa 17.18, bateu 50%
+passos  265099/300000   28.0 passos/s  decorrido 2h38min  falta ~20min 49s  ultimos 20 ep: recompensa 17.38, bateu 55%
+passos  266948/300000   28.0 passos/s  decorrido 2h39min  falta ~19min 42s  ultimos 20 ep: recompensa 17.11, bateu 50%
+passos  268801/300000   28.0 passos/s  decorrido 2h40min  falta ~18min 35s  ultimos 20 ep: recompensa 19.24, bateu 45%
+passos  270632/300000   28.0 passos/s  decorrido 2h41min  falta ~17min 29s  ultimos 20 ep: recompensa 15.04, bateu 65%
+passos  272479/300000   28.0 passos/s  decorrido 2h42min  falta ~16min 22s  ultimos 20 ep: recompensa 18.65, bateu 55%
+passos  274283/300000   28.0 passos/s  decorrido 2h43min  falta ~15min 17s  ultimos 20 ep: recompensa 18.40, bateu 55%
+passos  276153/300000   28.1 passos/s  decorrido 2h44min  falta ~14min 10s  ultimos 20 ep: recompensa 19.14, bateu 45%
+passos  278017/300000   28.1 passos/s  decorrido 2h45min  falta ~13min 03s  ultimos 20 ep: recompensa 20.93, bateu 30%
+passos  279849/300000   28.1 passos/s  decorrido 2h46min  falta ~11min 57s  ultimos 20 ep: recompensa 20.35, bateu 35%
+passos  281573/300000   28.1 passos/s  decorrido 2h47min  falta ~10min 56s  ultimos 20 ep: recompensa 15.64, bateu 60%
+passos  283290/300000   28.1 passos/s  decorrido 2h48min  falta ~9min 55s  ultimos 20 ep: recompensa 17.97, bateu 45%
+passos  284929/300000   28.1 passos/s  decorrido 2h49min  falta ~8min 57s  ultimos 20 ep: recompensa 12.03, bateu 85%
+passos  286718/300000   28.1 passos/s  decorrido 2h50min  falta ~7min 53s  ultimos 20 ep: recompensa 19.10, bateu 40%
+passos  288436/300000   28.1 passos/s  decorrido 2h51min  falta ~6min 52s  ultimos 20 ep: recompensa 17.17, bateu 55%
+passos  290094/300000   28.1 passos/s  decorrido 2h52min  falta ~5min 53s  ultimos 20 ep: recompensa 17.14, bateu 45%
+passos  291762/300000   28.1 passos/s  decorrido 2h53min  falta ~4min 53s  ultimos 20 ep: recompensa 18.12, bateu 50%
+passos  293367/300000   28.1 passos/s  decorrido 2h54min  falta ~3min 56s  ultimos 20 ep: recompensa 20.40, bateu 30%
+passos  295010/300000   28.1 passos/s  decorrido 2h55min  falta ~2min 58s  ultimos 20 ep: recompensa 17.85, bateu 55%
+passos  296719/300000   28.1 passos/s  decorrido 2h56min  falta ~1min 57s  ultimos 20 ep: recompensa 18.66, bateu 45%
+passos  298500/300000   28.1 passos/s  decorrido 2h57min  falta ~0min 53s  ultimos 20 ep: recompensa 19.83, bateu 35%
+passos  300167/300000   28.1 passos/s  decorrido 2h58min  falta ~0min 00s  ultimos 20 ep: recompensa 21.95, bateu 25%
+passos  300288/300000   28.1 passos/s  decorrido 2h58min  falta ~0min 00s  ultimos 20 ep: recompensa 22.62, bateu 20%
+fim: 300288 passos em 2h58min (28.1 passos/s); modelo em rodada/modelo_final.zip

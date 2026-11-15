@@ -1,0 +1,4 @@
+episodio,semente,concluiu,colidiu,vel_media,passos,recompensa,fracao_rota,saiu_da_pista,motivo,erro_lat_medio_m,erro_lat_max_m,var_direcao,tempo_parede_s
+0,100,0,0,37.69,352,377.19,0.752,1,out_of_road,0.157,3.37,0.0085,287.4
+1,101,0,0,36.57,226,232.11,0.468,1,out_of_road,0.393,4.129,0.0107,209.1
+2,102,0,0,34.4,145,137.39,0.298,1,out_of_road,0.2,3.446,0.0063,138.6

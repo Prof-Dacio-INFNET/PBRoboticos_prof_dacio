@@ -1,0 +1,183 @@
+ambiente highway-fast-v0: 3 faixas, 20 carros, 30 s de episodio a 1 Hz de decisao
+sementes 1000 a 1049 (as mesmas para todas as politicas)
+
+ppo -- 50 episodios
+  ep  semente  concluiu  colidiu  vel_km/h  passos  recompensa
+   0     1000       nao      sim      95.4      16       14.12
+   1     1001       sim      nao      88.9      30       25.75
+   2     1002       sim      nao      76.8      30       23.07
+   3     1003       sim      nao      79.3      30       23.59
+   4     1004       sim      nao      82.3      30       24.28
+   5     1005       nao      sim      79.8      19       14.62
+   6     1006       sim      nao      94.3      30       26.95
+   7     1007       sim      nao      86.5      30       25.19
+   8     1008       nao      sim      95.7      15       13.13
+   9     1009       sim      nao      82.3      30       24.29
+  10     1010       sim      nao      87.7      30       25.49
+  11     1011       nao      sim      85.2       7        5.12
+  12     1012       sim      nao      76.3      30       22.95
+  13     1013       sim      nao      85.9      30       24.55
+  14     1014       sim      nao      81.1      30       24.02
+  15     1015       nao      sim      84.2      15       11.95
+  16     1016       nao      sim      85.7      11        8.59
+  17     1017       sim      nao      76.9      30       23.09
+  18     1018       sim      nao      79.9      30       23.75
+  19     1019       nao      sim      93.3      10        8.52
+  20     1020       sim      nao      88.3      30       25.62
+  21     1021       nao      sim      96.5      20       17.19
+  22     1022       nao      sim      89.6       9        7.42
+  23     1023       sim      nao      76.3      30       22.92
+  24     1024       sim      nao      81.6      30       24.10
+  25     1025       sim      nao      73.3      30       22.28
+  26     1026       sim      nao      77.5      30       23.22
+  27     1027       nao      sim      94.4      12       10.36
+  28     1028       sim      nao      80.5      30       23.19
+  29     1029       sim      nao      79.3      30       23.12
+  30     1030       sim      nao      93.7      30       26.79
+  31     1031       nao      sim      80.7       4        2.80
+  32     1032       sim      nao      79.3      30       22.62
+  33     1033       sim      nao      84.7      30       24.45
+  34     1034       sim      nao      85.9      30       24.92
+  35     1035       sim      nao      82.8      30       24.37
+  36     1036       sim      nao      75.7      30       22.82
+  37     1037       nao      sim      91.4       9        7.39
+  38     1038       nao      sim      80.2      29       22.56
+  39     1039       sim      nao      79.3      30       23.49
+  40     1040       sim      nao      83.5      30       23.79
+  41     1041       nao      sim      82.1      19       14.89
+  42     1042       sim      nao      87.7      30       25.49
+  43     1043       sim      nao      87.1      30       25.35
+  44     1044       sim      nao      82.3      30       24.25
+  45     1045       sim      nao      78.7      30       23.49
+  46     1046       sim      nao      78.1      30       23.32
+  47     1047       nao      sim      73.3      16       11.45
+  48     1048       sim      nao      80.5      30       23.88
+  49     1049       nao      sim      86.7      20       16.29
+
+aleatoria -- 50 episodios
+  ep  semente  concluiu  colidiu  vel_km/h  passos  recompensa
+   0     1000       nao      sim      76.2      17       12.07
+   1     1001       nao      sim      90.0      11        8.43
+   2     1002       nao      sim      98.2       8        6.40
+   3     1003       nao      sim      83.1      13        9.23
+   4     1004       nao      sim      76.5      12        8.23
+   5     1005       nao      sim      80.7      27       19.73
+   6     1006       nao      sim      85.8       3        2.01
+   7     1007       nao      sim      72.5       7        4.45
+   8     1008       nao      sim      96.8       7        5.29
+   9     1009       sim      nao      74.5      30       21.68
+  10     1010       nao      sim      95.6      15       12.68
+  11     1011       nao      sim      90.7       5        3.66
+  12     1012       nao      sim      80.0      19       14.52
+  13     1013       nao      sim     101.5      12       10.55
+  14     1014       nao      sim      81.7       8        5.62
+  15     1015       nao      sim      85.1      14       10.46
+  16     1016       nao      sim      79.8       7        4.50
+  17     1017       nao      sim      85.1       4        2.58
+  18     1018       nao      sim      90.0       6        4.43
+  19     1019       nao      sim      96.3      11        9.34
+  20     1020       nao      sim      81.5      12        8.75
+  21     1021       nao      sim      94.1       4        2.81
+  22     1022       nao      sim      86.3      11        8.33
+  23     1023       nao      sim      92.6      18       14.62
+  24     1024       nao      sim      94.1       3        1.88
+  25     1025       nao      sim      86.4       5        3.50
+  26     1026       nao      sim      93.0      10        8.08
+  27     1027       nao      sim      78.4      17       12.07
+  28     1028       nao      sim     107.1       3        2.28
+  29     1029       nao      sim      79.1      10        7.33
+  30     1030       nao      sim     100.3       5        3.71
+  31     1031       nao      sim      86.3       9        6.73
+  32     1032       nao      sim      87.9       6        4.61
+  33     1033       nao      sim      93.9      15       12.51
+  34     1034       nao      sim      96.0       3        2.03
+  35     1035       nao      sim      94.1       3        1.88
+  36     1036       nao      sim      88.0      10        7.78
+  37     1037       nao      sim      81.1       8        5.50
+  38     1038       nao      sim     106.7       2        1.21
+  39     1039       nao      sim      86.4       4        2.70
+  40     1040       nao      sim      79.7       7        4.77
+  41     1041       nao      sim      84.0      19       14.75
+  42     1042       nao      sim      85.1      15       11.78
+  43     1043       nao      sim      76.3       5        3.39
+  44     1044       nao      sim      87.0      11        8.51
+  45     1045       nao      sim      90.7       5        3.60
+  46     1046       nao      sim      89.3       9        6.49
+  47     1047       nao      sim     101.1       3        2.11
+  48     1048       nao      sim      90.7       6        4.48
+  49     1049       nao      sim      88.4       5        3.77
+
+idle -- 50 episodios
+  ep  semente  concluiu  colidiu  vel_km/h  passos  recompensa
+   0     1000       nao      sim      86.9      14       10.40
+   1     1001       sim      nao      90.0      30       26.00
+   2     1002       nao      sim      87.5      13       10.03
+   3     1003       nao      sim      84.6       6        4.00
+   4     1004       nao      sim      87.0      18       14.80
+   5     1005       nao      sim      89.1      19       15.03
+   6     1006       nao      sim      87.8      24       19.20
+   7     1007       nao      sim      84.7      10        7.20
+   8     1008       nao      sim      87.5      21       16.70
+   9     1009       nao      sim      89.0      18       14.80
+  10     1010       nao      sim      88.4      28       23.47
+  11     1011       nao      sim      79.4       5        3.20
+  12     1012       nao      sim      86.0      11        8.73
+  13     1013       nao      sim      90.0      16       12.13
+  14     1014       nao      sim      86.2      14       10.87
+  15     1015       nao      sim      87.1      11        8.37
+  16     1016       nao      sim      88.0      22       17.53
+  17     1017       nao      sim      86.0      11        8.73
+  18     1018       nao      sim      88.8      15       12.20
+  19     1019       nao      sim      88.8      15       11.70
+  20     1020       sim      nao      90.0      30       26.00
+  21     1021       nao      sim      88.2      25       19.20
+  22     1022       nao      sim      88.2      10        7.87
+  23     1023       nao      sim      87.3      16       12.00
+  24     1024       nao      sim      87.7      19       15.03
+  25     1025       nao      sim      90.0       4        2.80
+  26     1026       nao      sim      85.6      12        9.20
+  27     1027       nao      sim      86.2      14       10.87
+  28     1028       nao      sim      86.6      13       10.03
+  29     1029       nao      sim      87.0       6        4.20
+  30     1030       sim      nao      90.0      30       25.00
+  31     1031       nao      sim      90.0       4        2.80
+  32     1032       nao      sim      87.1      15       11.70
+  33     1033       nao      sim      87.3      20       15.87
+  34     1034       sim      nao      90.0      30       25.00
+  35     1035       nao      sim      87.1      11        8.00
+  36     1036       nao      sim      87.3      12        9.20
+  37     1037       nao      sim      87.1      15       11.70
+  38     1038       nao      sim      88.4      27       21.70
+  39     1039       nao      sim      88.4      20       15.87
+  40     1040       nao      sim      87.5      21       16.00
+  41     1041       nao      sim      87.7      14       11.33
+  42     1042       nao      sim      88.4      28       23.47
+  43     1043       nao      sim      88.1      28       23.47
+  44     1044       nao      sim      79.4       5        3.20
+  45     1045       nao      sim      85.1       9        7.00
+  46     1046       nao      sim      88.0       9        6.40
+  47     1047       nao      sim      88.8      15       11.20
+  48     1048       nao      sim      87.8       8        6.13
+  49     1049       nao      sim      87.2      19       15.67
+
+RESUMO (50 episodios; media +- desvio entre episodios)
+  politica          concluiu   colidiu   vel_media (km/h)  recompensa
+  ppo                 68%       32%      83.8 +-  6.1       20.14 +-  6.57
+  aleatoria            2%       98%      88.1 +-  8.2        7.16 +-  4.71
+  idle                 8%       92%      87.4 +-  2.2       12.86 +-  6.53
+
+  o que cada politica fez (soma dos episodios):
+  ppo              faixa da direita  90% do tempo, 0.9 trocas/ep, LANE_LEFT=11 IDLE=207 LANE_RIGHT=181 FASTER=351 SLOWER=501
+  aleatoria        faixa da direita  34% do tempo, 2.8 trocas/ep, LANE_LEFT=95 IDLE=93 LANE_RIGHT=103 FASTER=102 SLOWER=86
+  idle             faixa da direita  34% do tempo, 0.0 trocas/ep, LANE_LEFT=0 IDLE=810 LANE_RIGHT=0 FASTER=0 SLOWER=0
+
+gravado em final50/ (avaliacao_*.csv, comportamento_*.csv, resumo.csv)
+olhe: 50 episodios dao uma taxa de colisao em degraus de 2%; duas politicas que diferem em 1 ou 2 batidas nao estao separadas por estes numeros.
+  politica          concluiu   colidiu   vel_media (km/h)  recompensa
+  ppo_estocastico     44%       56%      85.4 +-  7.2       18.73 +-  6.76
+
+  o que cada politica fez (soma dos episodios):
+  ppo_estocastico  faixa da direita  89% do tempo, 0.9 trocas/ep, LANE_LEFT=9 IDLE=173 LANE_RIGHT=222 FASTER=333 SLOWER=424
+
+gravado em final50-est/ (avaliacao_*.csv, comportamento_*.csv, resumo.csv)
+olhe: 50 episodios dao uma taxa de colisao em degraus de 2%; duas politicas que diferem em 1 ou 2 batidas nao estao separadas por estes numeros.

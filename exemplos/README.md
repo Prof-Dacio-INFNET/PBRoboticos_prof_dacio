@@ -27,6 +27,9 @@ Pacotes ROS 2 prontos para rodar, usados em aula e pensados para serem **copiado
 | [`aula16-arvore-bag`](aula16-arvore-bag/index.md) | Aula 16 | a árvore de comportamento, a sessão gravada e a régua que mede o bag | gates G4.3 e G4.4 |
 | [`aula17-metadrive`](aula17-metadrive/index.md) | Aula 17 | o MetaDrive sem janela: a captura com o rótulo sugerido, as faixas medidas com dois limiares, e as formas que a cena tem (e a placa que não tem) | gates G4.5 e G4.6 |
 | [`aula17-cnn`](aula17-cnn/index.md) | Aula 17 | a mesma CNN treinada sem e com augmentation, a rotulagem com revisão, as curvas e a matriz — e a rede que acerta 90% decorando | gate G4.6 |
+| [`aula18-ppo`](aula18-ppo/index.md) | Aula 18 | PPO no highway-env: o treino de 300 mil passos medido (horas, não minutos), a curva, e a política avaliada contra a aleatória e o IDLE nos mesmos episódios | gate G5.5 |
+| [`aula18-pid-bc`](aula18-pid-bc/index.md) | Aula 18 | PID e Behavioral Cloning no MetaDrive medidos na mesma régua, o dataset e o histograma, e o empurrão que mostra a deriva de distribuição | gates G5.2, G5.3 e G5.4 |
+| [`aula18-moveit`](aula18-moveit/index.md) | Aula 18 | MoveIt 2 com o Panda: uma caixa na cena, três poses com e sem ela, a pose proibida, e o roteiro de pick-and-place — a parte ROS 2 com a primeira execução no ensaio do professor | gate G5.1 |
 
 ## Exemplos por TP
 

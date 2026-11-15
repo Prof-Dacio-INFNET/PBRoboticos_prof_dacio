@@ -116,7 +116,7 @@ Um `[!]` não é vergonha nem perda de nota — é informação. O que custa not
 | **G5.6** | Opção escolhida no G5.0 **demonstrada**: robô real percebendo e se movendo, ou missão de waypoints do drone | vídeo | link/vídeo em `docs/evidencias/tp5/` | 26/11 |
 | **G5.7** | **Entrega**: relatório, branch `entrega-tp5`, tag `tp5`, Moodle | `git tag --list` mostra `tp5` | tag + postagem | 27/11 |
 
-**O PPO é o item que mais atrasa entregas**, porque 300k steps não terminam em quinze minutos e ninguém descobre isso no dia 26. Dispare o treino **cedo** (ele roda sozinho enquanto você faz o MoveIt) e salve os checkpoints. Treino que roda em segundo plano é tempo que você ganha de graça; treino iniciado na véspera é nota perdida por relógio.
+**O PPO é o item que mais atrasa entregas**, porque 300k steps não terminam em quinze minutos e ninguém descobre isso no dia 26. Medido no exemplo [`aula18-ppo`](../exemplos/aula18-ppo/index.md): numa CPU de 2 núcleos com carga, os 300k steps do `highway-fast-v0` levaram **2 h 58 min** (28 passos/s) — o gargalo é o simulador, não a rede. Meça os passos/s do seu treino nos primeiros minutos e faça a conta. Dispare o treino **cedo** (ele roda sozinho enquanto você faz o MoveIt) e salve os checkpoints. Treino que roda em segundo plano é tempo que você ganha de graça; treino iniciado na véspera é nota perdida por relógio.
 
 ---
 

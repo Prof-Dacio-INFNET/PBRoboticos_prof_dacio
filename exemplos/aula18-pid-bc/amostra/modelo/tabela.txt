@@ -1,0 +1,18 @@
+dados   : dataset-pid -- 1000 quadros, 5 episodios; |direcao| < 0.02 em 644 (64%)
+validacao: episodio(s) dataset-pid:4 -- 105 quadros (64 de reta, 41 de curva)
+treino  : 30 epocas, lote 32, entrada 80x35, BN momentum 0.9, semente 7
+
+linha de base "sempre a media do treino" (-0.007): MAE 0.029 no episodio separado
+linha de base "sempre zero":                  MAE 0.027
+
+divisao        MAE_treino  MAE_val(propria)  MAE_ep_separado   reta    curva   tempo
+por episodio        0.008             0.006            0.006   0.002   0.012     38 s
+por quadro          0.006             0.011            0.006   0.003   0.011     38 s
+MAE em unidades de volante (1,0 = 40 graus de roda). MAE_val(propria) e a
+validacao que cada divisao reporta; MAE_ep_separado e a do episodio que
+nenhuma das duas viu. reta/curva: o MAE do episodio separado em cada parte.
+sempre media            -                 -            0.029   0.007   0.062
+
+o modelo "por episodio", no episodio separado, com a entrada ERRADA:
+RGB, nao BGR            -                 -            0.012   0.007   0.019   (saida media -0.018)
+sem o /255              -                 -            1.027   1.000   1.069   (saida media +1.000)

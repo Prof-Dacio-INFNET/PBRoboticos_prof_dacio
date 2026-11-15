@@ -1,0 +1,55 @@
+ambiente highway-v0: 4 faixas, 50 carros, 40 s de episodio a 1 Hz de decisao
+sementes 1000 a 1009 (as mesmas para todas as politicas)
+
+ppo -- 10 episodios
+  ep  semente  concluiu  colidiu  vel_km/h  passos  recompensa
+   0     1000       nao      sim      95.1       6        4.55
+   1     1001       sim      nao      82.4      40       32.43
+   2     1002       sim      nao      82.4      40       32.40
+   3     1003       sim      nao      77.0      40       30.80
+   4     1004       sim      nao      77.0      40       30.83
+   5     1005       sim      nao      78.4      40       31.20
+   6     1006       sim      nao      84.2      40       32.83
+   7     1007       sim      nao      85.1      40       33.16
+   8     1008       sim      nao      82.9      40       32.54
+   9     1009       sim      nao      78.4      40       30.85
+
+aleatoria -- 10 episodios
+  ep  semente  concluiu  colidiu  vel_km/h  passos  recompensa
+   0     1000       nao      sim      78.9      26       19.28
+   1     1001       nao      sim      81.6       4        2.75
+   2     1002       nao      sim      82.5      20       15.35
+   3     1003       nao      sim      81.6      15       10.54
+   4     1004       nao      sim      74.6      22       15.48
+   5     1005       nao      sim      97.5       2        1.04
+   6     1006       nao      sim      85.9      18       14.26
+   7     1007       nao      sim      73.4      23       15.62
+   8     1008       nao      sim      81.0      14       10.50
+   9     1009       nao      sim     100.1       5        3.90
+
+idle -- 10 episodios
+  ep  semente  concluiu  colidiu  vel_km/h  passos  recompensa
+   0     1000       nao      sim      87.5      12        8.80
+   1     1001       nao      sim      88.9      24       20.00
+   2     1002       nao      sim      86.5      13       10.18
+   3     1003       nao      sim      89.4      10        7.51
+   4     1004       nao      sim      90.0      23       18.76
+   5     1005       nao      sim      87.5      19       14.82
+   6     1006       nao      sim      88.8      28       22.84
+   7     1007       nao      sim      87.4      10        7.20
+   8     1008       nao      sim      88.2      25       19.76
+   9     1009       nao      sim      86.8      13       10.18
+
+RESUMO (10 episodios; media +- desvio entre episodios)
+  politica          concluiu   colidiu   vel_media (km/h)  recompensa
+  ppo                 90%       10%      82.3 +-  5.4       29.16 +-  8.69
+  aleatoria            0%      100%      83.7 +-  8.8       10.87 +-  6.30
+  idle                 0%      100%      88.1 +-  1.1       14.00 +-  5.92
+
+  o que cada politica fez (soma dos episodios):
+  ppo              faixa da direita  83% do tempo, 1.4 trocas/ep, LANE_LEFT=0 IDLE=99 LANE_RIGHT=53 FASTER=84 SLOWER=130
+  aleatoria        faixa da direita  26% do tempo, 4.9 trocas/ep, LANE_LEFT=32 IDLE=34 LANE_RIGHT=27 FASTER=26 SLOWER=30
+  idle             faixa da direita  10% do tempo, 0.0 trocas/ep, LANE_LEFT=0 IDLE=177 LANE_RIGHT=0 FASTER=0 SLOWER=0
+
+gravado em final-hv0/ (avaliacao_*.csv, comportamento_*.csv, resumo.csv)
+olhe: 10 episodios dao uma taxa de colisao em degraus de 10%; duas politicas que diferem em 1 ou 2 batidas nao estao separadas por estes numeros.

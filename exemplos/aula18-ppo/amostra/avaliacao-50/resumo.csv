@@ -1,0 +1,5 @@
+politica,episodios,concluiu_media,concluiu_desvio,colidiu_media,colidiu_desvio,vel_media_media,vel_media_desvio,passos_media,passos_desvio,recompensa_media,recompensa_desvio,frac_faixa_direita_media,trocas_faixa_media,acoes
+ppo,50,0.68,0.4712,0.32,0.4712,83.7657,6.1105,25.02,8.1026,20.1366,6.5721,0.8953,0.88,LANE_LEFT=11 IDLE=207 LANE_RIGHT=181 FASTER=351 SLOWER=501
+aleatoria,50,0.02,0.1414,0.98,0.1414,88.1182,8.1819,9.58,6.1182,7.1567,4.7081,0.3439,2.8,LANE_LEFT=95 IDLE=93 LANE_RIGHT=103 FASTER=102 SLOWER=86
+idle,50,0.08,0.274,0.92,0.274,87.4002,2.1505,16.2,7.516,12.86,6.5337,0.34,0.0,LANE_LEFT=0 IDLE=810 LANE_RIGHT=0 FASTER=0 SLOWER=0
+ppo_estocastico,50,0.44,0.5014,0.56,0.5014,85.3823,7.1654,23.22,8.4764,18.7293,6.7558,0.8894,0.88,LANE_LEFT=9 IDLE=173 LANE_RIGHT=222 FASTER=333 SLOWER=424
