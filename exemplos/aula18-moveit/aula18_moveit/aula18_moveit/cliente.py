@@ -1,9 +1,11 @@
 """O no que conversa com o move_group: tres clientes de acao e um de servico.
 
-ADVERTENCIA: NUNCA EXECUTADO. Escrito sem ROS 2, a partir da fonte do Humble
-(URLs no README); o testar.py roda este codigo com dubles do rclpy, o que
-prova a logica (prazos, recusas, traducao de codigos), nao que ele conversa
-com um move_group de verdade. A primeira execucao real e o ensaio da Aula 18.
+ADVERTENCIA: escrito sem ROS 2, a partir da fonte do Humble (URLs no
+README), e conferido pelo testar.py com dubles do rclpy. EXECUTADO pela
+primeira vez em 16/11 (WSL2 do professor, Humble, MoveIt 2.5.10): a cena pelo
+servico, o planejamento pela /move_action e a execucao pela
+/execute_trajectory conversaram com o move_group. A acao da garra
+(/panda_hand_controller/gripper_cmd) NUNCA foi chamada de verdade.
 
 POR QUE rclpy PURO, e nao uma biblioteca do MoveIt:
 

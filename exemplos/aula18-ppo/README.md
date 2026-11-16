@@ -4,7 +4,7 @@
 
 > ## Leia isto antes de qualquer coisa
 >
-> **300 mil passos não levam 30 minutos.** Nesta máquina (2 núcleos Xeon a 2,1 GHz, torch com 1 thread, outros processos disputando a CPU) levaram **2 h 58 min**, a **28,1 passos por segundo**. Na máquina do professor (WSL2), o treino começou a 52,7 passos/s, com a estimativa de **1 h 33 min**. O gargalo é o simulador, que é Python puro, e não a rede. No seu notebook pode ser mais rápido ou mais lento; o que **não** muda é a ordem de grandeza: são horas, não minutos. **Dispare o treino hoje**, em segundo plano, e faça o resto do TP5 enquanto ele roda.
+> **300 mil passos não levam 30 minutos.** Nesta máquina (2 núcleos Xeon a 2,1 GHz, torch com 1 thread, outros processos disputando a CPU) levaram **2 h 58 min**, a **28,1 passos por segundo**. Na máquina do professor (WSL2), o treino rodou a **55 passos/s**, estáveis, com a estimativa total de **1 h 31 min** (aos 57 min estava em 188 mil passos). O gargalo é o simulador, que é Python puro, e não a rede. No seu notebook pode ser mais rápido ou mais lento; o que **não** muda é a ordem de grandeza: são horas, não minutos. **Dispare o treino hoje**, em segundo plano, e faça o resto do TP5 enquanto ele roda.
 >
 > **A recompensa sobe nos primeiros ~10 mil passos e depois fica plana.** Os outros 290 mil não mudaram a curva. A política aprendeu a ir para a faixa da direita e **frear** — e, com isso, a bater bem menos que as linhas de base. Se isso é "dirigir bem" é a pergunta do relatório.
 >
@@ -46,9 +46,11 @@ O PPO vai num ambiente próprio, `$PB_DIR/.venv-rl`, fora da pasta do exemplo pe
 : "${PB_WS:?defina PB_USER, PB_DIR e PB_WS — o bloco está no topo desta página}"
 cd "$PB_DIR"
 command -v uv >/dev/null || { curl -LsSf https://astral.sh/uv/install.sh | sh; . ~/.bashrc; }
-uv venv --python 3.10 .venv-rl
+test -x "$PB_DIR/.venv-rl/bin/python" || uv venv --python 3.10 .venv-rl
 uv pip install --python .venv-rl/bin/python --torch-backend cpu stable-baselines3 highway-env gymnasium matplotlib
 ```
+
+O `test -x ... ||` só cria o venv se ele ainda não existe. Sem a guarda, colar o bloco de novo faz o `uv` perguntar `A virtual environment already exists ... replace it?` — e um `yes` **recria o venv embaixo de um treino que está rodando** (aconteceu no ensaio de 16/11; o treino sobreviveu por sorte).
 
 **O `--torch-backend cpu` é a linha que mais importa.** Sem ele, o `uv` resolve o torch do PyPI, que no Linux vem com CUDA: o `uv pip install --dry-run` sem a opção lista **17 pacotes** a mais (`torch`, `triton` e 15 `nvidia-*`), e a soma dos arquivos no PyPI dá **cerca de 3,0 GB** de download (somei os tamanhos publicados; não baixei). Com a opção, o torch vem do índice CPU do PyTorch: **187 MB** de download, e a instalação inteira levou **11 s** aqui. O venv pronto ocupa **977 MB** — 730 MB são o torch. Num WSL2 sem GPU configurada, o CUDA não serve para nada.
 
@@ -168,7 +170,7 @@ ate 2 000                 168        8,9           90%
 
 **Por que a recompensa empaca perto de 19.** A recompensa do `highway-fast-v0` vai de 0 a 1 **por passo**, e o episódio tem 30 passos: o teto é 30. Pela fórmula (`_reward` no `highway_env/envs/highway_env.py`), um passo **sem batida** vale pelo menos 0,67 — na faixa da esquerda a 72 km/h —, 0,73 na faixa da direita na mesma velocidade, e 1,0 na faixa da direita a 108 km/h. Sobreviver os 30 passos devagar já rende uns 22; ir rápido acrescenta no máximo 8. **Quem paga é a sobrevivência**, e a política aprendeu exatamente isso.
 
-**Reprodutibilidade, na mesma máquina.** Rodei um segundo treino com a mesma semente, até 15 360 passos, em outro processo: os **738 episódios** do `monitor.csv` saíram idênticos aos primeiros 738 da rodada longa — recompensa, duração e batida, linha a linha. Outro treino curto, de 1 536 passos, também. Em **outra** máquina isso não é garantido, e não foi testado: na Aula 17 a mesma semente deu números diferentes entre este container e o WSL2 do professor.
+**Reprodutibilidade, na mesma máquina.** Rodei um segundo treino com a mesma semente, até 15 360 passos, em outro processo: os **738 episódios** do `monitor.csv` saíram idênticos aos primeiros 738 da rodada longa — recompensa, duração e batida, linha a linha. Outro treino curto, de 1 536 passos, também. Em **outra** máquina isso não é garantido: na Aula 17 a mesma semente deu números diferentes entre este container e o WSL2 do professor. A **avaliação**, porém, se repetiu: o modelo da amostra, avaliado no WSL2 do professor em 16/11, deu exatamente a tabela abaixo (e os 60% / 40% do `--estocastico`). Com o highway-env, o mesmo modelo e as mesmas sementes, a tabela foi igual nestas duas máquinas — observado nelas, não garantido em outras.
 
 ## Avaliar: PPO × aleatória × IDLE
 
@@ -288,7 +290,7 @@ a criação do venv e a instalação com `--torch-backend cpu` (11 s; venv de 97
 
 **Não rodou, e é o que você vai encontrar:**
 
-o treino de 300 mil **até o fim no WSL2 com Ubuntu 22.04**. Na máquina do professor, em 15/11, o venv resolveu as mesmas versões desta página (`2.14.1+cpu`, SB3 2.9.2, gymnasium 1.4.0, highway-env 1.12.1) em uns 13 s; o treino curto de 3000 passos fez **57,8 passos/s** (53 s), e o de 300 mil começou a 52,7 passos/s, com a estimativa de 1 h 33 min — o fim dele e a avaliação ainda não estão aqui. A velocidade no seu notebook não foi medida: pode ficar perto de 28 passos/s (esta CPU é lenta e estava dividida), perto de 55, ou abaixo (WSL2 com pouca memória). **Meça nos primeiros cinco minutos** — a linha de progresso dá a estimativa — antes de planejar a semana.
+o treino de 300 mil **até o fim no WSL2 com Ubuntu 22.04**. Na máquina do professor, em 15/11, o venv resolveu as mesmas versões desta página (`2.14.1+cpu`, SB3 2.9.2, gymnasium 1.4.0, highway-env 1.12.1) em uns 13 s; o treino curto de 3000 passos fez **50 a 58 passos/s** (53 a 61 s); o de 300 mil rodou a 55 passos/s estáveis e, aos 57 min, estava em 188 mil passos (`ultimos 20 ep: recompensa 18.73, bateu 45%`), com a previsão total de 1 h 31 min — o fim dele e a avaliação do modelo dele ainda não estão aqui. Em 16/11, lá, o `testar.py` passou inteiro e a avaliação do **modelo da amostra** deu a mesma tabela desta página, em 12 a 14 s. A velocidade no seu notebook não foi medida: pode ficar perto de 28 passos/s (esta CPU é lenta e estava dividida), perto de 55, ou abaixo (WSL2 com pouca memória). **Meça nos primeiros cinco minutos** — a linha de progresso dá a estimativa — antes de planejar a semana.
 
 o **render com janela** (`render_mode="human"`, pygame). Nenhum script deste exemplo abre janela, e o container não tem tela. No WSL2 a janela depende do WSLg.
 

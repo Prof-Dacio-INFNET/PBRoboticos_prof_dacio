@@ -1,8 +1,9 @@
 """A sequencia de alvos e as tabelas que ela imprime. Sem ROS 2.
 
 ADVERTENCIA: a logica foi conferida pelo testar.py com movimentos falsos
-(sucesso, falha de planejamento, goal recusado, sem resposta); nunca rodou com
-um move_group de verdade.
+(sucesso, falha de planejamento, goal recusado, sem resposta). Rodou com um
+move_group de verdade no ensaio de 16/11 (tres_poses e comparar); o
+lado a lado com a pose D falhando so com a caixa ainda nao foi visto.
 
 Este modulo nao sabe o que e MoveIt: ele recebe uma lista de alvos e uma
 funcao `mover(alvo)` que devolve um `Resultado`. Quem fala com o move_group e
@@ -76,13 +77,14 @@ def percorrer(alvos, mover, log=print):
         resultados.append(r)
         log('      -> %s' % linha(r))
         if not r.planejou:
-            log('      olhe: %s' % _dica(r))
+            log('      olhe: %s' % dica(r))
         elif r.execucao not in (None, codigos.SUCESSO):
             log('      olhe (execucao): %s' % codigos.dica(r.execucao))
     return resultados
 
 
-def _dica(r):
+def dica(r):
+    """Onde olhar quando o PLANEJAMENTO nao deu SUCCESS (recusa, prazo ou codigo)."""
     if r.recusado:
         return ('o move_group recusou antes de planejar -- o motivo esta no Terminal A '
                 '(grupo ou link com nome errado e o mais comum)')

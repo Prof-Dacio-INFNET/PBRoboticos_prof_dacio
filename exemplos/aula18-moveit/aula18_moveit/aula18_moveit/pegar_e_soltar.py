@@ -3,15 +3,25 @@
     ros2 run aula18_moveit pegar_e_soltar
     ros2 run aula18_moveit pegar_e_soltar --ros-args -p ate_passo:=6
 
-ADVERTENCIA -- LEIA ANTES: este arquivo e um ROTEIRO, nunca executado, nem
-pelo professor. A sequencia e as mensagens foram montadas contra a fonte do
-Humble e o testar.py confere a ordem dos passos, as alturas e que ele para no
-primeiro passo que falhar. O que NAO se sabe: se a pegada (dedos em volta do
-cubo) e aceita pelo verificador de colisao do MoveIt com a malha de colisao
-dos dedos do Panda, e se o OMPL faz a descida de 10 cm em linha razoavel (ele
-nao promete linha reta; veja "Como adequar" no README). E o ponto de partida
-da tarefa da semana, nao uma demonstracao pronta. `ate_passo:=N` para no
-passo N, para voce depurar um passo de cada vez.
+ADVERTENCIA -- LEIA ANTES: este arquivo e um ROTEIRO. No ensaio de 16/11 ele
+rodou UMA vez, com ate_passo:=6: o passo 1 (o cubo na cena) deu success =
+True, e o passo 2 (ready) deu START_STATE_INVALID -- nao por defeito deste
+arquivo: o comando anterior (tres_poses com comparar) tinha deixado o braco
+DENTRO da caixa. Do passo 2 em diante, NUNCA EXECUTADO. A sequencia e as
+mensagens foram montadas contra a fonte do Humble e o testar.py confere a
+ordem dos passos, as alturas e que ele para no primeiro passo que falhar. O
+que NAO se sabe: se a pegada (dedos em volta do cubo) e aceita pelo
+verificador de colisao do MoveIt com a malha de colisao dos dedos do Panda, e
+se o OMPL faz a descida de 10 cm em linha razoavel (ele nao promete linha
+reta; veja "Como adequar" no README). E o ponto de partida da tarefa da
+semana, nao uma demonstracao pronta. `ate_passo:=N` para no passo N, para voce
+depurar um passo de cada vez.
+
+A CAIXA DO `cena` NAO E TIRADA: o passo 1 so ACRESCENTA o cubo "peca"; se a
+caixa estiver na cena, ela continua la, e e o obstaculo entre a origem e o
+destino (o passo 9 tem de dar a volta nela). E de proposito: o TP5 pede
+pick-and-place COM Collision Object. Para ver o roteiro sem ela, tire-a
+antes com o `cena --ros-args -p acao:=remover`.
 
 SEM FISICA quer dizer: nada cai, nada escorrega, a garra nao sente o cubo. O
 que faz o cubo "ir junto" com a mao e a ANEXACAO -- um AttachedCollisionObject:
@@ -48,7 +58,7 @@ controlador so devolve sucesso se `allow_stalling` for true.
 """
 import rclpy
 
-from aula18_moveit import codigos, mensagens
+from aula18_moveit import codigos, mensagens, sequencia
 from aula18_moveit.cliente import ClienteMoveIt
 
 PECA_ID = 'peca'
@@ -129,6 +139,10 @@ class PegarESoltar(ClienteMoveIt):
         r = self.mover(alvo, 'executar')
         texto = 'planejamento %s, execucao %s' % (
             r.situacao(), '-' if r.execucao is None else codigos.descrever(r.execucao))
+        if not r.planejou:
+            texto += '\n      olhe: %s' % sequencia.dica(r)
+        elif not r.executou:
+            texto += '\n      olhe (execucao): %s' % codigos.dica(r.execucao)
         return r.executou, texto
 
     def rodar(self):

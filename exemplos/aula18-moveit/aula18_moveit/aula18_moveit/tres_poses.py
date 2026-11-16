@@ -4,15 +4,18 @@
     ros2 run aula18_moveit tres_poses --ros-args -p modo:=planejar
     ros2 run aula18_moveit tres_poses --ros-args -p com_proibida:=true
     ros2 run aula18_moveit tres_poses --ros-args -p comparar:=true
+    ros2 run aula18_moveit tres_poses --ros-args -p voltar_ao_ready:=false
     ros2 run aula18_moveit tres_poses --ros-args \\
         -p poses:="[0.45, 0.30, 0.35, 0.45, -0.30, 0.35, 0.45, 0.0, 0.60]"
 
-ADVERTENCIA: NUNCA EXECUTADO com ROS 2. As poses padrao saem de uma conta de
-cinematica feita SEM o MoveIt (testar.py, grupo 6: cinematica direta e
-inversa numerica do URDF do Panda, com um teste de colisao grosseiro contra a
-caixa). Elas sao plausiveis, nao testadas. Se alguma falhar no ensaio, o
-README ensina a achar uma pose valida em um minuto, arrastando o marcador no
-RViz2 e lendo a pose com o tf2_echo.
+ADVERTENCIA: EXECUTADO pela primeira vez em 16/11 (WSL2 do professor,
+Humble, MoveIt 2.5.10 pelo apt): com a caixa na cena, ready, A, B e C deram
+SUCCESS no planejamento e na execucao em tres execucoes seguidas. O que NAO
+rodou ainda: a VOLTA AO READY (parametro voltar_ao_ready, e a volta antes de
+por a caixa no comparar), escrita depois do ensaio para corrigir o defeito que
+ele achou -- a rodada sem a caixa terminava na pose D, DENTRO do volume da
+caixa, e a caixa era posta em cima do braco (START_STATE_INVALID em tudo
+depois). Essa parte so foi conferida pelo testar.py, com dubles.
 
 O QUE O ITEM 1 DO TP5 PEDE, e onde isso esta aqui:
 
@@ -47,10 +50,22 @@ OS MODOS (parametro `modo`):
 `comparar:=true` roda a lista inteira duas vezes -- sem a caixa e com a
 caixa -- e imprime as duas lado a lado. E a demonstracao da aula em um
 comando. Ele DEIXA a caixa na cena ao terminar.
+
+A VOLTA AO READY (movimento de servico, fora da tabela, dito no log):
+
+    no comparar, entre as duas rodadas: o braco volta ao ready ANTES de a
+    caixa entrar. Sem isso, a rodada sem a caixa termina onde a ultima pose
+    deixou o braco -- com com_proibida, na D, dentro do volume da caixa -- e
+    a caixa nasce em cima dele. Se a volta falhar, a caixa NAO e posta.
+
+    no fim de toda execucao que mexe o braco (modos executar e direto), com
+    voltar_ao_ready (padrao true): o proximo comando -- o cena, o
+    pegar_e_soltar, este mesmo -- parte de um estado conhecido, fora da
+    caixa. No modo planejar o braco nao se mexe, e nao ha volta.
 """
 import rclpy
 
-from aula18_moveit import cena, mensagens, sequencia
+from aula18_moveit import cena, codigos, mensagens, sequencia
 from aula18_moveit.cliente import ClienteMoveIt
 
 POSES_PADRAO = [
@@ -59,6 +74,8 @@ POSES_PADRAO = [
     0.45, 0.00, 0.60,     # C
 ]
 POSE_PROIBIDA = [0.45, 0.00, 0.30]   # D: dentro da caixa padrao do `cena`
+ALVO_READY = {'nome': 'ready', 'tipo': 'juntas', 'valores': mensagens.ESTADOS['ready'],
+              'descricao': 'estado nomeado do SRDF, por juntas (sem IK)'}
 
 
 def montar_alvos(poses, orientacao=mensagens.PARA_BAIXO, comecar_em_ready=True,
@@ -72,9 +89,7 @@ def montar_alvos(poses, orientacao=mensagens.PARA_BAIXO, comecar_em_ready=True,
         bruta += POSE_PROIBIDA
     alvos = []
     if comecar_em_ready:
-        alvos.append({'nome': 'ready', 'tipo': 'juntas',
-                      'valores': mensagens.ESTADOS['ready'],
-                      'descricao': 'estado nomeado do SRDF, por juntas (sem IK)'})
+        alvos.append(dict(ALVO_READY))
     for i in range(0, len(bruta), 3):
         letra = chr(ord('A') + i // 3)
         x, y, z = bruta[i:i + 3]
@@ -97,6 +112,7 @@ class TresPoses(ClienteMoveIt):
         self.declare_parameter('comecar_em_ready', True)
         self.declare_parameter('com_proibida', False)
         self.declare_parameter('comparar', False)
+        self.declare_parameter('voltar_ao_ready', True)
         self.modo = self.get_parameter('modo').value
         self.alvos = montar_alvos(
             self.get_parameter('poses').value,
@@ -104,6 +120,7 @@ class TresPoses(ClienteMoveIt):
             bool(self.get_parameter('comecar_em_ready').value),
             bool(self.get_parameter('com_proibida').value))
         self.comparar = bool(self.get_parameter('comparar').value)
+        self.voltar = bool(self.get_parameter('voltar_ao_ready').value)
 
     def _rodada(self, titulo):
         log = self.get_logger().info
@@ -112,6 +129,28 @@ class TresPoses(ClienteMoveIt):
         for linha in sequencia.tabela(res, titulo):
             log(linha)
         return res
+
+    def voltar_ao_ready(self, motivo):
+        """Movimento de servico: leva o braco ao ready, FORA da tabela.
+
+        Devolve True se o braco esta no ready ao fim (ou se o modo nao mexe
+        o braco). Diz no log o que fez e, se falhou, o que olhar.
+        """
+        log = self.get_logger()
+        if self.modo == 'planejar':
+            return True      # o braco nao se mexeu: nao ha de onde voltar
+        log.info('(servico, fora da tabela) voltando ao ready %s...' % motivo)
+        r = self.mover(dict(ALVO_READY), self.modo)
+        if r.executou:
+            log.info('(servico) o braco esta no ready: %d pontos, %.2f rad'
+                     % (r.pontos, r.comprimento))
+            return True
+        exe = '-' if r.execucao is None else codigos.descrever(r.execucao)
+        log.error('(servico) NAO consegui voltar ao ready: planejamento %s, execucao %s'
+                  % (r.situacao(), exe))
+        log.error('      olhe: %s' % (codigos.dica(r.execucao) if r.planejou
+                                     else sequencia.dica(r)))
+        return False
 
     def rodar(self):
         if self.modo not in ('executar', 'planejar', 'direto'):
@@ -123,6 +162,8 @@ class TresPoses(ClienteMoveIt):
         log = self.get_logger().info
         if not self.comparar:
             res = self._rodada('as poses, com a cena como ela esta agora')
+            if self.voltar:
+                self.voltar_ao_ready('para o proximo comando partir dele')
             for linha in sequencia.resumo(res):
                 log(linha)
             return 0
@@ -130,11 +171,21 @@ class TresPoses(ClienteMoveIt):
         # Sem a caixa. success = False aqui so quer dizer que ela nao estava la.
         self.aplicar_cena(cena.diff_remover())
         sem = self._rodada('SEM a caixa')
+        # A ultima pose da rodada sem a caixa pode estar DENTRO dela (a D
+        # esta, de proposito). Por a caixa ali e prender o braco: todo plano
+        # seguinte daria START_STATE_INVALID. Visto no ensaio de 16/11.
+        if not self.voltar_ao_ready('antes de por a caixa (a ultima pose pode estar '
+                                    'dentro dela)'):
+            self.get_logger().error('NAO pus a caixa: com o braco fora do ready, ele poderia '
+                                    'ficar dentro dela. Parei antes da segunda rodada.')
+            return 1
         if self.aplicar_cena(cena.diff_adicionar()) is not True:
             self.get_logger().error('nao consegui por a caixa na cena; parei antes da '
                                     'segunda rodada. Olhe o Terminal A.')
             return 1
         com = self._rodada('COM a caixa')
+        if self.voltar:
+            self.voltar_ao_ready('para o proximo comando partir dele')
         log('=== as mesmas poses, lado a lado ===')
         for linha in sequencia.comparar(sem, com):
             log(linha)

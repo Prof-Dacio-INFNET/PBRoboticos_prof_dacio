@@ -3,7 +3,9 @@
 ADVERTENCIA: escrito SEM ROS 2. Cada campo foi conferido contra as definicoes
 da branch humble (URLs abaixo) e o testar.py monta cada mensagem com dubles
 que recusam campo inexistente e tipo errado, como as classes geradas pelo
-rosidl. Nenhuma destas mensagens chegou ainda a um move_group de verdade.
+rosidl. No ensaio de 16/11 a caixa, o goal por juntas e o goal por pose
+chegaram a um move_group de verdade e foram aceitos; a anexacao, a soltura e
+a mensagem da garra ainda nao.
 
 Este modulo nao fala com ninguem: so constroi mensagens. Quem envia e o
 `cliente.py`. A separacao existe para que o testar.py possa conferir a

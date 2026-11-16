@@ -5,11 +5,12 @@
     ros2 run aula18_moveit cena --ros-args -p centro:="[0.45, 0.0, 0.2]" \\
         -p tamanho:="[0.1, 0.2, 0.4]"
 
-ADVERTENCIA: NUNCA EXECUTADO com ROS 2. A mensagem foi montada campo por
-campo contra a fonte do Humble e conferida pelo testar.py com dubles; a
-geometria (a caixa nao encosta no Panda em `ready`, e fica entre as poses A e
-B do tres_poses) e uma conta aproximada do testar.py, grupo 6, nao um teste
-de colisao do MoveIt.
+ADVERTENCIA: EXECUTADO pela primeira vez em 16/11 (WSL2 do professor, Humble,
+MoveIt 2.5.10): "achei o move_group" em 0,5 s, "success = True", e a caixa
+verde apareceu no RViz2. A geometria (a caixa nao encosta no Panda em
+`ready`, e fica entre as poses A e B do tres_poses) e uma conta aproximada do
+testar.py, grupo 6; com o braco no ready ela nao colidiu no ensaio. Posta com
+o braco PARADO DENTRO do volume dela, ela o prende: veja o tres_poses.
 
 O QUE E UM COLLISION OBJECT:
 

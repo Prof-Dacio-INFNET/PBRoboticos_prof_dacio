@@ -84,7 +84,7 @@ Os três ambientes Python ficam em `$PB_DIR`, fora dos exemplos: `.venv-rl` (o P
     Ela confere que as variáveis existem **neste** terminal. Um bloco que começa com ela supõe que o mesmo terminal já rodou um bloco que define as variáveis; um terminal novo começa sempre pelas três variáveis — e, se for chamar `ros2`, pelas duas linhas de `source`.
 
 !!! warning "O que rodou onde — leia antes de confiar em qualquer número"
-    **Na nuvem** (um servidor Linux de 2 núcleos, sem placa de vídeo, com outros processos disputando a CPU, em 14 e 15/11): o treino do PPO inteiro, todas as avaliações, o PID em todas as varreduras, o dataset do PID, o treino do BC e o BC dirigindo com renderização por software. **Na minha máquina** (WSL2, Ubuntu 22.04, GPU pelo WSLg), no ensaio de 15/11: o venv do PPO e um treino curto, o PID nas duas varreduras, o dataset do PID, o treino do BC, o BC dirigindo os 10 episódios e o empurrão — os números de lá estão ao lado dos da nuvem em cada bloco. <!-- ENSAIO-A18 -->A parte ROS 2 do exemplo do MoveIt **ainda não rodou em lugar nenhum**: no ensaio, a instalação dos pacotes foi interrompida e o bloco não chegou a subir. A primeira execução é a minha, antes da aula, e o resultado entra nesta página depois.<!-- /ENSAIO-A18 --> **No WSL2 de vocês: ninguém viu ainda.** Os READMEs dos exemplos separam, linha a linha, o que foi visto do que não foi — e a pilotagem **humana** do dataset não foi feita por ninguém.
+    **Na nuvem** (um servidor Linux de 2 núcleos, sem placa de vídeo, com outros processos disputando a CPU, em 14 e 15/11): o treino do PPO inteiro, todas as avaliações, o PID em todas as varreduras, o dataset do PID, o treino do BC e o BC dirigindo com renderização por software. **Na minha máquina** (WSL2, Ubuntu 22.04, GPU pelo WSLg), no ensaio de 15/11: o venv do PPO e um treino curto, o PID nas duas varreduras, o dataset do PID, o treino do BC, o BC dirigindo os 10 episódios e o empurrão — os números de lá estão ao lado dos da nuvem em cada bloco. A parte ROS 2 do exemplo do MoveIt rodou **só na minha máquina, em 16/11**: o demo do Panda subiu, a caixa entrou na cena, e as três poses deram `SUCCESS` com a caixa, em três execuções seguidas — o que ainda não foi visto está dito no bloco 3. **No WSL2 de vocês: ninguém viu ainda.** Os READMEs dos exemplos separam, linha a linha, o que foi visto do que não foi — e a pilotagem **humana** do dataset não foi feita por ninguém.
 
 ---
 
@@ -117,7 +117,7 @@ fim: 3072 passos em 1min 34s (32.6 passos/s); modelo em /tmp/demo-a18/modelo_fin
 
 Essas linhas são da nuvem. Na minha máquina, o mesmo treino curto fez **57,8 passos/s** e terminou em 53 s — quase o dobro. O alvo de 3000 vira 3072 porque o SB3 completa a coleta de 768 passos — e o de 300 mil vira 300 288.
 
-**300 mil passos não são 30 minutos.** O enunciado diz "≈30 min CPU"; isso exigiria uns 167 passos por segundo. Na nuvem, o treino inteiro levou **2 h 58 min**, a **28 passos/s**. Na minha máquina, o de 300 mil começou a **52,7 passos/s**, e a primeira linha dizia `falta ~1h33min`: cerca de **1 h 30 min**. Nenhuma das duas chega perto de 30 minutos. O gargalo é o **simulador**, que é Python puro: sozinho, com ações aleatórias e sem rede nenhuma, ele fez 35 passos/s ali. Mais threads no torch não ajudam; dois ambientes em paralelo deram 31,9 contra 28,1. **A conta é sua:** 300 000 divididos pelos passos/s da **sua** linha, em horas. É por isso que o treino é o **passo 1** da tarefa — com `nohup`, checkpoint a cada 20 mil passos, e o resto do TP5 enquanto ele roda.
+**300 mil passos não são 30 minutos.** O enunciado diz "≈30 min CPU"; isso exigiria uns 167 passos por segundo. Na nuvem, o treino inteiro levou **2 h 58 min**, a **28 passos/s**. Na minha máquina, o de 300 mil rodou a **55 passos/s**, estáveis: aos 57 min estava em 188 mil passos, e a previsão total dava **1 h 31 min**. Nenhuma das duas chega perto de 30 minutos. O gargalo é o **simulador**, que é Python puro: sozinho, com ações aleatórias e sem rede nenhuma, ele fez 35 passos/s ali. Mais threads no torch não ajudam; dois ambientes em paralelo deram 31,9 contra 28,1. **A conta é sua:** 300 000 divididos pelos passos/s da **sua** linha, em horas. É por isso que o treino é o **passo 1** da tarefa — com `nohup`, checkpoint a cada 20 mil passos, e o resto do TP5 enquanto ele roda.
 
 ### A curva, e por que ela para cedo
 
@@ -137,6 +137,8 @@ O modelo de 300 mil passos da amostra, avaliado em 10 episódios (sementes 1000 
   aleatoria           10%       90%      83.4 +-  9.1        9.75 +-  6.42
   idle                10%       90%      87.4 +-  1.8       13.82 +-  6.28
 ```
+
+Na minha máquina, o mesmo `.zip` nas mesmas sementes deu **exatamente esta tabela**, linha a linha, em 12 a 14 s — e o sorteio da seção seguinte, os mesmos 60% / 40%. Com o highway-env, semente e modelo iguais, a avaliação se repetiu entre as duas máquinas; é o que se observou nelas, não uma garantia (com a câmera do MetaDrive, na Aula 17, não se repetiu).
 
 **O que a política aprendeu:** vai para a faixa da direita uma vez, no começo, e fica lá 99% do tempo; depois alterna acelerar e frear — `SLOWER` é a ação mais escolhida — e não ultrapassa ninguém. **O IDLE não é "não fazer nada" seguro:** ele não freia para o carro da frente e bate em 9 de 10. E ele **corre mais** que o PPO (87,4 contra 86,1 km/h). A frase certa para o relatório é "bateu três vezes menos que o IDLE, andando um pouco mais devagar". A errada é "aprendeu a dirigir": ele ainda bate em 3 de 10.
 
@@ -187,7 +189,7 @@ O dataset da aula — 1000 quadros pilotados pelo **PID**, que serve para a aula
 
 **64% é volante parado**, a curva deste mapa pede só 0,06 a 0,08 de volante, e há três vezes mais curva à direita que à esquerda. O `histograma.py` é **apoio, não veredito**: relata o que achou no `acoes.csv`, não diz se o dataset serve.
 
-A rede — a CNN da Aula 17 virada regressão, uma saída, a direção — treinada nesse dataset com a divisão **por episódio**: no episódio que ela nunca viu, erra **0,006** de volante em média na nuvem e **0,007** na minha máquina, contra **0,029** da linha de base "sempre a média" nas duas. Quatro a cinco vezes melhor. Por qualquer número de validação, é um bom modelo. Ela treina no venv da CNN e exporta os pesos para um `.npz`; no venv do MetaDrive, a mesma conta roda em NumPy puro — os dois venvs nunca se misturam.
+A rede — a CNN da Aula 17 virada regressão, uma saída, a direção — treinada nesse dataset com a divisão **por episódio**: no episódio que ela nunca viu, erra **0,006** de volante em média na nuvem e, na minha máquina, **0,007** numa execução e **0,006** na seguinte — treinar de novo com a mesma semente deu pesos idênticos na nuvem, mas no meu WSL2 variou na terceira casa —, contra **0,029** da linha de base "sempre a média" nas duas. Quatro a cinco vezes melhor. Por qualquer número de validação, é um bom modelo. Ela treina no venv da CNN e exporta os pesos para um `.npz`; no venv do MetaDrive, a mesma conta roda em NumPy puro — os dois venvs nunca se misturam.
 
 Na régua, contra o PID e o volante parado — os mesmos scripts e as mesmas sementes nas duas máquinas, cada BC treinado nos quadros da própria máquina:
 
@@ -226,8 +228,8 @@ Duas armadilhas foram reproduzidas no exemplo, com o sintoma literal: canais tro
 
 **Pressupõe:** ROS 2 Humble e os quatro pacotes do `apt`. **Para fazer: passo 2 da [tarefa](#a-tarefa-da-semana).** O exemplo é o [`aula18-moveit`](../../exemplos/aula18-moveit/index.md), e a referência rápida é a [cheatsheet do MoveIt 2](../../cheatsheets/moveit.md).
 
-!!! warning "A parte ROS 2 deste exemplo ainda não rodou em lugar nenhum"
-    O exemplo foi escrito numa máquina sem ROS 2, lendo a fonte das versões Humble do MoveIt, e testado com dublês. <!-- ENSAIO-A18 -->No meu ensaio de 15/11 ele **não chegou a rodar**: a instalação dos pacotes foi interrompida no meio (o aviso sobre o terminal do VS Code, no [passo 2](#passo-2-moveit-2-a-caixa-tres-poses-suas-com-e-sem-ela), nasceu daí). A primeira execução de verdade é a minha, no WSL2, antes da aula; o que ela mostrar entra nesta página depois.<!-- /ENSAIO-A18 --> No WSL2 de vocês, ninguém viu ainda.
+!!! warning "A parte ROS 2 deste exemplo rodou uma vez, na minha máquina"
+    O exemplo foi escrito numa máquina sem ROS 2, lendo a fonte das versões Humble do MoveIt, e testado com dublês. **No meu WSL2, em 16/11:** o demo subiu (RViz2 a 31 fps, sem ajuste de vídeo); o `cena` pôs a caixa; o `tres_poses`, com a caixa, deu `SUCCESS` em `ready`, A, B e C, no planejamento e na execução, nas três execuções — com trajetórias diferentes a cada vez. O ensaio também achou um **defeito**, já corrigido: a comparação sem a caixa terminava com o braço **dentro** do volume da caixa, e tudo depois falhava com `START_STATE_INVALID`. No WSL2 de vocês, ninguém viu ainda.
 
 ### O que é o MoveIt 2
 
@@ -237,7 +239,7 @@ As quatro palavras do que está na tela: **planning group** (o MoveIt planeja um
 
 ### Caso 1 — a IK feita com o mouse
 
-Com o demo no ar, o braço laranja do RViz2 é o **estado objetivo**. Arrastar a bolinha azul dele é a IK resolvendo a cada movimento; *Plan* anima a trajetória sem mexer o braço; *Execute* a manda ao controlador. Arrastado para longe demais, o laranja para de acompanhar: ali não há IK. E a pose onde a garra chegou se lê com `tf2_echo panda_link0 panda_link8` — **pose que o braço alcançou tem IK e não colide: é válida por construção**. É assim que se acha uma pose nova quando A, B ou C falham na sua máquina.
+O RViz2 do demo **não traz** o painel que move o braço com o mouse: na árvore *Displays* há só *Grid*, *MarkerArray*, *Trajectory* e *PlanningScene*. Você o acrescenta, em 10 segundos, a cada vez que sobe o demo: **Add** (embaixo de *Displays*) > aba *By display type* > `moveit_ros_visualization` > **MotionPlanning** > **OK**, e confira *Planning Group* = `panda_arm`. O passo a passo, com o que fazer se o marcador não aparecer, está no [exemplo](../../exemplos/aula18-moveit/index.md#mover-o-braco-com-o-mouse-o-painel-motionplanning). Aí surge um braço laranja: é o **estado objetivo**. Arrastar a bolinha azul dele é a IK resolvendo a cada movimento; *Plan* anima a trajetória sem mexer o braço; *Execute* a manda ao controlador. Arrastado para longe demais, o laranja para de acompanhar: ali não há IK. E a pose onde a garra chegou se lê com `tf2_echo panda_link0 panda_link8` — **pose que o braço alcançou tem IK e não colide: é válida por construção**. É assim que se acha uma pose nova quando A, B ou C falham na sua máquina.
 
 ### Caso 2 — com e sem a caixa, e a pose proibida
 
@@ -250,15 +252,19 @@ O nó `cena` põe uma caixa de 10 × 20 × 40 cm, 40 a 50 cm à frente do robô 
 | C | (0,45; 0,00; 0,60) | em cima dela, a garra 10 cm acima |
 | D | (0,45; 0,00; 0,30), só com `com_proibida:=true` | **dentro** da caixa |
 
-Com `comparar:=true`, ele tira a caixa, roda a lista, põe a caixa, roda de novo e imprime as duas rodadas lado a lado — **o braço sem a caixa é a linha de base do item 1**. O esperado, pela leitura da fonte do Humble: sem a caixa, tudo `SUCCESS`; com a caixa, A, B e C `SUCCESS`, e a ida de A para B **mais longa** em radianos, porque o braço dá a volta; e D falhando com `GOAL_STATE_INVALID (-27)` ou `TIMED_OUT (-6)` — e **não** com `NO_IK_SOLUTION`, porque pela `/move_action` a IK roda dentro do planejamento. <!-- ENSAIO-A18 -->Tudo isso é previsão: nenhuma destas linhas foi vista ainda. O que a primeira execução e a sala mostrarem será registrado aqui.<!-- /ENSAIO-A18 -->
+Com `comparar:=true`, ele tira a caixa, roda a lista, **volta o braço ao `ready`**, põe a caixa, roda de novo e imprime as duas rodadas lado a lado — **o braço sem a caixa é a linha de base do item 1**. A volta ao `ready` existe porque a última pose da rodada sem a caixa é a D, **dentro** do volume onde a caixa vai aparecer: sem ela, a caixa nasce em cima do braço.
+
+**Com a caixa, o braço não bate nela: ele a contorna.** "Não encostou na caixa" é o resultado. O que mostra que a caixa pesou é o **caminho**: o *Show Trail* do display *Trajectory*, com e sem ela. E **uma execução não prova** que o caminho ficou mais longo: na minha máquina, com a caixa, a ida de A a B deu 2,16, 4,36 e 2,71 rad em três execuções; sem ela, 1,88 e 2,40. O sorteio do OMPL é maior que o efeito da caixa nessas poses — a frase do relatório é a faixa de várias execuções, com e sem a caixa.
+
+Visto em 16/11: sem a caixa, os cinco alvos com `SUCCESS`, D inclusive. Pela leitura da fonte do Humble, D com a caixa deve falhar com `GOAL_STATE_INVALID (-27)` ou `TIMED_OUT (-6)` — e **não** com `NO_IK_SOLUTION`, porque pela `/move_action` a IK roda dentro do planejamento. <!-- ENSAIO-A18 -->A rodada com a caixa depois da correção, e o código com que D falha, ainda não foram vistos: o defeito escondeu os dois no ensaio. O que a reexecução e a sala mostrarem entra aqui.<!-- /ENSAIO-A18 -->
 
 ### Caso 3 — rodar de novo
 
-O OMPL **sorteia**: duas execuções iguais dão trajetórias diferentes — outro número de pontos, outro tempo, outro comprimento. Não é defeito. Com e sem a caixa, a frase do relatório é **a diferença que se repete**, não a de uma execução — a mesma lição das três imagens em cem da semana passada.
+O OMPL **sorteia**: duas execuções iguais dão trajetórias diferentes — outro número de pontos, outro tempo, outro comprimento. Na minha máquina, a pose A deu 38, 25 e 31 pontos em três execuções seguidas. Não é defeito. Com e sem a caixa, a frase do relatório é **a diferença que se repete**, não a de uma execução — a mesma lição das três imagens em cem da semana passada.
 
 ### O item 1 no relatório, e no seu projeto
 
-Prints ou vídeo das três poses com a caixa visível e o *Show Trail* ligado; a tabela que o `tres_poses` imprime, com e sem a caixa; e, numa frase sua, o que mudou e o que o código da pose proibida quer dizer. Os três juntos são a evidência; nenhum sozinho é. **Sem braço no projeto** — o caso de quase todos, com base diferencial —, o caminho é o Panda como o manipulador do seu cenário (o braço que pega o que o seu robô trouxe), dito com todas as letras, com a caixa trocada pelo que o seu robô encontra. **Com braço**, o Setup Assistant gera a configuração — e custa de um a dois dias. O **pick-and-place** está no exemplo como roteiro (`pegar_e_soltar`), com o cubo anexado à garra: **ninguém o executou**, nem eu. É assunto da próxima aula.
+Prints ou vídeo das três poses com a caixa visível e o *Show Trail* ligado; a tabela que o `tres_poses` imprime, com e sem a caixa; e, numa frase sua, o que mudou e o que o código da pose proibida quer dizer. Os três juntos são a evidência; nenhum sozinho é. **Sem braço no projeto** — o caso de quase todos, com base diferencial —, o caminho é o Panda como o manipulador do seu cenário (o braço que pega o que o seu robô trouxe), dito com todas as letras, com a caixa trocada pelo que o seu robô encontra. **Com braço**, o Setup Assistant gera a configuração — e custa de um a dois dias. O **pick-and-place** está no exemplo como roteiro (`pegar_e_soltar`), com o cubo anexado à garra: no meu ensaio ele pôs o cubo na cena e parou no passo 2, por causa do defeito acima; **do passo 2 em diante, ninguém o executou**, nem eu. É assunto da próxima aula.
 
 ---
 
@@ -327,12 +333,12 @@ export PB_DIR="$HOME/projeto-pb-$PB_USER"
 export PB_WS="$PB_DIR/ros2_ws"
 cd "$PB_DIR"
 command -v uv >/dev/null || { curl -LsSf https://astral.sh/uv/install.sh | sh; . ~/.bashrc; }
-uv venv --python 3.10 .venv-rl
+test -x "$PB_DIR/.venv-rl/bin/python" || uv venv --python 3.10 .venv-rl
 uv pip install --python .venv-rl/bin/python --torch-backend cpu stable-baselines3 highway-env gymnasium matplotlib
 "$PB_DIR/.venv-rl/bin/python" -c "import torch, stable_baselines3, highway_env, gymnasium; print(torch.__version__, stable_baselines3.__version__, gymnasium.__version__, torch.cuda.is_available())"
 ```
 
-**O que tem de aparecer:** uma linha terminando em `+cpu 2.9.2 1.4.0 False` (ou versões vizinhas). **Se a instalação começar a baixar `nvidia-cublas`, `nvidia-cudnn`...**, faltou o `--torch-backend cpu`: `Ctrl+C`, apague o `.venv-rl` e repita. **Se aparecer `unexpected argument '--torch-backend'`**, o `uv` é antigo: `uv self update` e repita a linha.
+**O que tem de aparecer:** uma linha terminando em `+cpu 2.9.2 1.4.0 False` (ou versões vizinhas). O `test -x ... ||` só cria o venv se ele não existir: colar o bloco de novo, com o treino rodando, **não** recria o venv embaixo dele (sem a guarda, o `uv` pergunta `replace it?` — e um `yes` apaga o ambiente que o treino está usando). **Se a instalação começar a baixar `nvidia-cublas`, `nvidia-cudnn`...**, faltou o `--torch-backend cpu`: `Ctrl+C`, apague o `.venv-rl` e repita. **Se aparecer `unexpected argument '--torch-backend'`**, o `uv` é antigo: `uv self update` e repita a linha.
 
 Agora o treino, em segundo plano. Ele grava em `$PB_DIR/ppo-treino`, **fora** da pasta do exemplo. No mesmo Terminal A:
 
@@ -411,9 +417,9 @@ Agora o braço. No mesmo Terminal D — o launch ocupa o terminal até o `Ctrl+C
 ros2 launch moveit_resources_panda_moveit_config demo.launch.py
 ```
 
-**O que tem de aparecer:** o RViz2 com o Panda em pé e o painel *MotionPlanning*; no terminal, `You can start planning now!`. Antes dela, os outros terminais esperam e, passados 20 s, desistem dizendo o que conferir. **Se o RViz2 abrir preto ou vazio:** `Ctrl+C`, rode `export LIBGL_ALWAYS_SOFTWARE=1` neste mesmo terminal e suba de novo. **Se faltar um pacote**, o socorro do [exemplo](../../exemplos/aula18-moveit/index.md#socorro-rapido) diz qual pela mensagem.
+**O que tem de aparecer:** o RViz2 com o Panda em pé e, no terminal, os três *spawners* terminando (`joint_state_broadcaster`, `panda_arm_controller`, `panda_hand_controller`); o `move_group` imprime `You can start planning now!`. Antes de ele subir, os outros terminais esperam e, passados 20 s, desistem dizendo o que conferir. **Se o RViz2 abrir preto ou vazio** (na minha máquina não abriu: 31 fps sem ajuste), o socorro do exemplo tem a linha. **Se faltar um pacote**, o socorro do [exemplo](../../exemplos/aula18-moveit/index.md#socorro-rapido) diz qual pela mensagem. Ao `Ctrl+C`, `exit code -11` do `move_group` e do `rviz2` é do encerramento e não afeta nada.
 
-Arraste o marcador do braço laranja, clique *Plan* e depois *Execute* — é o caso 1 da aula, na sua tela.
+O RViz2 abre **sem** o painel que move o braço. Acrescente-o: **Add** (embaixo de *Displays*) > aba *By display type* > `moveit_ros_visualization` > **MotionPlanning** > **OK**; confira *Planning Group* = `panda_arm`. Arraste o marcador do braço laranja, clique *Plan* e depois *Execute* — é o caso 1 da aula, na sua tela. Se o marcador não aparecer, ou um nome não bater com a sua tela, o [passo a passo do exemplo](../../exemplos/aula18-moveit/index.md#mover-o-braco-com-o-mouse-o-painel-motionplanning) tem o que conferir.
 
 **Terminal E — a pose e a cena.** Terminal novo, com ROS, com o D no ar. Primeiro, a caixa:
 
@@ -427,7 +433,7 @@ source "$PB_WS/install/setup.bash"
 ros2 run aula18_moveit cena
 ```
 
-**O que tem de aparecer:** o nó dizendo que a cena foi aplicada e terminando; no RViz2, uma caixa verde à frente do robô; na aba *Scene Objects*, o nome `caixa`. **Para o seu projeto**, troque a caixa pelo que o seu robô encontra — uma prateleira, uma mesa — com `-p centro:=` e `-p tamanho:=` (o README do exemplo tem os parâmetros), e diga no relatório o que ela representa.
+**O que tem de aparecer:** o nó dizendo que a cena foi aplicada e terminando; no RViz2, uma caixa verde à frente do robô; com o painel *MotionPlanning* acrescentado, a aba *Scene Objects* dele lista o nome `caixa`. **Para o seu projeto**, troque a caixa pelo que o seu robô encontra — uma prateleira, uma mesa — com `-p centro:=` e `-p tamanho:=` (o README do exemplo tem os parâmetros), e diga no relatório o que ela representa.
 
 **Terminal F — as poses.** Terminal novo, com ROS, com o D no ar e a caixa na cena. Primeiro as poses do exemplo, com e sem a caixa, e a pose proibida — a saída vai também para a evidência:
 
@@ -442,7 +448,7 @@ mkdir -p "$PB_DIR/docs/evidencias/tp5/moveit"
 ros2 run aula18_moveit tres_poses --ros-args -p comparar:=true -p com_proibida:=true 2>&1 | tee "$PB_DIR/docs/evidencias/tp5/moveit/comparacao-exemplo.txt"
 ```
 
-**O que tem de aparecer:** duas rodadas, `SEM a caixa` e `COM a caixa`, e a tabela lado a lado. O esperado: A, B e C com `SUCCESS (1)` nas duas; a coluna de radianos maior na ida de A para B com a caixa; D falhando com a caixa, com `GOAL_STATE_INVALID (-27)` ou `TIMED_OUT (-6)` — e o Terminal D dizendo `Invalid goal state` ou `Timed out`. **Se A, B ou C falharem na sua máquina**, não procure o erro: troque a pose, como abaixo. **Se D falhar com outro código**, não é defeito seu: anote o código e o que o Terminal D disse, e poste no fórum — é informação nova.
+**O que tem de aparecer:** duas rodadas, `SEM a caixa` e `COM a caixa`; entre elas, a linha `(servico) o braco esta no ready` — a volta que impede a caixa de nascer em cima do braço; e a tabela lado a lado. O esperado: `ready`, A, B e C com `SUCCESS (1)` nas duas; D falhando com a caixa, com `GOAL_STATE_INVALID (-27)` ou `TIMED_OUT (-6)` — e o Terminal D dizendo `Invalid goal state` ou `Timed out`; **nenhuma** linha `START_STATE_INVALID`. Os radianos de A a B **não** precisam crescer com a caixa numa execução: o sorteio do OMPL é maior que o efeito dela (veja o caso 2). **Se aparecer `START_STATE_INVALID` em tudo**, o braço está dentro de um objeto: a linha `olhe:` diz a saída. **Se A, B ou C falharem na sua máquina**, não procure o erro: troque a pose, como abaixo. **Se D falhar com outro código**, não é defeito seu: anote o código e o que o Terminal D disse, e poste no fórum — é informação nova.
 
 **As suas três poses.** Arraste o marcador no RViz2 até onde você quer a garra, clique *Plan & Execute*, e leia onde ela chegou. No Terminal E (o `cena` já terminou):
 
@@ -460,7 +466,7 @@ A linha `Translation: [x, y, z]` é a pose; `Ctrl+C` para parar. Repita para tr�
 ros2 run aula18_moveit tres_poses --ros-args -p comparar:=true -p poses:="[0.45, 0.30, 0.35, 0.45, -0.30, 0.35, 0.45, 0.0, 0.60]" 2>&1 | tee "$PB_DIR/docs/evidencias/tp5/moveit/comparacao.txt"
 ```
 
-Rode **duas vezes**: o OMPL sorteia, e a diferença que vai para o relatório é a que se repete. Com o *Show Trail* do display *Trajectory* ligado, tire um print por pose — com a caixa visível — e salve em `docs/evidencias/tp5/moveit/`. **Os prints, a tabela e a sua frase sobre o que mudou** são a evidência do item 1.
+Rode **pelo menos três vezes**, trocando o nome do arquivo do `tee`: o OMPL sorteia, e o que vai para o relatório é a **faixa** com e sem a caixa, não uma execução. Com o *Show Trail* do display *Trajectory* ligado, tire um print por pose — com a caixa visível — e salve em `docs/evidencias/tp5/moveit/`. **Os prints, a tabela e a sua frase sobre o que mudou** são a evidência do item 1.
 
 ### Passo 3 — O PID medido na régua
 
@@ -556,7 +562,15 @@ cp -r modelo "$PB_DIR/docs/evidencias/tp5/modelo-bc"
 
 **Pressupõe:** o treino do passo 1 terminado — ou o último checkpoint, declarado. **Observe:** o RESUMO das três políticas e o que cada uma fez.
 
-No Terminal B (`Ctrl+C` no `tail`, se ele ainda estiver rodando):
+No Terminal B (`Ctrl+C` no `tail`, se ele ainda estiver rodando), primeiro a conferência de que o treino terminou:
+
+```bash
+# ── Terminal B ──
+: "${PB_WS:?defina PB_USER, PB_DIR e PB_WS — o bloco está no topo desta página}"
+test -f "$PB_DIR/ppo-treino/modelo_final.zip" && echo "treino terminou" || echo "PARE: o treino ainda nao terminou (veja o tail do treino.log)"
+```
+
+**Com `PARE`, não cole o bloco seguinte:** ele falharia com `FileNotFoundError: ... modelo_final.zip.zip` (o SB3 acrescenta `.zip` quando não acha o arquivo) e, em cascata, o `curva.py` sem `resumo.csv`. Espere o treino, ou troque `modelo_final.zip` pelo último checkpoint, como diz o fim deste passo. Com `treino terminou`, no mesmo Terminal B:
 
 ```bash
 # ── Terminal B ──

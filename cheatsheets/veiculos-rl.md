@@ -12,7 +12,7 @@ cd "$PB_DIR"
 uv venv --python 3.10 --system-site-packages .venv-metadrive
 uv pip install --python .venv-metadrive/bin/python "metadrive-simulator==0.4.3" simple-pid
 # PPO: sem --torch-backend cpu o uv traz o torch com CUDA (17 pacotes, ~3 GB) que não ajuda aqui
-uv venv --python 3.10 .venv-rl
+test -x .venv-rl/bin/python || uv venv --python 3.10 .venv-rl
 uv pip install --python .venv-rl/bin/python --torch-backend cpu stable-baselines3 highway-env gymnasium matplotlib
 ```
 

@@ -1,9 +1,10 @@
 """O numero que o MoveIt devolve, virado em nome e em "o que olhar".
 
 ADVERTENCIA: a tabela foi copiada da fonte do Humble e conferida pelo
-testar.py contra ela; as DICAS sao leitura de codigo e experiencia, e nunca
-rodaram contra um move_group de verdade. Nenhuma delas e veredito: elas dizem
-onde olhar, nao o que esta errado.
+testar.py contra ela; as DICAS sao leitura de codigo e experiencia. No ensaio
+de 16/11 (WSL2, Humble, MoveIt 2.5.10) apareceram de verdade SUCCESS,
+INVALID_MOTION_PLAN (1 vez) e START_STATE_INVALID; as outras nunca foram vistas.
+Nenhuma dica e veredito: elas dizem onde olhar, nao o que esta errado.
 
 Todo resultado do MoveIt carrega um `moveit_msgs/MoveItErrorCodes`, que e um
 inteiro so (`val`). O numero sozinho nao ensina nada -- `-27` nao diz que a
@@ -74,6 +75,17 @@ EXEC_RECUSADA = -1001
 EXEC_SEM_RESPOSTA = -1002
 LOCAIS = {EXEC_RECUSADA: 'EXECUCAO_RECUSADA', EXEC_SEM_RESPOSTA: 'EXECUCAO_SEM_RESPOSTA'}
 
+# Visto no ensaio de 16/11: o braco parou DENTRO do volume onde a caixa foi
+# posta depois, e todo plano seguinte nasceu em colisao (o Terminal A dizia
+# "Found a contact between 'caixa' ... and 'panda_link5'" e "Start state
+# appears to be in collision"). Nenhum plano sai dai: o braco nao se move
+# enquanto o objeto estiver em cima dele. A saida e tirar, voltar, repor.
+SAIR_DE_DENTRO = (
+    'o braco esta DENTRO de um objeto da cena (o Terminal A diz qual, em "Found a contact '
+    'between"). Nenhum plano parte dai. Faca, nesta ordem: (1) ros2 run aula18_moveit cena '
+    '--ros-args -p acao:=remover; (2) ros2 run aula18_moveit tres_poses (ele volta ao '
+    'ready no fim); (3) ros2 run aula18_moveit cena, para repor a caixa')
+
 # Onde olhar, por codigo. Curto de proposito: a frase vai para o terminal.
 DICAS = {
     'SUCCESS': 'o move_group diz que deu certo; confira no RViz2 se e o que voce queria',
@@ -81,7 +93,8 @@ DICAS = {
     'PLANNING_FAILED': 'o planejador nao achou caminho. O OMPL e aleatorio: rode de novo; '
                        'se repetir, aumente tempo_planejamento ou afaste a pose do obstaculo',
     'INVALID_MOTION_PLAN': 'achou um plano mas o pos-processamento o invalidou; '
-                           'olhe o Terminal A',
+                           'olhe o Terminal A e rode de novo (no ensaio de 16/11 saiu 1 vez, '
+                           'numa pose que deu SUCCESS nas outras execucoes)',
     'MOTION_PLAN_INVALIDATED_BY_ENVIRONMENT_CHANGE': 'a cena mudou durante a execucao '
                                                      '(alguem rodou o `cena` no meio?)',
     'CONTROL_FAILED': 'o controlador nao cumpriu a trajetoria: '
@@ -89,10 +102,8 @@ DICAS = {
     'TIMED_OUT': 'o tempo de planejamento acabou. No OMPL isso costuma ser pose em colisao '
                  'ou fora do alcance, nao "pouco tempo"',
     'PREEMPTED': 'o pedido foi cancelado (Ctrl-C, ou outro pedido chegou por cima)',
-    'START_STATE_IN_COLLISION': 'o braco JA esta encostado em algo: a caixa foi posta em cima '
-                                'dele? ros2 run aula18_moveit cena --ros-args -p acao:=remover',
-    'START_STATE_INVALID': 'o estado inicial nao vale (colisao ou fora dos limites); '
-                           'olhe o Terminal A',
+    'START_STATE_IN_COLLISION': SAIR_DE_DENTRO,
+    'START_STATE_INVALID': SAIR_DE_DENTRO,
     'GOAL_IN_COLLISION': 'o objetivo encosta em algo da cena',
     'GOAL_STATE_INVALID': 'nenhum estado do braco satisfaz a pose sem colidir: pose DENTRO de '
                           'um objeto, ou fora do alcance (~0,85 m do panda_link0)',

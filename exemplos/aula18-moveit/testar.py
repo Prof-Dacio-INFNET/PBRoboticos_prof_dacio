@@ -387,9 +387,11 @@ class _Mundo:
         self.no_ar = set()
         self.respostas = {}     # nome -> lista de ('recusa'|'sem_resposta'|resultado)
         self.enviados = {}      # nome -> lista de goals/requests
+        self.ordem = []         # (nome, pedido) na ordem em que chegaram, de todos
 
     def proxima(self, nome, pedido):
         self.enviados.setdefault(nome, []).append(pedido)
+        self.ordem.append((nome, pedido))
         fila = self.respostas.get(nome, [])
         return fila.pop(0) if fila else 'sem_resposta'
 
@@ -838,6 +840,7 @@ def novo_mundo(no_ar=TODOS, **respostas):
     MUNDO.no_ar = set(no_ar)
     MUNDO.respostas = {k.replace('__', '/'): list(v) for k, v in respostas.items()}
     MUNDO.enviados = {}
+    MUNDO.ordem = []
 
 
 _Node.parametros = {}
@@ -923,20 +926,91 @@ conferir('cena com acao invalida: devolve 2', cena.Cena().rodar() == 2)
 _Node.parametros = {'comparar': True, 'com_proibida': True}
 ok_mg = [res_mg(1) for _ in range(5)]
 com_mg = [res_mg(1), res_mg(1), res_mg(1), res_mg(1), res_mg(-27, pts=0)]
+volta = [res_mg(1)]
 novo_mundo(**{'/apply_planning_scene': [resp_cena(False), resp_cena(True)],
-              '/move_action': ok_mg + com_mg,
-              '/execute_trajectory': [res_ex(1) for _ in range(9)]})
+              '/move_action': ok_mg + volta + com_mg + volta,
+              '/execute_trajectory': [res_ex(1) for _ in range(11)]})
 no = tres_poses.TresPoses()
 cod = no.rodar()
 cenas = MUNDO.enviados['/apply_planning_scene']
 saida = '\n'.join(no.log.linhas)
-conferir('comparar: remove, roda 5, adiciona, roda 5 -- nessa ordem',
-         cod == 0 and [s.scene.world.collision_objects[0].operation for s in cenas]
-         == [CO.REMOVE, CO.ADD] and len(MUNDO.enviados['/move_action']) == 10)
+
+
+def _e_ready(goal):
+    jc = goal.request.goal_constraints[0].joint_constraints
+    return (len(jc) == 7 and not goal.request.goal_constraints[0].position_constraints
+            and [j.position for j in jc] == list(mensagens.ESTADOS['ready']))
+
+
+seq_ = [(n, p_) for n, p_ in MUNDO.ordem if n in ('/apply_planning_scene', '/move_action')]
+rotulos = [('cena-' + ('remove' if p_.scene.world.collision_objects[0].operation == CO.REMOVE
+                       else 'add')) if n == '/apply_planning_scene'
+           else ('ready' if _e_ready(p_) else 'pose') for n, p_ in seq_]
+conferir('comparar: remove, ready + 4 poses, VOLTA AO READY, adiciona, ready + 4, volta',
+         cod == 0 and rotulos == (['cena-remove', 'ready'] + ['pose'] * 4 + ['ready', 'cena-add',
+                                  'ready'] + ['pose'] * 4 + ['ready']), str(rotulos))
+conferir('comparar: a volta antes da caixa e EXECUTADA, nao so planejada',
+         len(MUNDO.enviados['/execute_trajectory']) == 11)
+conferir('comparar: a volta e dita no log, como servico fora da tabela',
+         'antes de por a caixa' in saida and '(servico) o braco esta no ready' in saida)
 conferir('comparar: a tabela lado a lado mostra D falhando so com a caixa',
          'lado a lado' in saida and re.search(r'D\s+\|\s+SUCCESS \(1\).*GOAL_STATE_INVALID',
                                               saida) is not None)
+conferir('comparar: cada rodada continua com 5 alvos na tabela (a volta nao entra)',
+         len(re.findall(r'^\[\d/5\]', saida, re.M)) == 10
+         and not re.search(r'^\[\d/6\]', saida, re.M))
 conferir('comparar: avisa que a caixa ficou na cena', 'FICOU na cena' in saida)
+
+# a volta antes da caixa FALHA (o braco nao saiu de onde estava): a caixa nao entra
+_Node.parametros = {'comparar': True, 'com_proibida': True}
+novo_mundo(**{'/apply_planning_scene': [resp_cena(False), resp_cena(True)],
+              '/move_action': ok_mg + [res_mg(-26, pts=0)],
+              '/execute_trajectory': [res_ex(1) for _ in range(5)]})
+no = tres_poses.TresPoses()
+cod = no.rodar()
+saida = '\n'.join(no.log.linhas)
+conferir('comparar: se a volta ao ready falha, NAO poe a caixa e devolve 1',
+         cod == 1 and len(MUNDO.enviados['/apply_planning_scene']) == 1
+         and MUNDO.enviados['/apply_planning_scene'][0].scene.world.collision_objects[0]
+         .operation == CO.REMOVE and len(MUNDO.enviados['/move_action']) == 6)
+conferir('... e diz por que, com a dica de sair de dentro do objeto',
+         'NAO pus a caixa' in saida and 'NAO consegui voltar ao ready' in saida
+         and 'acao:=remover' in saida)
+
+# sem comparar: no fim, volta ao ready (padrao), e nao volta com voltar_ao_ready:=false
+_Node.parametros = {'com_proibida': True}
+novo_mundo(**{'/move_action': [res_mg(1) for _ in range(6)],
+              '/execute_trajectory': [res_ex(1) for _ in range(6)]})
+no = tres_poses.TresPoses()
+cod = no.rodar()
+gols = MUNDO.enviados['/move_action']
+conferir('sem comparar: depois de D, o ultimo pedido e a volta ao ready (por juntas)',
+         cod == 0 and len(gols) == 6 and _e_ready(gols[-1]) and not _e_ready(gols[-2]))
+_Node.parametros = {'com_proibida': True, 'voltar_ao_ready': False}
+novo_mundo(**{'/move_action': [res_mg(1) for _ in range(5)],
+              '/execute_trajectory': [res_ex(1) for _ in range(5)]})
+no = tres_poses.TresPoses()
+conferir('voltar_ao_ready:=false: nenhum pedido alem dos 5 alvos',
+         no.rodar() == 0 and len(MUNDO.enviados['/move_action']) == 5)
+_Node.parametros = {'modo': 'planejar'}
+novo_mundo(**{'/move_action': [res_mg(1) for _ in range(4)]})
+no = tres_poses.TresPoses()
+conferir('modo planejar: o braco nao se mexe, e nao ha volta ao ready',
+         no.rodar() == 0 and len(MUNDO.enviados['/move_action']) == 4
+         and 'voltando ao ready' not in '\n'.join(no.log.linhas))
+
+# a dica nova do START_STATE_INVALID (visto no ensaio de 16/11)
+d26 = codigos.dica(-26)
+conferir('START_STATE_INVALID: a dica diz que o braco esta DENTRO de um objeto, e a saida',
+         'DENTRO' in d26 and d26.index('acao:=remover') < d26.index('tres_poses')
+         < d26.rindex('aula18_moveit cena') and 'Found a contact' in d26)
+conferir('START_STATE_IN_COLLISION: a mesma dica', codigos.dica(-10) == d26)
+_Node.parametros = {}
+novo_mundo(**{'/move_action': [res_mg(-26, pts=0)]})
+no = tres_poses.TresPoses()
+no.rodar()
+conferir('tres_poses: o START_STATE_INVALID no ready imprime a dica nova',
+         any('olhe:' in l_ and 'acao:=remover' in l_ for l_ in no.log.linhas))
 _Node.parametros = {'modo': 'rapido'}
 conferir('tres_poses com modo invalido: devolve 2', tres_poses.TresPoses().rodar() == 2)
 _Node.parametros = {}
@@ -956,6 +1030,15 @@ conferir('cumprir para no passo que falha (5) e nao anexa nada', feito == 4
          and 'parei no passo 5' in log9[-1])
 feito = pegar_e_soltar.cumprir(passos, lambda p_: (True, 'x'), log=log9.append, ate=6)
 conferir('ate_passo:=6 para antes do 7', feito == 6 and 'ate_passo:=6' in log9[-1])
+conferir('o passo 1 so ACRESCENTA o cubo: nao tira a caixa do cena',
+         [o.id for o in mensagens.cena_diff(passos[0]['objetos']).world.collision_objects]
+         == ['peca'] and all(o.operation == CO.ADD for o in
+                             mensagens.cena_diff(passos[0]['objetos']).world.collision_objects))
+novo_mundo(**{'/move_action': [res_mg(-26, pts=0)]})
+pes = pegar_e_soltar.PegarESoltar()
+ok_, texto_ = pes.fazer(passos[1])
+conferir('pegar_e_soltar: ready com START_STATE_INVALID para e da a dica de sair de dentro',
+         not ok_ and 'START_STATE_INVALID (-26)' in texto_ and 'acao:=remover' in texto_)
 
 # ---------------------------------------------------------------------- 9
 print('9. o README cita o que o codigo usa')
