@@ -16,6 +16,8 @@ datasets/
 rosbag2*/
 *.mp4
 *.zip
+# excecao: a politica treinada que a Aula 18 avalia em sala (1,8 MB)
+!exemplos/aula18-ppo/amostra/modelo_ppo.zip
 .DS_Store
 Thumbs.db
 

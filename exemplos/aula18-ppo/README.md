@@ -4,7 +4,7 @@
 
 > ## Leia isto antes de qualquer coisa
 >
-> **300 mil passos não levam 30 minutos.** Nesta máquina (2 núcleos Xeon a 2,1 GHz, torch com 1 thread, outros processos disputando a CPU) levaram **2 h 58 min**, a **28,1 passos por segundo**. O gargalo é o simulador, que é Python puro, e não a rede. No seu notebook pode ser mais rápido ou mais lento; o que **não** muda é a ordem de grandeza: são horas, não minutos. **Dispare o treino hoje**, em segundo plano, e faça o resto do TP5 enquanto ele roda.
+> **300 mil passos não levam 30 minutos.** Nesta máquina (2 núcleos Xeon a 2,1 GHz, torch com 1 thread, outros processos disputando a CPU) levaram **2 h 58 min**, a **28,1 passos por segundo**. Na máquina do professor (WSL2), o treino começou a 52,7 passos/s, com a estimativa de **1 h 33 min**. O gargalo é o simulador, que é Python puro, e não a rede. No seu notebook pode ser mais rápido ou mais lento; o que **não** muda é a ordem de grandeza: são horas, não minutos. **Dispare o treino hoje**, em segundo plano, e faça o resto do TP5 enquanto ele roda.
 >
 > **A recompensa sobe nos primeiros ~10 mil passos e depois fica plana.** Os outros 290 mil não mudaram a curva. A política aprendeu a ir para a faixa da direita e **frear** — e, com isso, a bater bem menos que as linhas de base. Se isso é "dirigir bem" é a pergunta do relatório.
 >
@@ -288,7 +288,7 @@ a criação do venv e a instalação com `--torch-backend cpu` (11 s; venv de 97
 
 **Não rodou, e é o que você vai encontrar:**
 
-o venv e o treino **no WSL2 com Ubuntu 22.04**. O `uv venv --python 3.10` deve achar o Python do sistema e resolver as mesmas versões; é a expectativa, não o experimento. A velocidade no seu notebook também não foi medida: pode ser bem mais rápida que 28 passos/s (esta CPU é lenta e estava dividida) ou mais lenta (WSL2 com pouca memória). **Meça nos primeiros cinco minutos** — a linha de progresso dá a estimativa — antes de planejar a semana.
+o treino de 300 mil **até o fim no WSL2 com Ubuntu 22.04**. Na máquina do professor, em 15/11, o venv resolveu as mesmas versões desta página (`2.14.1+cpu`, SB3 2.9.2, gymnasium 1.4.0, highway-env 1.12.1) em uns 13 s; o treino curto de 3000 passos fez **57,8 passos/s** (53 s), e o de 300 mil começou a 52,7 passos/s, com a estimativa de 1 h 33 min — o fim dele e a avaliação ainda não estão aqui. A velocidade no seu notebook não foi medida: pode ficar perto de 28 passos/s (esta CPU é lenta e estava dividida), perto de 55, ou abaixo (WSL2 com pouca memória). **Meça nos primeiros cinco minutos** — a linha de progresso dá a estimativa — antes de planejar a semana.
 
 o **render com janela** (`render_mode="human"`, pygame). Nenhum script deste exemplo abre janela, e o container não tem tela. No WSL2 a janela depende do WSLg.
 
@@ -314,6 +314,8 @@ a mesma semente em **outra máquina**. Não prometa igualdade.
 | a curva de treino mostra 40–50% de batidas e a avaliação mostra 10% | a curva mede a política **sorteando** ações (o PPO explora); a avaliação usa `deterministic=True`. Ver as armadilhas |
 | o PPO avaliado no `highway-v0` foi muito pior | foi treinado no `highway-fast-v0`: outra estrada, outro tráfego. Avalie no ambiente do `config_ambiente.json` |
 | `nada a fazer: o checkpoint ja tem N passos` | o `--passos` é o total; o checkpoint já chegou lá |
+| `FileNotFoundError: ... 'amostra/modelo_ppo.zip.zip'` | o arquivo **não existe**: quando não acha o caminho dado, o SB3 tenta de novo com `.zip` acrescentado, e a mensagem mostra o nome dobrado. Confira com `ls amostra/`; se faltar ali, baixe o exemplo de novo |
+| o seu `modelo_final.zip` não aparece no clone do GitHub | um `*.zip` no `.gitignore` o engoliu. `git check-ignore -v ppo-treino/modelo_final.zip` diz qual regra; acrescente a exceção `!ppo-treino/modelo_final.zip` depois dela, ou ponha o link do modelo no relatório |
 
 ## Como adequar ao seu projeto
 

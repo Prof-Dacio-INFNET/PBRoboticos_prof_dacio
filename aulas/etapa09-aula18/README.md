@@ -84,7 +84,7 @@ Os três ambientes Python ficam em `$PB_DIR`, fora dos exemplos: `.venv-rl` (o P
     Ela confere que as variáveis existem **neste** terminal. Um bloco que começa com ela supõe que o mesmo terminal já rodou um bloco que define as variáveis; um terminal novo começa sempre pelas três variáveis — e, se for chamar `ros2`, pelas duas linhas de `source`.
 
 !!! warning "O que rodou onde — leia antes de confiar em qualquer número"
-    **Na nuvem** (um servidor Linux de 2 núcleos, sem placa de vídeo, com outros processos disputando a CPU, em 14 e 15/11): o treino do PPO inteiro, todas as avaliações, o PID em todas as varreduras, o dataset do PID, o treino do BC e o BC dirigindo com renderização por software. **Na minha máquina** (WSL2, Ubuntu 22.04, GPU pelo WSLg), no ensaio da véspera: <!-- ENSAIO-A18 -->a receita dos três exemplos — e, pela **primeira vez em qualquer lugar**, a parte ROS 2 do exemplo do MoveIt<!-- /ENSAIO-A18 -->. **No WSL2 de vocês: ninguém viu ainda.** Os READMEs dos exemplos separam, linha a linha, o que foi visto do que não foi — e a pilotagem **humana** do dataset não foi feita por ninguém.
+    **Na nuvem** (um servidor Linux de 2 núcleos, sem placa de vídeo, com outros processos disputando a CPU, em 14 e 15/11): o treino do PPO inteiro, todas as avaliações, o PID em todas as varreduras, o dataset do PID, o treino do BC e o BC dirigindo com renderização por software. **Na minha máquina** (WSL2, Ubuntu 22.04, GPU pelo WSLg), no ensaio de 15/11: o venv do PPO e um treino curto, o PID nas duas varreduras, o dataset do PID, o treino do BC, o BC dirigindo os 10 episódios e o empurrão — os números de lá estão ao lado dos da nuvem em cada bloco. <!-- ENSAIO-A18 -->A parte ROS 2 do exemplo do MoveIt **ainda não rodou em lugar nenhum**: no ensaio, a instalação dos pacotes foi interrompida e o bloco não chegou a subir. A primeira execução é a minha, antes da aula, e o resultado entra nesta página depois.<!-- /ENSAIO-A18 --> **No WSL2 de vocês: ninguém viu ainda.** Os READMEs dos exemplos separam, linha a linha, o que foi visto do que não foi — e a pilotagem **humana** do dataset não foi feita por ninguém.
 
 ---
 
@@ -115,9 +115,9 @@ passos     512/3000   34.1 passos/s  decorrido 0min 15s  falta ~1min 13s  ultimo
 fim: 3072 passos em 1min 34s (32.6 passos/s); modelo em /tmp/demo-a18/modelo_final.zip
 ```
 
-Essas linhas são da nuvem; <!-- ENSAIO-A18 -->em outra máquina o número é outro — o da minha é o que aparece na tela em sala<!-- /ENSAIO-A18 -->. O alvo de 3000 vira 3072 porque o SB3 completa a coleta de 768 passos — e o de 300 mil vira 300 288.
+Essas linhas são da nuvem. Na minha máquina, o mesmo treino curto fez **57,8 passos/s** e terminou em 53 s — quase o dobro. O alvo de 3000 vira 3072 porque o SB3 completa a coleta de 768 passos — e o de 300 mil vira 300 288.
 
-**300 mil passos não são 30 minutos.** O enunciado diz "≈30 min CPU"; isso exigiria uns 167 passos por segundo. Na nuvem, o treino inteiro levou **2 h 58 min**, a **28 passos/s**. O gargalo é o **simulador**, que é Python puro: sozinho, com ações aleatórias e sem rede nenhuma, ele fez 35 passos/s ali. Mais threads no torch não ajudam; dois ambientes em paralelo deram 31,9 contra 28,1. **A conta é sua:** 300 000 divididos pelos passos/s da **sua** linha, em horas. É por isso que o treino é o **passo 1** da tarefa — com `nohup`, checkpoint a cada 20 mil passos, e o resto do TP5 enquanto ele roda.
+**300 mil passos não são 30 minutos.** O enunciado diz "≈30 min CPU"; isso exigiria uns 167 passos por segundo. Na nuvem, o treino inteiro levou **2 h 58 min**, a **28 passos/s**. Na minha máquina, o de 300 mil começou a **52,7 passos/s**, e a primeira linha dizia `falta ~1h33min`: cerca de **1 h 30 min**. Nenhuma das duas chega perto de 30 minutos. O gargalo é o **simulador**, que é Python puro: sozinho, com ações aleatórias e sem rede nenhuma, ele fez 35 passos/s ali. Mais threads no torch não ajudam; dois ambientes em paralelo deram 31,9 contra 28,1. **A conta é sua:** 300 000 divididos pelos passos/s da **sua** linha, em horas. É por isso que o treino é o **passo 1** da tarefa — com `nohup`, checkpoint a cada 20 mil passos, e o resto do TP5 enquanto ele roda.
 
 ### A curva, e por que ela para cedo
 
@@ -187,20 +187,20 @@ O dataset da aula — 1000 quadros pilotados pelo **PID**, que serve para a aula
 
 **64% é volante parado**, a curva deste mapa pede só 0,06 a 0,08 de volante, e há três vezes mais curva à direita que à esquerda. O `histograma.py` é **apoio, não veredito**: relata o que achou no `acoes.csv`, não diz se o dataset serve.
 
-A rede — a CNN da Aula 17 virada regressão, uma saída, a direção — treinada nesse dataset com a divisão **por episódio**: no episódio que ela nunca viu, erra **0,006** de volante em média, contra **0,029** da linha de base "sempre a média". Cinco vezes melhor. Por qualquer número de validação, é um bom modelo. Ela treina no venv da CNN e exporta os pesos para um `.npz`; no venv do MetaDrive, a mesma conta roda em NumPy puro — os dois venvs nunca se misturam.
+A rede — a CNN da Aula 17 virada regressão, uma saída, a direção — treinada nesse dataset com a divisão **por episódio**: no episódio que ela nunca viu, erra **0,006** de volante em média na nuvem e **0,007** na minha máquina, contra **0,029** da linha de base "sempre a média" nas duas. Quatro a cinco vezes melhor. Por qualquer número de validação, é um bom modelo. Ela treina no venv da CNN e exporta os pesos para um `.npz`; no venv do MetaDrive, a mesma conta roda em NumPy puro — os dois venvs nunca se misturam.
 
-Na régua, contra o PID e o volante parado:
+Na régua, contra o PID e o volante parado — os mesmos scripts e as mesmas sementes nas duas máquinas, cada BC treinado nos quadros da própria máquina:
 
-| medida | PID | BC | volante parado em −0,009 |
-|---|---|---|---|
-| concluiu | **10 de 10** | **8 de 10** | 0 de 10 |
-| saiu_da_pista | 0 de 10 | 2 de 10 | 10 de 10 |
-| colidiu | 0 de 10 | 0 de 10 | 0 de 10 |
-| vel_media (km/h) | 38,0 ± 0,3 | 37,7 ± 1,3 | 28,9 ± 0,3 |
-| erro_lat_medio_m | **0,021 ± 0,004** | **0,116 ± 0,068** | 1,031 ± 0,017 |
-| var_direcao | 0,010 | 0,008 | 0 |
+| medida | PID (igual nas duas) | BC, nuvem | BC, minha máquina | volante parado em −0,009 (nuvem) |
+|---|---|---|---|---|
+| concluiu | **10 de 10** | **8 de 10** | **10 de 10** | 0 de 10 |
+| saiu_da_pista | 0 de 10 | 2 de 10 | 0 de 10 | 10 de 10 |
+| colidiu | 0 de 10 | 0 de 10 | 0 de 10 | 0 de 10 |
+| vel_media (km/h) | 38,0 ± 0,3 | 37,7 ± 1,3 | 38,1 ± 0,3 | 28,9 ± 0,3 |
+| erro_lat_medio_m | **0,021 ± 0,004** | **0,116 ± 0,068** | **0,083 ± 0,033** | 1,031 ± 0,017 |
+| var_direcao | 0,010 | 0,008 | 0,009 | 0 |
 
-Pelo que o enunciado pede — conclusão de rota, colisões, velocidade média — os dois ficam perto. **A coluna que separa os dois é a que o enunciado não pede:** o BC anda 5,5 vezes mais longe do centro.
+**Na minha máquina, a tabela de 10 episódios não separa o PID do BC:** 10 de 10 contra 10 de 10, na mesma velocidade. Na nuvem, o BC perdeu 2 de 10. Mesmos scripts, mesmas sementes, renderização diferente: os pixels mudam, a rede treinada neles muda, e a tabela muda — a lição da Aula 17 de novo. Pelo que o enunciado pede — conclusão de rota, colisões, velocidade média —, os dois ficam perto nas duas máquinas. **O que separa os dois nas duas é o que o enunciado não pede:** o erro lateral (o BC anda de 4 a 5,5 vezes mais longe do centro) e, sobretudo, o empurrão.
 
 ### Caso 3 — o empurrão
 
@@ -210,7 +210,7 @@ A régua tem uma opção para provocar o primeiro erro: `--empurrao 0.06` força
 
 O **PID** sai 1,37 m do centro e está de volta uns 2 s depois. O **BC**, com o mesmo empurrão, continua indo para a esquerda depois que o volante volta para ele: **3,65 m** no segundo 7 — em cima do centro da faixa vizinha, a 3,5 m —, e só volta no segundo 10. Ele chega ao fim, e a régua conta "concluiu". Dos 1000 quadros do dataset, **nenhum** está a mais de 0,47 m do centro: a rede nunca viu o carro torto na faixa, e para ela a faixa vizinha parece tanto uma faixa quanto a dela. **É a deriva de distribuição, medida:** o MAE de validação diz como a rede imita o piloto **onde o piloto esteve**, e nada sobre onde o carro vai parar depois do primeiro erro.
 
-<!-- ENSAIO-A18 -->A figura acima é a da nuvem; em sala o empurrão roda na minha máquina, e o que sair lá vale tanto quanto ela.<!-- /ENSAIO-A18 -->
+A figura acima é a da nuvem. Na minha máquina, o mesmo empurrão, na mesma semente: o PID a **1,37 m** do centro, o BC a **3,42 m** — de novo na faixa vizinha —, e os dois chegam ao fim. **É o resultado que se repete nas duas máquinas**, e por isso é ele, e não a tabela de 10 episódios, que sustenta a conclusão do bloco.
 
 ### Para a entrega: você pilota
 
@@ -218,7 +218,7 @@ O enunciado pede **pilotagem humana**, e é ela que vai para a entrega. O `colet
 
 Duas armadilhas foram reproduzidas no exemplo, com o sintoma literal: canais trocados (**BGR × RGB**) num lado só — a validação ainda parece boa e, na pista, 0 de 3 —; e **esquecer o `/255`** na direção — volante todo à esquerda, fora da pista em 2 s.
 
-**A velocidade com câmera.** Na nuvem, com renderização por software, o dataset de 1000 quadros levou 34 min e o BC nos 10 episódios, 58 min. Com GPU deve ser bem mais rápido — na Aula 17 a captura foi 7 a 9 quadros/s na minha máquina —, mas **isso é estimativa**: meça na sua.
+**A velocidade com câmera.** Na nuvem, com renderização por software, o dataset de 1000 quadros levou 34 min e o BC nos 10 episódios, 58 min. Na minha máquina, com GPU pelo WSLg: o dataset em **68 s** e o BC nos 10 episódios em **2 min 37 s**. O seu fica em algum lugar entre os dois: meça na sua.
 
 ---
 
@@ -226,8 +226,8 @@ Duas armadilhas foram reproduzidas no exemplo, com o sintoma literal: canais tro
 
 **Pressupõe:** ROS 2 Humble e os quatro pacotes do `apt`. **Para fazer: passo 2 da [tarefa](#a-tarefa-da-semana).** O exemplo é o [`aula18-moveit`](../../exemplos/aula18-moveit/index.md), e a referência rápida é a [cheatsheet do MoveIt 2](../../cheatsheets/moveit.md).
 
-!!! warning "A parte ROS 2 deste exemplo nunca tinha rodado antes do meu ensaio"
-    O exemplo foi escrito numa máquina sem ROS 2, lendo a fonte das versões Humble do MoveIt, e testado com dublês. <!-- ENSAIO-A18 -->A primeira execução de verdade é a do meu ensaio, no WSL2, e o que ela mostrar entra nesta página depois da aula.<!-- /ENSAIO-A18 --> No WSL2 de vocês, ninguém viu ainda.
+!!! warning "A parte ROS 2 deste exemplo ainda não rodou em lugar nenhum"
+    O exemplo foi escrito numa máquina sem ROS 2, lendo a fonte das versões Humble do MoveIt, e testado com dublês. <!-- ENSAIO-A18 -->No meu ensaio de 15/11 ele **não chegou a rodar**: a instalação dos pacotes foi interrompida no meio (o aviso sobre o terminal do VS Code, no [passo 2](#passo-2-moveit-2-a-caixa-tres-poses-suas-com-e-sem-ela), nasceu daí). A primeira execução de verdade é a minha, no WSL2, antes da aula; o que ela mostrar entra nesta página depois.<!-- /ENSAIO-A18 --> No WSL2 de vocês, ninguém viu ainda.
 
 ### O que é o MoveIt 2
 
@@ -250,7 +250,7 @@ O nó `cena` põe uma caixa de 10 × 20 × 40 cm, 40 a 50 cm à frente do robô 
 | C | (0,45; 0,00; 0,60) | em cima dela, a garra 10 cm acima |
 | D | (0,45; 0,00; 0,30), só com `com_proibida:=true` | **dentro** da caixa |
 
-Com `comparar:=true`, ele tira a caixa, roda a lista, põe a caixa, roda de novo e imprime as duas rodadas lado a lado — **o braço sem a caixa é a linha de base do item 1**. O esperado, pela leitura da fonte do Humble: sem a caixa, tudo `SUCCESS`; com a caixa, A, B e C `SUCCESS`, e a ida de A para B **mais longa** em radianos, porque o braço dá a volta; e D falhando com `GOAL_STATE_INVALID (-27)` ou `TIMED_OUT (-6)` — e **não** com `NO_IK_SOLUTION`, porque pela `/move_action` a IK roda dentro do planejamento. <!-- ENSAIO-A18 -->O que o meu ensaio e a sala mostraram de fato será registrado aqui.<!-- /ENSAIO-A18 -->
+Com `comparar:=true`, ele tira a caixa, roda a lista, põe a caixa, roda de novo e imprime as duas rodadas lado a lado — **o braço sem a caixa é a linha de base do item 1**. O esperado, pela leitura da fonte do Humble: sem a caixa, tudo `SUCCESS`; com a caixa, A, B e C `SUCCESS`, e a ida de A para B **mais longa** em radianos, porque o braço dá a volta; e D falhando com `GOAL_STATE_INVALID (-27)` ou `TIMED_OUT (-6)` — e **não** com `NO_IK_SOLUTION`, porque pela `/move_action` a IK roda dentro do planejamento. <!-- ENSAIO-A18 -->Tudo isso é previsão: nenhuma destas linhas foi vista ainda. O que a primeira execução e a sala mostrarem será registrado aqui.<!-- /ENSAIO-A18 -->
 
 ### Caso 3 — rodar de novo
 
@@ -293,7 +293,7 @@ O enunciado pede um gráfico de barras e a análise crítica dos três. O PID e 
 
 - **taxas em N episódios** — conclusão e colisão: frações sem unidade, em degraus de 10% com 10 episódios;
 - **a fração do episódio concluída** — `passos / 30` no highway-env, `fracao_rota` no MetaDrive;
-- **cada um contra as linhas de base do próprio simulador** — a comparação mais honesta: "o PPO reduziu a colisão de 90% (IDLE) para 30% no highway-env; o BC ficou a dois episódios do PID no MetaDrive" é uma frase que se sustenta.
+- **cada um contra as linhas de base do próprio simulador** — a comparação mais honesta: "o PPO reduziu a colisão de 90% (IDLE) para 30% no highway-env; o BC concluiu as mesmas rotas que o PID no MetaDrive, mas, empurrado igual, foi 2,5 vezes mais longe do centro" é uma frase que se sustenta — com os números de quem a escreve.
 
 Os dois exemplos gravam as mesmas sete primeiras colunas — `episodio,semente,concluiu,colidiu,vel_media,passos,recompensa` — para o gráfico sair de um script só. **Mesmas colunas não quer dizer mesma tarefa**, e o título do gráfico diz isso. E vale o que as Aulas 16 e 17 ensinaram: **a régua também é código**, e **a mesma semente não dá a mesma tabela em outra máquina** — diga onde cada número rodou.
 
@@ -356,7 +356,7 @@ export PB_WS="$PB_DIR/ros2_ws"
 tail -f "$PB_DIR/ppo-treino/treino.log"
 ```
 
-**O que tem de aparecer:** depois de um minuto, `passos N/300000  X passos/s  decorrido 1min 00s  falta ~...`. **Anote o X** e o `falta`: vão para o relatório. Na nuvem foram 28 passos/s e 2 h 58 min. **Se o treino parar** (o notebook dormiu), retome do último checkpoint — o bloco está em [Treinar, no exemplo](../../exemplos/aula18-ppo/index.md#treinar). **Se o prazo apertar**, treine o que der e diga no relatório quantos passos foram: nesta configuração a curva fica plana muito antes de 300 mil.
+**O que tem de aparecer:** depois de um minuto, `passos N/300000  X passos/s  decorrido 1min 00s  falta ~...`. **Anote o X** e o `falta`: vão para o relatório. Na nuvem foram 28 passos/s e 2 h 58 min; na minha máquina, 52,7 passos/s e uns 1 h 30 min. **Se o treino parar** (o notebook dormiu), retome do último checkpoint — o bloco está em [Treinar, no exemplo](../../exemplos/aula18-ppo/index.md#treinar). **Se o prazo apertar**, treine o que der e diga no relatório quantos passos foram: nesta configuração a curva fica plana muito antes de 300 mil.
 
 Agora vá para o passo 2 enquanto ele roda.
 
@@ -364,7 +364,10 @@ Agora vá para o passo 2 enquanto ele roda.
 
 **Pressupõe:** ROS 2 Humble e o material baixado. **Observe:** `You can start planning now!`, a caixa verde no RViz2, e as duas rodadas lado a lado.
 
-**Terminal D — o braço.** Terminal novo, com ROS. Primeiro, uma vez por máquina, os quatro pacotes e a compilação do pacote do exemplo:
+**Terminal D — o braço.** Terminal novo, com ROS. Primeiro, uma vez por máquina, os quatro pacotes — num bloco **só para o `apt`**, porque ele não pode ser interrompido:
+
+!!! warning "Terminal do VS Code: espere o prompt assentar antes de colar"
+    Ao abrir, o terminal integrado do VS Code pode injetar um `^C` seguido de `source .../activate` (a ativação automática do venv Python) — e esse `^C` mata o que estiver rodando. Foi assim que a minha instalação do MoveIt morreu aos 7% no ensaio. Espere o prompt assentar antes de colar, ou rode a instalação num terminal do Ubuntu fora do VS Code. E terminal que chama `ros2` não deve ter venv ativado: se o prompt começar com `(nome-do-venv)`, abra outro. Se quiser, a opção `python.terminal.activateEnvironment` do VS Code desliga essa ativação.
 
 ```bash
 # ── Terminal D: uma vez por terminal ──────────────────
@@ -375,12 +378,31 @@ source /opt/ros/humble/setup.bash
 sudo apt update
 sudo apt install -y ros-humble-moveit ros-humble-moveit-resources-panda-moveit-config \
   ros-humble-ros2-control ros-humble-ros2-controllers
+```
+
+Na minha máquina, além do `ros-humble-desktop`, o `apt` anunciou **91 pacotes, 18,9 MB de download e 109 MB em disco**. São quatro nomes, e não um, porque o do Panda não traz o `move_group` e o MoveIt não traz os controladores.
+
+Com o prompt de volta, a conferência, no mesmo Terminal D. Ela diz `PARE` se o `apt` não terminou:
+
+```bash
+# ── Terminal D ──
+: "${PB_WS:?defina PB_USER, PB_DIR e PB_WS — o bloco está no topo desta página}"
+test "$(apt list --installed 2>/dev/null | grep -cE '^ros-humble-(moveit|moveit-resources-panda-moveit-config|ros2-control|ros2-controllers)/')" = 4 && echo "MoveIt instalado" || echo "PARE: o apt nao terminou; rode o bloco anterior de novo"
+```
+
+**O que tem de aparecer:** `MoveIt instalado`. **Se aparecer `PARE`**, não siga: cole o bloco do `apt` de novo e espere o prompt voltar — o `apt` aproveita o que já baixou.
+
+Agora a compilação do pacote do exemplo, no mesmo Terminal D:
+
+```bash
+# ── Terminal D ──
+: "${PB_WS:?defina PB_USER, PB_DIR e PB_WS — o bloco está no topo desta página}"
 cd "$PB_WS" && colcon build --packages-select aula18_moveit
 source "$PB_WS/install/setup.bash"
 ros2 pkg executables aula18_moveit
 ```
 
-**O que tem de aparecer:** `aula18_moveit cena`, `aula18_moveit pegar_e_soltar` e `aula18_moveit tres_poses`. São quatro pacotes, e não um, porque o do Panda não traz o `move_group` e o MoveIt não traz os controladores.
+**O que tem de aparecer:** `aula18_moveit cena`, `aula18_moveit pegar_e_soltar` e `aula18_moveit tres_poses`.
 
 Agora o braço. No mesmo Terminal D — o launch ocupa o terminal até o `Ctrl+C`:
 
@@ -547,6 +569,18 @@ ls "$PB_DIR/ppo-treino"
 ```
 
 **O que tem de aparecer:** o RESUMO com `ppo`, `aleatoria` e `idle` nos mesmos 10 episódios, e as duas figuras. **Se o treino não terminou**, troque `modelo_final.zip` pelo último arquivo de `"$PB_DIR/ppo-treino/checkpoints"` e diga no relatório quantos passos ele tem. **Se as batidas do PPO ficarem perto das do IDLE**, é resultado, não defeito — escreva-o. E **não** avalie sorteando a ação, nem em outro ambiente que não o do `config_ambiente.json` do treino.
+
+**O modelo chegou ao GitHub?** Muito `.gitignore` traz a regra `*.zip`, e ela engole o `modelo_final.zip` calada: no seu computador tudo funciona, e no clone do avaliador o modelo não existe. Aconteceu com o modelo da amostra deste exemplo — passou em todos os testes locais e faltou no primeiro clone. Depois de commitar, no Terminal B:
+
+```bash
+# ── Terminal B ──
+: "${PB_WS:?defina PB_USER, PB_DIR e PB_WS — o bloco está no topo desta página}"
+cd "$PB_DIR"
+git check-ignore -v ppo-treino/modelo_final.zip
+git ls-files | grep modelo
+```
+
+**O que tem de aparecer:** a primeira linha **sem saída nenhuma** (o arquivo não é ignorado), e a segunda listando o `ppo-treino/modelo_final.zip`. **Se a primeira imprimir** algo como `.gitignore:18:*.zip  ppo-treino/modelo_final.zip`, há duas saídas: acrescentar ao `.gitignore`, **depois** da regra, a exceção `!ppo-treino/modelo_final.zip`, e commitar de novo; ou deixar o modelo fora do repositório e pôr no relatório o link dele, testado numa janela anônima. O mesmo vale para o `pesos.npz` do BC.
 
 ### Passo 7 — O item 2 em marcha, e o TP4 entregue
 

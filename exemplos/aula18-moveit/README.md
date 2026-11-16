@@ -54,7 +54,17 @@ sudo apt install -y ros-humble-moveit ros-humble-moveit-resources-panda-moveit-c
   ros-humble-ros2-control ros-humble-ros2-controllers
 ```
 
-Pelo índice do repositório do ROS 2 (jammy, amd64, novembro de 2026), isso são uns **90 pacotes ROS e cerca de 120 MB** além do `ros-humble-desktop`, mais algumas bibliotecas do Ubuntu que o índice não soma. Não foi medido numa máquina de verdade. Quem já instalou o `ros2_control` para o Gazebo tem uma parte disso.
+Na máquina do professor (WSL2, Ubuntu 22.04, com o `ros-humble-desktop`), em 15/11, o `apt` anunciou **91 pacotes, 18,9 MB de download e 109 MB em disco**. Quem já instalou o `ros2_control` para o Gazebo tem uma parte disso.
+
+**Cole este bloco sozinho e espere o prompt voltar.** No ensaio, o terminal integrado do VS Code injetou, ao abrir, um `^C` seguido de `source .../activate` (a ativação automática do venv Python) — e o `^C` interrompeu o `apt` aos 7% do download. Espere o prompt assentar antes de colar, ou instale num terminal do Ubuntu fora do VS Code (a opção `python.terminal.activateEnvironment` do VS Code desliga essa ativação, se você quiser). E terminal que chama `ros2` não deve ter venv ativado.
+
+Depois, a conferência — ela diz `PARE` se o `apt` não terminou:
+
+```bash
+test "$(apt list --installed 2>/dev/null | grep -cE '^ros-humble-(moveit|moveit-resources-panda-moveit-config|ros2-control|ros2-controllers)/')" = 4 && echo "MoveIt instalado" || echo "PARE: o apt nao terminou; rode o bloco anterior de novo"
+```
+
+Tem de aparecer `MoveIt instalado`. Com `PARE`, cole o bloco do `apt` de novo antes de seguir.
 
 ## Baixar e compilar
 
@@ -323,6 +333,8 @@ Os três conferidores do repositório — `conferir-caminhos.py`, `conferir-coma
 | Sintoma | Causa provável |
 |---|---|
 | `Package 'moveit_resources_panda_moveit_config' not found` | faltou o `apt` da seção Instalar, ou o `source /opt/ros/humble/setup.bash` neste terminal |
+| `ModuleNotFoundError: No module named 'moveit_msgs'`, ou o `tf2_echo` sem o frame `panda_link0` | o `apt` não terminou (foi o caso do ensaio: um `^C` do terminal do VS Code o interrompeu). Rode a conferência da seção Instalar; com `PARE`, o `apt` de novo |
+| o prompt mostra `^C` e `source .../activate` ao abrir o terminal, e o comando que estava rodando morreu | a ativação automática de venv do VS Code. Espere o prompt assentar antes de colar, ou use um terminal do Ubuntu fora do VS Code |
 | o Terminal A sobe e o `move_group` morre com erro de plugin `chomp` ou `pilz` | o demo carrega os três pipelines; faltou o `ros-humble-moveit` inteiro (ele traz `moveit_planners`) |
 | `Could not load controller` / os spawners falham no Terminal A | faltou `ros-humble-ros2-controllers` (o `joint_trajectory_controller` e o `gripper_controllers` vêm dele) |
 | o RViz2 abre vazio ou preto no WSL2 | o caminho 3D do WSLg: `export LIBGL_ALWAYS_SOFTWARE=1` antes do `ros2 launch`, no Terminal A — é a mesma bisseção do tutorial *URDF, TF e RViz2*, seção "Se as janelas abrem vazias (WSL2)" |
