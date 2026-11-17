@@ -358,6 +358,16 @@ def montar_tabela(r_sem, r_com, ytr, yva, args, n_total, fonte):
     return '\n'.join(linhas)
 
 
+def descrever_backend(nome):
+    """Onde o backend do Keras vai rodar (so o torch e descrito; os outros, pelo nome)."""
+    if nome != 'torch':
+        return nome
+    import torch
+    if torch.cuda.is_available():
+        return f'torch {torch.__version__}, GPU {torch.cuda.get_device_name(0)}'
+    return f'torch {torch.__version__}, so CPU'
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -402,6 +412,11 @@ def main():
     tf.config.experimental.enable_op_determinism()
     print(f'tensorflow {tf.__version__}, dispositivos: '
           + ', '.join(d.device_type for d in tf.config.list_physical_devices()))
+    # quem treina e o backend do Keras: com KERAS_BACKEND=torch a lista acima nao vale
+    import keras
+    if keras.backend.backend() != 'tensorflow':
+        print(f'keras {keras.__version__} com backend {keras.backend.backend()}: '
+              + descrever_backend(keras.backend.backend()))
     salvar_exemplos_augmentation(xs[tr], ys[tr], args.semente,
                                  saida / 'exemplos_augmentation.png')
 

@@ -144,6 +144,7 @@ nav:
       - "Tarefa da Aula 7 — ações": tutoriais/tarefa-aula07-acoes.md
       - "URDF, TF e RViz2": tutoriais/urdf-tf-rviz2.md
       - "Gazebo para o TP3": tutoriais/gazebo-para-o-tp3.md
+      - "CPU ou GPU: os dois caminhos": tutoriais/gpu-cpu.md
       - "Checklist de entrega do TP1": tutoriais/checklist-entrega-tp1.md
       - "Uso de IA na disciplina": tutoriais/orientacao-uso-ia.md
 
@@ -181,6 +182,7 @@ nav:
       - "Aula 18 — PPO no highway-env": exemplos/aula18-ppo/index.md
       - "Aula 18 — PID × Behavioral Cloning": exemplos/aula18-pid-bc/index.md
       - "Aula 18 — MoveIt 2 com o Panda": exemplos/aula18-moveit/index.md
+      - "CPU ou GPU — medir o dispositivo": exemplos/gpu-cpu/index.md
       - "TP3 — roteiro de revisão da entrega": exemplos/tp3/revisar-entrega/index.md
       - TP1: exemplos/tp1/index.md
       - TP2: exemplos/tp2/index.md

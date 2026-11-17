@@ -56,6 +56,9 @@ O `test -x ... ||` só cria o venv se ele ainda não existe. Sem a guarda, colar
 
 Se o seu `uv` responder `unexpected argument '--torch-backend'`, ele é antigo: atualize com `uv self update` e repita a linha.
 
+!!! tip "CPU ou GPU: a GPU não acelera este treino"
+    O padrão é CPU, e é nela que todos os números desta página foram medidos. O tempo do PPO está no simulador, que é Python puro; a rede escolhendo uma ação leva uns 0,04 ms. A documentação do Stable Baselines3 diz que o PPO com `MlpPolicy` foi feito para rodar na CPU. Para **medir** com os próprios olhos, o `treinar_ppo.py` aceita `--dispositivo cuda` (padrão `cpu`) num venv separado com o torch de GPU — nunca neste. A receita, e a armadilha da série RTX 50, estão em [CPU ou GPU: os dois caminhos](../../tutoriais/gpu-cpu.md).
+
 As versões que o `uv` resolveu aqui, em 15/11/2026 (30 pacotes):
 
 | pacote | versão |
@@ -91,7 +94,7 @@ cd "$PB_DIR/aula18-ppo"
 "$PB_DIR/.venv-rl/bin/python" testar.py
 ```
 
-Cinco grupos, 47 conferências, 1 min 36 s com o venv (quase tudo é o treino de fumaça e o torch subindo três vezes), menos de 1 s sem ele neste container. O teste não prova que o PPO aprende; prova que as peças estão no lugar: os `.py` são ASCII e compilam, as funções puras dão a resposta sabida (estimativa de término, leitura do `monitor.csv` atravessando uma retomada), a `amostra/` tem as colunas combinadas com o `aula18-pid-bc`, e — só com o venv — um treino de 300 passos grava checkpoint, **retoma** dele, continua o `monitor.csv`, desenha a curva e avalia o modelo da amostra. Termina em `todos os testes passaram.` Sem o venv (`python3 testar.py`), o grupo 5 é pulado e diz por quê.
+Cinco grupos, 48 conferências, 1 min 36 s com o venv (quase tudo é o treino de fumaça e o torch subindo três vezes), menos de 1 s sem ele neste container. O teste não prova que o PPO aprende; prova que as peças estão no lugar: os `.py` são ASCII e compilam, as funções puras dão a resposta sabida (estimativa de término, leitura do `monitor.csv` atravessando uma retomada), a `amostra/` tem as colunas combinadas com o `aula18-pid-bc`, e — só com o venv — um treino de 300 passos grava checkpoint, **retoma** dele, continua o `monitor.csv`, desenha a curva e avalia o modelo da amostra. Termina em `todos os testes passaram.` Sem o venv (`python3 testar.py`), o grupo 5 é pulado e diz por quê.
 
 ## Treinar
 
@@ -286,7 +289,7 @@ As colunas do `avaliacao_*.csv` são as mesmas nos dois exemplos — `episodio,s
 
 **Rodou neste container** — Linux sem GPU, 2 núcleos Intel Xeon a 2,1 GHz, 8 GB, Python 3.10.20 instalado pelo `uv`, as versões da tabela do ambiente, com outros processos usando a CPU ao mesmo tempo:
 
-a criação do venv e a instalação com `--torch-backend cpu` (11 s; venv de 977 MB); o `uv pip install --dry-run` **sem** a opção, que listou os 17 pacotes CUDA (o tamanho de ~3,0 GB é a soma do que o PyPI publica, sem baixar); a velocidade do `highway-fast-v0` e do `highway-v0` com ações aleatórias; o `treinar_ppo.py` completo, 300 288 passos em 2 h 58 min, com um thread do torch; um segundo treino de 15 360 passos com a mesma semente, idêntico episódio a episódio; o `SubprocVecEnv` com 2 ambientes, numa medida de 2 048 passos; a avaliação do modelo final em 10 e em 50 episódios com as duas linhas de base, com `deterministic=True` e `False`, e no `highway-v0`; a avaliação de nove checkpoints com 10 episódios e de cinco com 50; o `curva.py` (curva e barras); o trecho da cheatsheet em segundo plano até a primeira tabela; o `env.configure` no gymnasium 1.4 e o `progress_bar=True`; o `testar.py` com e sem o venv (47 conferências); e os conferidores `conferir-caminhos.py` e `conferir-comandos.py` do repositório.
+a criação do venv e a instalação com `--torch-backend cpu` (11 s; venv de 977 MB); o `uv pip install --dry-run` **sem** a opção, que listou os 17 pacotes CUDA (o tamanho de ~3,0 GB é a soma do que o PyPI publica, sem baixar); a velocidade do `highway-fast-v0` e do `highway-v0` com ações aleatórias; o `treinar_ppo.py` completo, 300 288 passos em 2 h 58 min, com um thread do torch; um segundo treino de 15 360 passos com a mesma semente, idêntico episódio a episódio; o `SubprocVecEnv` com 2 ambientes, numa medida de 2 048 passos; a avaliação do modelo final em 10 e em 50 episódios com as duas linhas de base, com `deterministic=True` e `False`, e no `highway-v0`; a avaliação de nove checkpoints com 10 episódios e de cinco com 50; o `curva.py` (curva e barras); o trecho da cheatsheet em segundo plano até a primeira tabela; o `env.configure` no gymnasium 1.4 e o `progress_bar=True`; o `testar.py` com e sem o venv (48 conferências); e os conferidores `conferir-caminhos.py` e `conferir-comandos.py` do repositório.
 
 **Não rodou, e é o que você vai encontrar:**
 
@@ -333,7 +336,7 @@ a mesma semente em **outra máquina**. Não prometa igualdade.
 
 | Arquivo | Papel | Roda com |
 |---|---|---|
-| `treinar_ppo.py` | PPO (`MlpPolicy`) no `highway-fast-v0`; `Monitor` grava `monitor.csv` (com a coluna `crashed`); checkpoint a cada 20 mil passos; progresso com passos/s e estimativa; `--passos`, `--semente`, `--saida`, `--retomar`, `--threads`, `--checkpoint`, `--relatorio`, `--ambiente` | venv do PPO |
+| `treinar_ppo.py` | PPO (`MlpPolicy`) no `highway-fast-v0`; `Monitor` grava `monitor.csv` (com a coluna `crashed`); checkpoint a cada 20 mil passos; progresso com passos/s e estimativa; `--passos`, `--semente`, `--saida`, `--retomar`, `--threads`, `--checkpoint`, `--relatorio`, `--ambiente`, `--dispositivo` (padrão `cpu`) | venv do PPO |
 | `avaliar.py` | N episódios (padrão 10) com sementes 1000, 1001...; PPO (`deterministic=True`), aleatória e IDLE nos mesmos episódios; `avaliacao_<politica>.csv`, `comportamento_<politica>.csv`, `resumo.csv`; `--modelo`, `--episodios`, `--so-linhas-de-base`, `--sem-linhas-de-base`, `--estocastico`, `--ambiente`, `--saida` | venv do PPO |
 | `curva.py` | `monitor.csv` → curva (recompensa e batidas, média móvel, eixo em passos); `resumo.csv` → barras; `--monitor`, `--saida`, `--janela`, `--linhas-de-base`, `--barras`, `--saida-barras` | venv do PPO |
 | `testar.py` | 5 grupos: higiene, funções puras, amostra, configuração, treino de fumaça com retomada (só com o venv: `--python` ou `PPO_PYTHON`) | qualquer Python 3 (grupo 5: venv do PPO) |

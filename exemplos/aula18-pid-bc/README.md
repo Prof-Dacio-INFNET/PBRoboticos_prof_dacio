@@ -362,6 +362,9 @@ Para a entrega, o `dataset.md` é a evidência do dataset: rode o `histograma.py
 
 ## 4. O treino: a rede que só vê a imagem
 
+!!! tip "CPU ou GPU"
+    O treino do BC levou 42 a 46 s **em CPU** na máquina do professor; a GPU pouco tem a encurtar aqui. O que ela muda de verdade é a **câmera**: gravar o dataset e o BC dirigindo dependem de quem desenha a imagem, e no WSL2 isso já é a placa de vídeo, pelo WSLg, sem CUDA. Num notebook com duas placas, veja qual está desenhando **antes** de gravar o dataset — trocar depois muda os pixels e a tabela. Tudo isso, e o TensorFlow com GPU, está no tutorial [CPU ou GPU: os dois caminhos](../../tutoriais/gpu-cpu.md). O `treinar_bc.py` imprime a linha `dispositivos:` no começo.
+
 ```bash
 # ── herda as variáveis do bloco de download ──
 : "${PB_WS:?defina PB_USER, PB_DIR e PB_WS — o bloco está no topo desta página}"

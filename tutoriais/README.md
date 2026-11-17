@@ -17,6 +17,7 @@ Todos os guias de setup **validam os pré-requisitos antes de instalar** e fixam
 | [Câmera USB no WSL2 (usbipd)](camera-wsl2-usbipd.md) | passar a webcam do Windows para o Linux (Etapa 2 em diante) |
 | [URDF, TF e RViz2](urdf-tf-rviz2.md) | modelar o robô e validar a árvore de transformadas (G2.5, e base do G3.2) |
 | [Gazebo para o TP3](gazebo-para-o-tp3.md) | antes de instalar o Gazebo — a armadilha da versão, a ponte, e o critério de desistência |
+| [CPU ou GPU: os dois caminhos](gpu-cpu.md) | **opcional**, Etapa 9 em diante: onde a GPU ajuda nas cargas do curso (e onde não), e como usá-la em venvs separados — com o caso da série RTX 50 |
 
 ## Processo e entregas
 

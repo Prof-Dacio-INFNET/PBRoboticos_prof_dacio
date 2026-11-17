@@ -4,6 +4,7 @@
     python treinar_ppo.py                                  # 300000 passos, semente 7
     python treinar_ppo.py --passos 20000 --saida rodada-curta
     python treinar_ppo.py --retomar rodada/checkpoints/ppo_120000_steps.zip
+    python treinar_ppo.py --passos 3000 --dispositivo cuda --saida teste-gpu
 
 Grava em --saida (padrao: rodada/):
     monitor.csv            uma linha por episodio de treino (Monitor do SB3):
@@ -41,6 +42,8 @@ GAMMA = 0.8                   # horizonte curto: o que importa e nao bater nos p
 PASSOS_PADRAO = 300_000       # o que o TP5 pede
 CHECKPOINT_PADRAO = 20_000    # um .zip a cada 20k passos: ~12 min de treino nesta CPU
 THREADS_PADRAO = 1            # o gargalo e o simulador (Python puro), nao a rede
+DISPOSITIVO_PADRAO = "cpu"    # a doc do SB3: PPO com MlpPolicy roda melhor em CPU; os
+#                               numeros do README sao todos em CPU (tutoriais/gpu-cpu.md)
 
 AQUI = pathlib.Path(__file__).resolve().parent
 
@@ -101,6 +104,9 @@ def argumentos(argv=None):
                    help="threads do torch (torch.set_num_threads)")
     p.add_argument("--relatorio", type=float, default=60.0,
                    help="segundos entre duas linhas de progresso")
+    p.add_argument("--dispositivo", choices=("cpu", "cuda", "auto"), default=DISPOSITIVO_PADRAO,
+                   help="onde a rede roda (padrao cpu). Sem GPU, o SB3 cai para cpu calado: "
+                        "o cabecalho do treino diz qual ficou")
     return p.parse_args(argv)
 
 
@@ -140,14 +146,14 @@ def main(argv=None):
         json.dump({"ambiente": a.ambiente, "config": cfg}, arq, indent=1, sort_keys=True)
 
     if retomando:
-        modelo = PPO.load(a.retomar, env=venv, device="cpu")
+        modelo = PPO.load(a.retomar, env=venv, device=a.dispositivo)
         ja = modelo.num_timesteps
         diga("retomando de %s: %d passos ja feitos" % (a.retomar, ja))
     else:
         modelo = PPO(POLITICA, venv, learning_rate=TAXA_APRENDIZADO, n_steps=N_PASSOS,
                      batch_size=LOTE, n_epochs=EPOCAS, gamma=GAMMA,
                      policy_kwargs=dict(net_arch=dict(pi=REDE, vf=REDE)),
-                     seed=a.semente, device="cpu", verbose=0)
+                     seed=a.semente, device=a.dispositivo, verbose=0)
         ja = 0
     faltam = a.passos - ja
     if faltam <= 0:
@@ -194,6 +200,8 @@ def main(argv=None):
          % (a.ambiente, a.passos, faltam, a.semente, a.threads))
     diga("hiperparametros: lr %g, n_steps %d, lote %d, epocas %d, gamma %g, rede %s"
          % (TAXA_APRENDIZADO, N_PASSOS, LOTE, EPOCAS, GAMMA, REDE))
+    diga("dispositivo: pedido %s, em uso %s (torch %s)"
+         % (a.dispositivo, modelo.device, torch.__version__))
     diga("a primeira linha de progresso sai em %.0f s; Ctrl+C interrompe e o ultimo "
          "checkpoint fica em %s" % (a.relatorio, saida / "checkpoints"))
     prog = Progresso()

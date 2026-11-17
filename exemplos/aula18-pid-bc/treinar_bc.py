@@ -259,6 +259,12 @@ def principal():
     tf.config.experimental.enable_op_determinism()
     print('tensorflow %s; %d quadros, %d episodios; validacao = episodios %s'
           % (tf.__version__, len(ys), len(set(episodios)), ', '.join(ep_val)))
+    # na GPU o TensorFlow entra sozinho se a enxergar; CUDA_VISIBLE_DEVICES="" a esconde
+    print('dispositivos: ' + ', '.join(d.device_type for d in tf.config.list_physical_devices()))
+    import keras
+    if keras.backend.backend() != 'tensorflow':
+        # com KERAS_BACKEND=torch quem treina e o torch, e a lista acima nao vale
+        print('keras %s com backend %s' % (keras.__version__, keras.backend.backend()))
 
     modelo, hist = treinar(xs[tr], ys[tr], xs[va], ys[va], args, 'divisao por episodio')
     historicos = [('por episodio', hist)]

@@ -121,6 +121,9 @@ Tentei também o caminho sem X nenhum — o pipe EGL do Panda3D (`load-display p
 
 ## Capturar
 
+!!! tip "CPU ou GPU: aqui a placa de vídeo já trabalha, sem CUDA"
+    A câmera é desenhada pelo OpenGL. No WSL2, o WSLg manda o desenho para a placa de vídeo do Windows (7 a 9 quadros/s medidos), e sem ela o desenho é por software (0,37 quadro/s). Nada a instalar para isso. Num notebook com placa integrada **e** NVIDIA, o padrão é a integrada: `glxinfo -B` diz qual está desenhando, e o tutorial [CPU ou GPU: os dois caminhos](../../tutoriais/gpu-cpu.md) mostra como pedir a outra e como medir se vale a pena. Troque **antes** de capturar o que vai para o relatório: a placa muda os pixels.
+
 ```bash
 # ── herda as variáveis do bloco de download ──
 : "${PB_WS:?defina PB_USER, PB_DIR e PB_WS — o bloco está no topo desta página}"

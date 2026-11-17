@@ -67,6 +67,8 @@ def grupo2():
     print("2. funcoes puras")
     t = treinar_ppo
     confere(t.fmt_tempo(59) == "0min 59s", "fmt_tempo(59) = '0min 59s'")
+    confere(t.argumentos([]).dispositivo == "cpu",
+            "--dispositivo tem padrao cpu (os numeros do README sao em CPU)")
     confere(t.fmt_tempo(3 * 3600 + 7 * 60) == "3h07min", "fmt_tempo(3h07) = '3h07min'")
     confere(t.estimar_termino(100, 300, 10.0) == 20.0,
             "estimar_termino: 100 de 300 em 10 s -> faltam 20 s")

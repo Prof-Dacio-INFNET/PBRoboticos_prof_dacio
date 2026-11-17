@@ -338,7 +338,12 @@ uv pip install --python .venv-rl/bin/python --torch-backend cpu stable-baselines
 "$PB_DIR/.venv-rl/bin/python" -c "import torch, stable_baselines3, highway_env, gymnasium; print(torch.__version__, stable_baselines3.__version__, gymnasium.__version__, torch.cuda.is_available())"
 ```
 
+
+
 **O que tem de aparecer:** uma linha terminando em `+cpu 2.9.2 1.4.0 False` (ou versões vizinhas). O `test -x ... ||` só cria o venv se ele não existir: colar o bloco de novo, com o treino rodando, **não** recria o venv embaixo dele (sem a guarda, o `uv` pergunta `replace it?` — e um `yes` apaga o ambiente que o treino está usando). **Se a instalação começar a baixar `nvidia-cublas`, `nvidia-cudnn`...**, faltou o `--torch-backend cpu`: `Ctrl+C`, apague o `.venv-rl` e repita. **Se aparecer `unexpected argument '--torch-backend'`**, o `uv` é antigo: `uv self update` e repita a linha.
+
+!!! tip "CPU ou GPU: a GPU não acelera este treino"
+    O `False` no fim da linha é o esperado: o torch deste venv é só CPU, e o padrão do `treinar_ppo.py` é `--dispositivo cpu`. O tempo do PPO está no simulador, não na rede, e a documentação do Stable Baselines3 recomenda CPU para `MlpPolicy`. Quem tem GPU NVIDIA e quer medir a diferença usa um venv **separado** — nunca este, com o treino rodando: [CPU ou GPU: os dois caminhos](../../tutoriais/gpu-cpu.md).
 
 Agora o treino, em segundo plano. Ele grava em `$PB_DIR/ppo-treino`, **fora** da pasta do exemplo. No mesmo Terminal A:
 
@@ -530,6 +535,9 @@ python3 histograma.py --pasta dataset --md "$PB_DIR/docs/evidencias/tp5/dataset.
 ### Passo 5 — O BC treinado e medido na mesma régua, e o empurrão
 
 **Pressupõe:** o passo 4. **Observe:** a linha de base antes do MAE; e, na régua, a coluna `erro_lat_medio_m`.
+
+!!! tip "CPU ou GPU"
+    O treino do BC leva menos de um minuto em CPU, e é o que a aula mediu. O que a placa de vídeo muda é a **câmera** do dataset (pelo WSLg, sem CUDA) — e trocar a placa que desenha entre gravar e avaliar muda a tabela. Escreva no relatório o dispositivo do treino e a placa que desenhou: [CPU ou GPU: os dois caminhos](../../tutoriais/gpu-cpu.md).
 
 O treino roda no **venv da CNN**. No Terminal C:
 

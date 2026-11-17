@@ -75,6 +75,9 @@ Os outros três detalhes da linha, cada um com motivo:
 - **`opencv-python-headless`**: o OpenCV sem janela. A janela de revisão do `rotular.py` roda com o `python3` **do sistema**, cujo OpenCV do apt abre janela pelo WSLg. Os dois OpenCV nunca se encontram, porque estão em Pythons diferentes.
 - **O venv fica em `$PB_DIR/.venv-cnn`**, fora da pasta do exemplo, pelo mesmo motivo do venv do MetaDrive: o bloco de download apaga e recria `aula17-cnn/`, e um venv de 1,9 GB iria junto.
 
+!!! tip "CPU ou GPU"
+    Todos os números desta página são de **CPU**, e a CNN treina em cerca de um minuto nela. Com GPU NVIDIA, o TensorFlow com GPU vai num venv **separado** (`.venv-cnn-gpu`) — este continua sendo a referência — e, na série RTX 50, ele pode não funcionar: o tutorial [CPU ou GPU: os dois caminhos](../../tutoriais/gpu-cpu.md) tem o teste que decide em um minuto e o plano B. O `treinar.py` imprime a linha `dispositivos:` no começo; `CUDA_VISIBLE_DEVICES=""` na frente do comando esconde a GPU.
+
 Nesta máquina o `uv` resolveu 47 pacotes. As versões que importam:
 
 | pacote | versão |

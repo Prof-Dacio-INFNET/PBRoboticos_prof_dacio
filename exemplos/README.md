@@ -30,6 +30,7 @@ Pacotes ROS 2 prontos para rodar, usados em aula e pensados para serem **copiado
 | [`aula18-ppo`](aula18-ppo/index.md) | Aula 18 | PPO no highway-env: o treino de 300 mil passos medido (horas, não minutos), a curva, e a política avaliada contra a aleatória e o IDLE nos mesmos episódios | gate G5.5 |
 | [`aula18-pid-bc`](aula18-pid-bc/index.md) | Aula 18 | PID e Behavioral Cloning no MetaDrive medidos na mesma régua, o dataset e o histograma, e o empurrão que mostra a deriva de distribuição | gates G5.2, G5.3 e G5.4 |
 | [`aula18-moveit`](aula18-moveit/index.md) | Aula 18 | MoveIt 2 com o Panda: uma caixa na cena, três poses com e sem ela, a pose proibida, e o roteiro de pick-and-place — a parte ROS 2 com a primeira execução no ensaio do professor | gate G5.1 |
+| [`gpu-cpu`](gpu-cpu/index.md) | Aulas 17 e 18 | cronometra na CPU e na GPU cargas parecidas com as do curso (a rede do PPO, a CNN 128×96) e explica o erro da série RTX 50 — relata, não recomenda | o dispositivo e o tempo que vão para o relatório |
 
 ## Exemplos por TP
 

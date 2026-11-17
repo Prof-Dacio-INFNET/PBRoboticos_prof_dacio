@@ -1,6 +1,8 @@
 # Deep Learning — Keras/CNN, YOLO (TP2–TP5)
 
 Venv (uv): `uv pip install tensorflow ultralytics`
+
+**CPU ou GPU.** As CNNs do curso treinam em ~1 min na CPU (`tensorflow-cpu`, venv da [`aula17-cnn`](../exemplos/aula17-cnn/index.md)); a GPU vale a pena em treino de visão maior (YOLO). TensorFlow com GPU vai num venv separado e pode **não** funcionar na série RTX 50; torch com GPU na série 50 pede `--torch-backend cu130`. Receitas, teste decisivo e plano B: [CPU ou GPU: os dois caminhos](../tutoriais/gpu-cpu.md).
 ```python
 # CNN simples (Keras) com augmentation
 from tensorflow import keras; from tensorflow.keras import layers

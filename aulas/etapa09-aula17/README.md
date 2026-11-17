@@ -485,6 +485,9 @@ xvfb-run -a -s "-screen 0 1280x1024x24" "$PB_DIR/.venv-metadrive/bin/python" -m 
 
 Se você precisou do Xvfb, ponha `xvfb-run -a -s "-screen 0 1280x1024x24"` na frente de todo comando com o Python do `.venv-metadrive` daqui em diante. **Se aparecer `panda3d==1.10.13 has no wheels`:** o venv nasceu com outro Python; apague `$PB_DIR/.venv-metadrive` e recrie com o bloco acima.
 
+!!! tip "Quem desenha a sua câmera"
+    A diferença entre 0,37 e 7 a 9 quadros por segundo é a placa de vídeo, que no WSL2 entra pelo WSLg sem instalar nada. Num notebook com placa integrada e NVIDIA, o padrão é a integrada; `glxinfo -B` diz qual está desenhando, e o tutorial [CPU ou GPU: os dois caminhos](../../tutoriais/gpu-cpu.md) mostra como medir a outra. Decida **antes** de capturar os 500 quadros: a placa muda os pixels.
+
 **A captura.** Cinco sementes de cem quadros, cada uma na sua pasta. O tempo depende de quem desenha: na nuvem, com renderização por software, 0,37 quadros por segundo, uns 23 minutos para os 500; na minha máquina, com GPU pelo WSLg, 7 a 9 quadros por segundo, de um a dois minutos. Dispare e vá fazer o passo 2. No Terminal D:
 
 ```bash
@@ -614,7 +617,12 @@ uv pip install --python .venv-cnn/bin/python tensorflow-cpu opencv-python-headle
 "$PB_DIR/.venv-cnn/bin/python" -c "import tensorflow as tf, keras, numpy, cv2; print(tf.__version__, keras.__version__, numpy.__version__, cv2.__version__)"
 ```
 
+
+
 **O que você tem de ver**, depois de umas linhas de `oneDNN` (informação, não erro): `2.21.0 3.12.4 2.2.6 5.0.0`, ou versões vizinhas. **Se a instalação parar no download do `tensorflow-cpu`** (são 261 MB), interrompa com `Ctrl+C` e repita a linha: o `uv` aproveita o que já baixou.
+
+!!! tip "CPU ou GPU"
+    Este venv é **só CPU** (`tensorflow-cpu`), e é com ele que a tabela da aula foi medida; a rede treina em cerca de um minuto. Se o seu notebook tem GPU NVIDIA e você quer experimentar, faça isso num venv **separado**, sem mexer neste: o tutorial [CPU ou GPU: os dois caminhos](../../tutoriais/gpu-cpu.md) tem a receita, o teste de um minuto para a série RTX 50 e o plano B. Escreva no relatório o dispositivo em que treinou.
 
 **Primeiro, o sintético, para conferir o caminho.** A sua tabela **não** vai sair igual à da aula: com a mesma semente, a nuvem deu 0,980 / 0,930 na validação limpa e a minha máquina, 0,980 / 0,850. O que confere o caminho é o sinal: a rodada `com` abaixo da `sem` na `acc_val`, e acima na `acc_val_pert`. Anote os seus números. Uns três minutos. No Terminal E:
 
