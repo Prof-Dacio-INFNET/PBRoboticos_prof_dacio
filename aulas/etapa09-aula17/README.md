@@ -658,8 +658,8 @@ cp resultado-metadrive/curvas.png "$PB_DIR/docs/evidencias/tp4/curvas-augmentati
 - **Recall `n/a` e uma linha de zeros:** a classe não está na validação — e, se também não está no treino, a rede nunca vai respondê-la.
 - **A rede não aprende nos seus quadros:** mude **uma** coisa de cada vez e diga qual — mais épocas (`--epocas 40`), depois mais resolução (`--tamanho 160x120`) —, sempre com a mesma semente nas duas rodadas.
 
-!!! note "A evidência do item 4 que a tabela de gates lista é um notebook"
-    Em [Gates de cada TP](../../recursos/gates-tps.md), o G4.6 pede um **notebook executado de ponta a ponta** (`notebooks/tp4_cnn.ipynb`) e a matriz em `docs/evidencias/tp4/matriz-confusao.png`. Os scripts deste exemplo são o caminho; o notebook pode chamá-los célula a célula e mostrar a tabela, as curvas e a matriz. O Jupyter **não** está na linha de instalação do venv da rede, e instalá-lo nele (`uv pip install --python .venv-cnn/bin/python jupyter`) **não foi testado** nesta disciplina. Se travar, poste no fórum antes de perder a noite.
+!!! note "A evidência do item 4: os scripts bastam"
+    Em [Gates de cada TP](../../recursos/gates-tps.md), o G4.6 pede a tabela, as curvas e a matriz **geradas pelos scripts** que estão no repositório, com a matriz em `docs/evidencias/tp4/matriz-confusao.png`. Os scripts deste exemplo são esse caminho; notebook não é obrigatório. Quem preferir um notebook executado de ponta a ponta (`notebooks/tp4_cnn.ipynb`) pode entregá-lo, chamando os scripts célula a célula. O Jupyter **não** está na linha de instalação do venv da rede, e instalá-lo nele (`uv pip install --python .venv-cnn/bin/python jupyter`) **não foi testado** nesta disciplina. Se travar, poste no fórum antes de perder a noite.
 
 ### Passo 7 — O relatório e a entrega
 

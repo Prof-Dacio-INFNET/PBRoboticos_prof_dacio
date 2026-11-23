@@ -54,17 +54,16 @@ Aulas às **terças, 07h00–09h30, sala SJ205** · Prof. Dácio Moreira de Souz
 
 ## Aula mais recente
 
-**Aula 18 — terça, 17/11/2026 — O TP5 de uma vez: quatro frentes e a linha de base de cada uma** <span class="pb-tag next">atual</span>
+**Aula 19 — terça, 24/11/2026 — Aterrissagem do TP5, item por item** <span class="pb-tag next">atual</span>
 
-**O número só vale com linha de base.** A aula abre o TP5 inteiro, em visão geral: o PPO no highway-env (o treino de 300 mil passos leva **horas**, não 30 minutos — e a política é avaliada contra quem não decide nada), o PID e o Behavioral Cloning medidos na mesma régua do MetaDrive (e o empurrão que mostra o que a validação não mostra), o MoveIt 2 com o Panda planejando com e sem uma caixa no caminho, e o que dá e o que não dá para comparar entre dois simuladores. O que é para rodar no seu ambiente está na **tarefa da semana**, em sete passos, na ordem do que demora.
+**Evidência é o que outra pessoa consegue conferir.** A última terça antes da entrega do TP5 lê o enunciado item por item — o que cada um pede, o que a evidência tem de mostrar e os três casos mais prováveis de entrega incompleta —: o pick-and-place do MoveIt 2, o BC contra o PID na mesma régua, o PPO e o gráfico de barras **com o intervalo** que o enunciado não pede, e a validação com o que tem de estar declarado. A aula também comunica três decisões: a demonstração simulada simples na opção B, o PPO curto declarado e "scripts bastam". O que é para rodar no seu ambiente está na **tarefa da semana**, na ordem do que falta entregar.
 
-[Conteúdo e slides da aula](aulas/etapa09-aula18/index.md){ .md-button .md-button--primary }
-[PPO](exemplos/aula18-ppo/index.md){ .md-button }
-[PID × BC](exemplos/aula18-pid-bc/index.md){ .md-button }
+[Conteúdo e slides da aula](aulas/etapa10-aula19/index.md){ .md-button .md-button--primary }
+[O comparativo PID × BC × PPO](exemplos/aula19-comparativo/index.md){ .md-button }
 [MoveIt 2](exemplos/aula18-moveit/index.md){ .md-button }
 
-!!! danger "Dispare o treino do PPO hoje"
-    Os 300 mil passos do PPO levaram quase **três horas** na máquina em que foram medidos — o "≈30 min" do enunciado não valeu. O treino roda sozinho, em segundo plano: é o passo 1 da tarefa. E o **TP4 vence sábado, 21/11, até o meio-dia**. As datas de cada item estão em [Gates de cada TP](recursos/gates-tps.md).
+!!! danger "O TP5 vence na sexta, 27/11"
+    No Moodle: o PDF do relatório, o link do GitHub (branch `entrega-tp5` e tag `tp5`), o vídeo no YouTube de até 5 minutos — público ou não listado — e o ZIP. Abra cada link numa janela anônima antes de postar. As datas de cada item estão em [Gates de cada TP](recursos/gates-tps.md).
 
 ## Calendário de entregas
 

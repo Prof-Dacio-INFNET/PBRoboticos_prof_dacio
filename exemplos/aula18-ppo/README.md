@@ -229,13 +229,13 @@ O gráfico de barras é a `amostra/barras.png` (10 episódios) e a `amostra/aval
 
 **O PPO não ganha em tudo — e isso é achado, não defeito.** Na velocidade média, o IDLE (87,4 km/h) passa o PPO (86,1 em 10 episódios, 83,8 em 50). O PPO comprou a redução de batidas — de 90% para 30% — andando mais devagar. E ele **ainda bate em 3 de 10**: o relatório que chama isso de "aprendeu a dirigir" está errado; "aprendeu a bater três vezes menos que o IDLE, andando de 1 a 4 km/h mais devagar" está certo.
 
-**10 episódios separam o PPO das linhas de base; não separam muito mais que isso.** Os 50 episódios em blocos de 10:
+**10 episódios sugerem a diferença entre o PPO e as linhas de base; pelo critério conservador, não a separam — 50 separam.** Com 10, o PPO conclui 7 de 10 (intervalo de 95% de Wilson de 40% a 89%) e o IDLE 1 de 10 (de 2% a 40%): os intervalos se tocam por um fio (39,7% e 40,4%). Com 50, o PPO conclui 34 de 50 (de 54% a 79%) e o IDLE 4 de 50 (de 3% a 19%), e os intervalos ficam longe um do outro. O [`aula19-comparativo`](../aula19-comparativo/index.md) desenha esses intervalos no gráfico de barras. Os 50 episódios em blocos de 10:
 
 ```
 batidas por bloco de 10    PPO: 3 4 3 3 3    PPO sorteando: 4 6 3 8 7    IDLE: 9 10 9 8 10    aleatoria: 9 10 10 10 10
 ```
 
-A diferença entre 3 e 9 batidas aparece em qualquer bloco. A diferença entre dois **checkpoints** do mesmo treino, não. Avaliados com 10 episódios, os checkpoints de 20k a 180k deram de **0 a 4 batidas** (o de 60k, zero; o de 120k, quatro). Com 50 (`amostra/checkpoints.txt`):
+A diferença entre 3 e 9 batidas aparece em qualquer bloco — o sinal é consistente, e é por isso que 10 episódios a **sugerem**; para dizer que ela está medida, o intervalo pede mais episódios. A diferença entre dois **checkpoints** do mesmo treino, não. Avaliados com 10 episódios, os checkpoints de 20k a 180k deram de **0 a 4 batidas** (o de 60k, zero; o de 120k, quatro). Com 50 (`amostra/checkpoints.txt`):
 
 ```
 checkpoint  episodios  concluiu  colidiu  vel_media_kmh  recompensa

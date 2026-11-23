@@ -129,6 +129,7 @@ nav:
       - "Aula 16 — O caminho até o Nav2 navegar": aulas/etapa08-aula16/index.md
       - "Aula 17 — Fechar o item 2, a câmera sintética e a rede que decora": aulas/etapa09-aula17/index.md
       - "Aula 18 — O TP5 de uma vez: quatro frentes e a linha de base": aulas/etapa09-aula18/index.md
+      - "Aula 19 — Aterrissagem do TP5, item por item": aulas/etapa10-aula19/index.md
 
   - Tutoriais:
       - tutoriais/index.md
@@ -182,6 +183,7 @@ nav:
       - "Aula 18 — PPO no highway-env": exemplos/aula18-ppo/index.md
       - "Aula 18 — PID × Behavioral Cloning": exemplos/aula18-pid-bc/index.md
       - "Aula 18 — MoveIt 2 com o Panda": exemplos/aula18-moveit/index.md
+      - "Aula 19 — o comparativo PID × BC × PPO": exemplos/aula19-comparativo/index.md
       - "CPU ou GPU — medir o dispositivo": exemplos/gpu-cpu/index.md
       - "TP3 — roteiro de revisão da entrega": exemplos/tp3/revisar-entrega/index.md
       - TP1: exemplos/tp1/index.md

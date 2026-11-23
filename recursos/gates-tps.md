@@ -94,8 +94,10 @@ Um `[!]` não é vergonha nem perda de nota — é informação. O que custa not
 | **G4.3** | Comportamento de obstáculo (<0,5 m) disparando e o robô se recuperando | vídeo do obstáculo entrando na frente do robô | `docs/evidencias/tp4/obstaculo.mp4` (ou link) | 12/11 |
 | **G4.4** | `ros2 bag` gravado e **reproduzível**: dá para rodar a análise sem o robô ligado | `ros2 bag info <bag>` e `ros2 bag play <bag>` alimentando os nós de análise | `bags/` (ou link, se grande) + `docs/evidencias/tp4/bag-info.txt` | 15/11 |
 | **G4.5** | Percepção veicular no MetaDrive: HSV + Canny + Hough sobre a cena, com discussão de falhas; e detecção de formas (Hough Circle e Harris Corner) | script + prints das três etapas e da sobreposição final; figura das formas (círculos e cantos) sobre um quadro do MetaDrive | `docs/evidencias/tp4/veicular/` | 17/11 |
-| **G4.6** | CNN treinada (≥500 frames, 3 classes) com **comparação com/sem augmentation** e matriz de confusão | notebook executado de ponta a ponta | `notebooks/tp4_cnn.ipynb` + `docs/evidencias/tp4/matriz-confusao.png` | 19/11 |
+| **G4.6** | CNN treinada (≥500 frames, 3 classes) com **comparação com/sem augmentation** e matriz de confusão | a tabela, as curvas e a matriz **geradas pelos scripts** que estão no repositório (um notebook executado de ponta a ponta também é aceito) | os scripts + a tabela e as curvas em `docs/evidencias/tp4/` + `docs/evidencias/tp4/matriz-confusao.png` | 19/11 |
 | **G4.7** | **Entrega**: relatório, branch `entrega-tp4`, tag `tp4`, Moodle **até 12h** | `git tag --list` mostra `tp4` | tag + postagem | 21/11 |
+
+**Scripts bastam, no TP4 e no TP5.** Onde a evidência é uma tabela, curvas ou uma matriz, o que se pede é que elas saiam dos **scripts que estão no repositório**, com o comando que as gera; notebook não é obrigatório, e um notebook executado de ponta a ponta continua aceito.
 
 **Aviso de calendário:** entre o TP4 (21/11) e o TP5 (27/11) há **seis dias**. Isso não é erro do cronograma — é a razão pela qual o TP5 tem de começar durante o TP4. O gate G5.0 abaixo tem data **anterior** à entrega do TP4 de propósito.
 
@@ -107,16 +109,24 @@ Um `[!]` não é vergonha nem perda de nota — é informação. O que custa not
 
 | Gate | O que tem de estar verdadeiro | Como provar | Evidência no repo | Quando |
 |---|---|---|---|---|
-| **G5.0** | Opção A (hardware) **ou** B (drone PX4 simulado) escolhida e registrada, com plano B declarado | `docs/decisoes.md` com data | `docs/decisoes.md` | 14/11 |
+| **G5.0** | Opção A (hardware) **ou** B (simulação: drone PX4 **ou** demonstração simulada simples, ver G5.6) escolhida e registrada, com plano B declarado | `docs/decisoes.md` com data | `docs/decisoes.md` | 14/11 |
 | **G5.1** | MoveIt 2 configurado e planejando para **≥3 poses** distintas com detecção de colisão | vídeo/prints das três poses no RViz2 | `docs/evidencias/tp5/moveit/` | 20/11 |
 | **G5.2** | Dataset de ≥1000 frames coletado para o comparativo de condução | `ls dataset/ \| wc -l` e histograma das ações | `docs/evidencias/tp5/dataset.md` | 21/11 |
 | **G5.3** | Baseline PID rodando e medido (métrica objetiva, não impressão) | script imprimindo a métrica em ≥10 episódios | `docs/evidencias/tp5/pid.md` | 23/11 |
 | **G5.4** | Behavioral Cloning treinado e **comparado** com o PID na mesma métrica | tabela PID × BC no relatório | `docs/evidencias/tp5/comparativo.md` | 25/11 |
-| **G5.5** | PPO no highway-env com ~300k steps: curva de recompensa e política avaliada | gráfico de treino + avaliação em ≥10 episódios | `docs/evidencias/tp5/ppo-curva.png` | 26/11 |
-| **G5.6** | Opção escolhida no G5.0 **demonstrada**: robô real percebendo e se movendo, ou missão de waypoints do drone | vídeo | link/vídeo em `docs/evidencias/tp5/` | 26/11 |
+| **G5.5** | PPO no highway-env com ~300k steps — **menos vale, se declarado**: o relatório informa quantos passos foram treinados e os passos/s medidos; curva de recompensa e política avaliada | gráfico de treino + avaliação em ≥10 episódios **com as linhas de base** (obrigatórias com qualquer número de passos) | `docs/evidencias/tp5/ppo-curva.png` | 26/11 |
+| **G5.6** | Opção escolhida no G5.0 **demonstrada**: robô real percebendo e se movendo (A); ou, em B, a missão de waypoints do drone **ou uma demonstração simulada simples, declarada** (critério abaixo da tabela) | vídeo | link/vídeo em `docs/evidencias/tp5/` | 26/11 |
 | **G5.7** | **Entrega**: relatório, branch `entrega-tp5`, tag `tp5`, Moodle | `git tag --list` mostra `tp5` | tag + postagem | 27/11 |
 
-**O PPO é o item que mais atrasa entregas**, porque 300k steps não terminam em quinze minutos e ninguém descobre isso no dia 26. Medido no exemplo [`aula18-ppo`](../exemplos/aula18-ppo/index.md): numa CPU de 2 núcleos com carga, os 300k steps do `highway-fast-v0` levaram **2 h 58 min** (28 passos/s) — o gargalo é o simulador, não a rede. Meça os passos/s do seu treino nos primeiros minutos e faça a conta. Dispare o treino **cedo** (ele roda sozinho enquanto você faz o MoveIt) e salve os checkpoints. Treino que roda em segundo plano é tempo que você ganha de graça; treino iniciado na véspera é nota perdida por relógio.
+**O G5.6 na opção B, sem PX4.** A disciplina não tem exemplo verificado de PX4 nem de Raspberry Pi, e por isso a opção B aceita uma **demonstração simulada simples**, no lugar do drone: o que você conseguir demonstrar e documentar — inclusive o robô simulado do seu próprio projeto. O caminho mais curto é o que você já faz desde o TP4: navegação por **≥3 waypoints**, com a sessão gravada em bag e o gráfico da trajetória. O critério:
+
+- **no vídeo (ou na evidência equivalente):** o robô, no simulador, recebendo a missão e percorrendo os waypoints do começo ao fim, sem intervenção; e, na mesma gravação ou logo depois, o `ros2 bag info` da sessão;
+- **no repositório:** o bag (ou o link dele) e o gráfico da trajetória **gerado do bag**, com os waypoints marcados, em `docs/evidencias/tp5/`;
+- **declarado no relatório:** o que foi simulado (simulador, robô, mundo); o que **não** foi feito do enunciado da opção B — o PX4, o voo em 3D, o que mais faltar — e **por quê**; e o que a demonstração mostra no lugar.
+
+A opção A (hardware) continua valendo do jeito que está, e o robô real demonstrado tem **reconhecimento adicional** na avaliação.
+
+**O PPO é o item que mais atrasa entregas**, porque 300k steps não terminam em quinze minutos e ninguém descobre isso no dia 26. Medido no exemplo [`aula18-ppo`](../exemplos/aula18-ppo/index.md): numa CPU de 2 núcleos com carga, os 300k steps do `highway-fast-v0` levaram **2 h 58 min** (28 passos/s) — o gargalo é o simulador, não a rede. Meça os passos/s do seu treino nos primeiros minutos e faça a conta. Dispare o treino **cedo** (ele roda sozinho enquanto você faz o MoveIt) e salve os checkpoints. Treino que roda em segundo plano é tempo que você ganha de graça; treino iniciado na véspera é nota perdida por relógio. Se o prazo apertar, **menos de 300k passos vale, se declarado**: diga no relatório quantos passos treinou e os passos/s que mediu — a curva e a avaliação em ≥10 episódios com as linhas de base continuam obrigatórias.
 
 ---
 

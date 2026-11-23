@@ -362,7 +362,7 @@ O TP4 vence em **21/11, até 12h**, e começa agora: o primeiro gate é **30/10*
 | 1. Nav2 + nó de rota | **enviando goals sequenciais** | `launch/` + o nó + print dos costmaps + vídeo de 20 s |
 | 2. Árvore de comportamento + bag | **interrompa**, **aguarde**, **retome** · **reproduzível** | XML da árvore + `bags/` + gráfico da trajetória |
 | 3. Percepção veicular no MetaDrive | **sobreponha** ao frame | scripts + prints das três etapas |
-| 4. CNN com e sem augmentation | **compare** as curvas | notebook executado + curvas + matriz de confusão |
+| 4. CNN com e sem augmentation | **compare** as curvas | os scripts + a tabela, as curvas e a matriz de confusão que eles geram (notebook executado também vale) |
 
 ### Item 1 — Nav2, costmaps, AMCL, planejador e a rota
 

@@ -148,7 +148,7 @@ O `model.predict(obs)` do Stable Baselines3 tem `deterministic=False` como **pad
 
 ### Quantos episódios bastam
 
-Dez episódios separam o PPO do IDLE em qualquer bloco: em 50 episódios, em blocos de 10, o PPO bateu `3 4 3 3 3` e o IDLE `9 10 9 8 10`. Dez episódios **não** separam dois checkpoints do mesmo treino. Com 50 episódios cada, seis checkpoints deram de **16% a 32%** de batidas — e o modelo **final** foi o que mais bateu. Os intervalos de 95% mal se separam: os dados sugerem que mais treino não melhorou, e não provam. E **recompensa só se compara com a mesma configuração**: o mesmo modelo avaliado no `highway-v0` "melhora" a recompensa (29,16 contra 21,50) só porque o episódio dele tem 40 s, e não 30.
+Dez episódios **sugerem** a diferença entre o PPO e o IDLE em qualquer bloco — pelo intervalo de 95% de Wilson, quem a separa são os 50, como a [Aula 19](../etapa10-aula19/index.md#item-4-ppo-e-os-tres-lado-a-lado) mostra: em 50 episódios, em blocos de 10, o PPO bateu `3 4 3 3 3` e o IDLE `9 10 9 8 10`. Dez episódios **não** separam dois checkpoints do mesmo treino. Com 50 episódios cada, seis checkpoints deram de **16% a 32%** de batidas — e o modelo **final** foi o que mais bateu. Os intervalos de 95% mal se separam: os dados sugerem que mais treino não melhorou, e não provam. E **recompensa só se compara com a mesma configuração**: o mesmo modelo avaliado no `highway-v0` "melhora" a recompensa (29,16 contra 21,50) só porque o episódio dele tem 40 s, e não 30.
 
 ---
 
@@ -283,7 +283,7 @@ A sua opção já está registrada no `docs/decisoes.md`, com plano B — o G5.0
 | a régua | escopo menor e desempenho inferior são aceitos, **com a dificuldade documentada**; hardware tem reconhecimento adicional | o caminho sem desculpas: dele se espera mais profundidade |
 | evidência | link do vídeo em `docs/evidencias/tp5/` | link do vídeo e o bag em `docs/evidencias/tp5/` |
 
-**Dito com todas as letras: a disciplina não tem, hoje, exemplo verificado nem para o PX4 simulado nem para a Raspberry Pi.** O que eu aceito como evidência em cada opção, e se haverá material para a próxima aula, sai no Moodle. Enquanto isso: **grave evidência no dia em que funciona** — o robô que funcionou na terça e queimou na quinta ainda vale, se está gravado. Opção A sem o hardware funcionando: acione o plano B **no mesmo dia** e registre. Mudar de opção não tira nota; mudar sem escrever, tira.
+**Dito com todas as letras: a disciplina não tem, hoje, exemplo verificado nem para o PX4 simulado nem para a Raspberry Pi.** O que eu aceito como evidência em cada opção está no G5.6 de [Gates de cada TP](../../recursos/gates-tps.md): na opção B, além do drone, vale uma **demonstração simulada simples, declarada** — por exemplo, o robô simulado do seu projeto percorrendo waypoints, com a sessão em bag e o gráfico da trajetória. Em qualquer opção: **grave evidência no dia em que funciona** — o robô que funcionou na terça e queimou na quinta ainda vale, se está gravado. Opção A sem o hardware funcionando: acione o plano B **no mesmo dia** e registre. Mudar de opção não tira nota; mudar sem escrever, tira.
 
 ### PID × BC × PPO: o que não se compara
 

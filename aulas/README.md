@@ -23,8 +23,9 @@ O bloco tem dez etapas de conteúdo distribuídas em dois trimestres (26T3, de 2
 | [Aula 15](etapa08-aula15/index.md) | 27/10/2026 | 8 | Navegação autônoma: o Nav2 em cima do seu mapa | <span class="pb-tag ok">dada</span> |
 | [Aula 16](etapa08-aula16/index.md) | 03/11/2026 | 8 | O caminho até o Nav2 navegar, e a sessão que se reproduz sem o robô | <span class="pb-tag ok">dada</span> |
 | [Aula 17](etapa09-aula17/index.md) | 10/11/2026 | 9 | Fechar o item 2, a câmera que não é a sua, e a rede que decora | <span class="pb-tag ok">dada</span> |
-| [Aula 18](etapa09-aula18/index.md) | 17/11/2026 | 9 | O TP5 de uma vez: quatro frentes e a linha de base de cada uma | <span class="pb-tag next">próxima</span> |
-| Aula 19 | 24/11/2026 | 10 | Aterrissagem do TP5: o pick-and-place, a validação e o relatório comparativo | <span class="pb-tag soon">a seguir</span> |
+| [Aula 18](etapa09-aula18/index.md) | 17/11/2026 | 9 | O TP5 de uma vez: quatro frentes e a linha de base de cada uma | <span class="pb-tag ok">dada</span> |
+| [Aula 19](etapa10-aula19/index.md) | 24/11/2026 | 10 | Aterrissagem do TP5, item por item | <span class="pb-tag next">próxima</span> |
+| Aula 20 | 01/12/2026 | 10 | A entrega final: o sistema que sobe com um comando, o vídeo e o relatório | <span class="pb-tag soon">a seguir</span> |
 
 !!! note "Por que as Aulas 4 e 5 apontam para a página da Aula 3"
     O material da Aula 3 é denso e foi trabalhado ao longo de três encontros — 04, 11 e 18/08 —, com a leitura oficial do TP1 no último deles. As datas do calendário não mudaram; o que mudou foi o ritmo, e isso é normal num bloco prático. As três aulas compartilham a mesma página porque compartilham o mesmo conteúdo.
@@ -81,13 +82,20 @@ Esta tabela existe para uma pergunta específica: **a redistribuição das aulas
 | G4.5 | percepção veicular no MetaDrive: HSV + Canny + Hough, com discussão de falhas | [Aula 17](etapa09-aula17/index.md) · 10/11 | 17/11 | 7 dias |
 | G4.6 | CNN com ≥500 frames, comparação com/sem augmentation e matriz de confusão | [Aula 17](etapa09-aula17/index.md) · 10/11 | 19/11 | 9 dias |
 | G4.7 | entrega: relatório, branch, tag, Moodle até 12h | [Aula 17](etapa09-aula17/index.md) · 10/11 | 21/11 | 11 dias |
-| G5.0 | opção A (hardware) ou B (drone PX4) registrada, com plano B | [Aula 17](etapa09-aula17/index.md) · 10/11 | 14/11 | 4 dias |
-| G5.1 | MoveIt 2 planejando ≥3 poses com detecção de colisão | [Aula 18](etapa09-aula18/index.md) · 17/11 | 20/11 | 3 dias |
+| G5.0 | opção A (hardware) ou B (simulação: drone PX4 ou demonstração simulada simples) registrada, com plano B | [Aula 17](etapa09-aula17/index.md) · 10/11 | 14/11 | 4 dias |
+| G5.1 | MoveIt 2 planejando ≥3 poses com detecção de colisão | [Aula 18](etapa09-aula18/index.md) · 17/11 (e o pick-and-place na [Aula 19](etapa10-aula19/index.md) · 24/11) | 20/11 | 3 dias |
 | G5.2 | dataset de ≥1000 frames e histograma das ações | [Aula 18](etapa09-aula18/index.md) · 17/11 | 21/11 | 4 dias |
 | G5.3 | baseline PID medido em ≥10 episódios | [Aula 18](etapa09-aula18/index.md) · 17/11 | 23/11 | 6 dias |
-| G5.4 | Behavioral Cloning comparado com o PID na mesma métrica | [Aula 18](etapa09-aula18/index.md) · 17/11 | 25/11 | 8 dias |
-| G5.5 | PPO com ~300k steps: curva e política avaliada em ≥10 episódios | [Aula 18](etapa09-aula18/index.md) · 17/11 (o treino disparado no passo 1 da tarefa) | 26/11 | 9 dias |
-| G5.6 | opção do G5.0 demonstrada (robô real ou missão do drone) | [Aula 18](etapa09-aula18/index.md) · 17/11 (o que cada opção exige; **sem exemplo verificado** para nenhuma das duas) | 26/11 | 9 dias |
+| G5.4 | Behavioral Cloning comparado com o PID na mesma métrica | [Aula 18](etapa09-aula18/index.md) · 17/11 (e o intervalo de cada taxa na [Aula 19](etapa10-aula19/index.md) · 24/11) | 25/11 | 8 dias |
+| G5.5 | PPO com ~300k steps (menos vale, se declarado): curva e política avaliada em ≥10 episódios | [Aula 18](etapa09-aula18/index.md) · 17/11 (o treino disparado no passo 1 da tarefa) e [Aula 19](etapa10-aula19/index.md) · 24/11 (o gráfico de barras com intervalo, e a decisão do treino curto declarado) | 26/11 | 9 dias |
+| G5.6 | opção do G5.0 demonstrada (robô real, missão do drone ou demonstração simulada simples, declarada) | [Aula 18](etapa09-aula18/index.md) · 17/11 (o que cada opção exige; **sem exemplo verificado** para nenhuma das duas) e [Aula 19](etapa10-aula19/index.md) · 24/11 (o critério da demonstração simulada simples) | 26/11 | 9 dias |
+| G5.7 | entrega: relatório, branch `entrega-tp5`, tag `tp5`, Moodle | [Aula 19](etapa10-aula19/index.md) · 24/11 | 27/11 | 3 dias |
+| GF.0 | sistema integrado sobe com um comando, ponta a ponta | [Aula 11](etapa06-aula11/index.md) · 29/09 (o `bringup.launch.py`) e Aula 20 · 01/12 (prevista) | 30/11 | 62 dias |
+| GF.1 | vídeo de demonstração público ou não listado, aberto numa janela anônima | [Aula 19](etapa10-aula19/index.md) · 24/11 (o vídeo do TP5 e a janela anônima) e Aula 20 · 01/12 (prevista) | 02/12 | 8 dias |
+| GF.2 | repositório navegável por quem nunca o viu | Aula 20 · 01/12 (prevista) | 02/12 | 1 dia |
+| GF.3 | relatório final consolidado | [Aula 19](etapa10-aula19/index.md) · 24/11 (a análise crítica e o sistema global) e Aula 20 · 01/12 (prevista) | 03/12 | 9 dias |
+| GF.4 | entrega final: `main`, tag `final`, Moodle | Aula 20 · 01/12 (prevista) | 04/12 | 3 dias |
+| GF.5 | apresentação ensaiada, com o vídeo de reserva | Aula 20 · 01/12 (prevista) | 07/12 | 6 dias |
 
 ### O que a redistribuição custou, dito com todas as letras
 
