@@ -50,7 +50,13 @@ find docs -name '__pycache__' -type d -prune -exec rm -rf {} +
 for s in "${SECOES[@]}"; do
   [ -d "docs/$s" ] || continue
   for d in $(find "docs/$s" -mindepth 1 -type d | sort -r); do
-    if [ -z "$(find "$d" -name '*.md' -print -quit)" ]; then rm -rf "$d"; fi
+    # Uma pasta sem pagina mas COM figura fica: os READMEs apontam para as
+    # figuras de amostra/ (ex.: amostra/figuras/empurrao.png), e sem elas o
+    # `mkdocs build --strict` aborta com "not found among documentation files".
+    if [ -z "$(find "$d" -name '*.md' -print -quit)" ] &&
+       [ -z "$(find "$d" \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.svg' -o -iname '*.gif' \) -print -quit)" ]; then
+      rm -rf "$d"
+    fi
   done
   if [ -z "$(find "docs/$s" -name '*.md' -print -quit)" ]; then rm -rf "docs/$s"; fi
 done
